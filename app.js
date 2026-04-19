@@ -250,11 +250,10 @@ function setupAIAssistant() {
   let isChatOpen = false;
   
   // ==========================================
-  // 根据你提供的文档，基础端点是 https://api.longcat.chat/openai
-  // OpenAI 格式对话补全后面通常要拼接 /v1/chat/completions
-  const AI_API_URL = "https://api.longcat.chat/openai/v1/chat/completions"; 
-  const AI_API_KEY = "ak_2gF51m2vL3xF96V1kc0Kk3Uc8dB1c";
-  const AI_MODEL_NAME = "gpt-3.5-turbo"; // 既然兼容 OpenAI 规范，大部分平台默认用这个模型名字来识别，如果报错再改
+  // OpenRouter 接入配置 
+  const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions"; 
+  const AI_API_KEY = "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";
+  const AI_MODEL_NAME = "google/gemini-2.0-flash-exp:free"; // OpenRouter上的限免顶配大模型
   // ==========================================
 
   // 为模型写入系统设定
@@ -311,7 +310,9 @@ function setupAIAssistant() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${AI_API_KEY}`
+          "Authorization": `Bearer ${AI_API_KEY}`,
+          "HTTP-Referer": window.location.href, // OpenRouter 鉴权需要
+          "X-Title": "老师一站式服务平台"       // OpenRouter 统计需要
         },
         body: JSON.stringify({
           model: AI_MODEL_NAME,
