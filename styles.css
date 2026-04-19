@@ -1336,3 +1336,9 @@ textarea { resize: vertical; }
     justify-content: center;
   }
 }
+
+/* 模态弹窗与隐藏状态全局类 */
+.hidden {
+  display: none !important;
+}
+
