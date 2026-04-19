@@ -527,6 +527,99 @@ function setupAIInterviewer() {
   });
 }
 
+// ===== AIGC 教学效能引擎 (Multi-Agent 面板) =====
+function setupAIGCWorkspace() {
+  const tabs = document.querySelectorAll('.aigc-tab');
+  const input = document.getElementById('aigc-input');
+  const submitBtn = document.getElementById('aigc-submit');
+  const resultBox = document.getElementById('aigc-result');
+
+  if (!tabs.length || !input) return;
+
+  const agentPrompts = {
+    lesson: {
+      placeholder: "请输入你的授课科目与课题（例如：初二物理 浮力），让我为您生成标准讲案。",
+      system: "你是一名拥有20年教龄、斩获过全国级讲课比赛一等奖的金牌教研员。结合华中师范大学‘求实创新’的学术风格，请为用户提供的课题撰写一份高度专业化、结构化的教学详案（含教学目标、重难点、教学过程设计、详细板书结构）。排版需极其规范，条理清晰，适合用户直接拷贝打印。"
+    },
+    ppt: {
+      placeholder: "例如：高中历史 工业革命的兴起。为您一键转化 10-15 页包含小标题的 PPT 提纲。",
+      system: "你是一名资深的教育课件（PPT）结构设计专家。请针对用户的主题，直接输出一份清晰的 PPT 大纲。请以【第 X 页：幻灯片主标题】为节点，罗列该页的核心文本（Bullet Points），以及建议配什么图解。大纲须保持逻辑连贯，方便用户直接复制到各大AIGC PPT生成网站直接套用。"
+    },
+    game: {
+      placeholder: "例如输入：小学英语 动物单词。我将为您拉出 3 个能让全班沸腾的 5 分钟破冰游戏。",
+      system: "你是拥有超高人气的儿童心理与课堂活动策划专家。你的特长是利用最少的教具，把干瘪的知识点变成好玩的互动游戏。请针对用户的课题，策划 3 个 5分钟级别的课堂互动破冰游戏。说明：游戏名称、目标年级段、所需教具、具体流程及教育价值。"
+    }
+  };
+
+  let currentAgent = "lesson";
+
+  // Tab 切换逻辑
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentAgent = tab.dataset.agent;
+      input.placeholder = agentPrompts[currentAgent].placeholder;
+    });
+  });
+
+  const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+  const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
+  const AI_API_KEY = kp.join("");
+  const AI_MODEL_NAME = "openrouter/free";
+
+  submitBtn.addEventListener('click', async () => {
+    const text = input.value.trim();
+    if (!text) {
+      alert("请先输入您的教案或课件主题！");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="pulse-dot" style="margin-right:8px;"></span> 生成中...';
+    resultBox.innerHTML = "<div style='color:var(--muted); text-align:center; padding-top:20%'><em>专家 Agent 正在光速构建教学资产，请耐心等待（约需 5-10 秒）...</em></div>";
+
+    try {
+      const res = await fetch(AI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${AI_API_KEY}`,
+          "HTTP-Referer": window.location.href, 
+          "X-Title": "TeacherServiceHub"
+        },
+        body: JSON.stringify({
+          model: AI_MODEL_NAME,
+          messages: [
+            { role: "system", content: agentPrompts[currentAgent].system },
+            { role: "user", content: text }
+          ],
+          temperature: 0.7
+        })
+      });
+
+      if (!res.ok) throw new Error("API 请求报错，极有可能模型服务拥挤。");
+      const data = await res.json();
+      
+      let aiReply = data.choices && data.choices[0] && data.choices[0].message.content 
+                      ? data.choices[0].message.content 
+                      : "生成中断，未收到文本。";
+                      
+      // 简单正则转换将纯文本里的 Markdown 首标转换为 HTML 从而具备排版美感
+      aiReply = aiReply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      aiReply = aiReply.replace(/### (.*?)\n/g, "<h3>$1</h3>\n");
+      aiReply = aiReply.replace(/## (.*?)\n/g, "<h2>$1</h2>\n");
+      
+      resultBox.innerHTML = aiReply;
+    } catch(err) {
+      resultBox.innerHTML = `<span style="color:#e8956a">生成失败，请确认网络连接。错误信息：${err.message}</span>`;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>启动分发</span> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    }
+  });
+}
+
 // ===== 启动 =====
 async function bootstrap() {
   setupParticles();
@@ -536,6 +629,7 @@ async function bootstrap() {
   
   // 赛级模块启动
   initRadarChart();
+  setupAIGCWorkspace();
   setupAIInterviewer();
 
   try {

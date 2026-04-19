@@ -1216,3 +1216,123 @@ textarea { resize: vertical; }
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== AIGC 教学效能引擎 (多层 Agent) ===== */
+.aigc-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  margin-top: 24px;
+}
+.aigc-sidebar {
+  background: rgba(47, 111, 97, 0.03);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.aigc-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+.aigc-tab:hover {
+  background: rgba(47, 111, 97, 0.05);
+}
+.aigc-tab.active {
+  background: white;
+  border-left: 4px solid var(--primary);
+}
+.tab-icon {
+  font-size: 1.5rem;
+}
+.tab-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+.tab-sub {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.aigc-main {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.aigc-input-area {
+  display: flex;
+  gap: 12px;
+}
+.aigc-input-area input {
+  flex-grow: 1;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+}
+.aigc-input-area input:focus {
+  border-color: var(--primary);
+}
+.aigc-output-area {
+  flex-grow: 1;
+  background: #fcfcfc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #333;
+  white-space: pre-wrap;
+}
+/* Markdown Elements Simulator (Minimal) */
+.aigc-output-area strong { color: var(--primary-dark); }
+.aigc-output-area h1, .aigc-output-area h2, .aigc-output-area h3 { margin-top: 1em; margin-bottom: 0.5em; border-bottom: 1px solid #eee; padding-bottom: 4px;}
+
+@media (max-width: 768px) {
+  .aigc-layout {
+    grid-template-columns: 1fr;
+  }
+  .aigc-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .aigc-tab {
+    flex-shrink: 0;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+  }
+  .aigc-tab.active {
+    border-left: none;
+    border-top: 4px solid var(--primary);
+  }
+  .aigc-input-area {
+    flex-direction: column;
+  }
+  .aigc-input-area button {
+    width: 100%;
+    justify-content: center;
+  }
+}

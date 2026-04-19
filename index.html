@@ -165,6 +165,62 @@
           <div id="resource-grid" class="resource-grid"></div>
         </section>
 
+        <!-- AIGC 教学效能工作台 -->
+        <section id="aigc-workspace" class="section glass-section" data-reveal>
+          <div class="section-heading">
+            <p class="section-kicker">Agent 工作流</p>
+            <h3>AIGC 教学效能引擎</h3>
+            <p style="color: var(--muted); margin-top:8px; font-size:0.95rem;">依托多模态大模型，我们抽象了三位独立的虚拟专家。一键为您生成合规的教学文档资产，实现教案、课件的工业化生产。</p>
+            <div class="heading-line"></div>
+          </div>
+          <div class="aigc-layout">
+            <!-- Sidebar Tabs -->
+            <div class="aigc-sidebar" id="aigc-tabs">
+              <button class="aigc-tab active" data-agent="lesson">
+                <span class="tab-icon">📝</span>
+                <div class="tab-text">
+                  <p class="tab-title">金牌教研员</p>
+                  <p class="tab-sub">一键生成标准详案</p>
+                </div>
+              </button>
+              <button class="aigc-tab" data-agent="ppt">
+                <span class="tab-icon">📊</span>
+                <div class="tab-text">
+                  <p class="tab-title">课件结构师</p>
+                  <p class="tab-sub">智能规划 PPT 提纲</p>
+                </div>
+              </button>
+              <button class="aigc-tab" data-agent="game">
+                <span class="tab-icon">🎮</span>
+                <div class="tab-text">
+                  <p class="tab-title">破冰策划器</p>
+                  <p class="tab-sub">设计课堂互动游戏</p>
+                </div>
+              </button>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="aigc-main">
+              <div class="aigc-input-area">
+                <input type="text" id="aigc-input" placeholder="请输入你的授课科目与课题（例如：初二物理 浮力），让我为您生成标准讲案。">
+                <button id="aigc-submit" class="button primary" style="white-space: nowrap;">
+                  <span>启动分发</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              
+              <div class="aigc-output-area">
+                <div id="aigc-result" class="aigc-result-content">
+                  <div class="empty-state-workspace" style="display:flex; align-items:center; gap:8px; color:var(--muted); height:100px; justify-content:center;">
+                    <span class="pulse-dot"></span>
+                    <p>等待输入指令，三大专职 Agent 随时待命...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- AI 微格试讲 / 面试官诊断 -->
         <section id="ai-interviewer" class="section dark-section" data-reveal>
           <div class="section-heading dark-heading">
