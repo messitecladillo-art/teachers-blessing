@@ -13,6 +13,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
     <!-- 背景粒子 -->
@@ -30,6 +31,11 @@
             </div>
           </div>
           <div class="nav-links" id="quick-links"></div>
+          <div class="auth-buttons" id="auth-container" style="display:flex; align-items:center;">
+            <button id="btn-login" class="button secondary small" style="padding:6px 12px; font-size:0.85rem">全栈模式(登录/注册)</button>
+            <span id="user-info" class="hidden" style="margin-left:12px; font-size:0.9rem; font-weight:600; color:var(--text-dark)"></span>
+            <button id="btn-logout" class="button tag-btn hidden" style="margin-left:8px; font-size:0.8rem; padding:4px 8px; border:none; background:transparent; cursor:pointer; color:var(--muted)">退出</button>
+          </div>
         </nav>
 
         <section class="hero-content">
@@ -197,6 +203,17 @@
                   <p class="tab-sub">设计课堂互动游戏</p>
                 </div>
               </button>
+              
+              <div id="dynamic-agents-list" style="display:contents"></div>
+
+              <div style="height:1px; background:var(--border); margin:12px"></div>
+              <button class="aigc-add-btn" id="btn-create-agent" style="display:flex; align-items:center; gap:12px; padding:16px 20px; background:rgba(196,104,60,0.05); border:none; cursor:pointer; text-align:left; transition:all 0.2s;">
+                <span class="tab-icon">➕</span>
+                <div class="tab-text">
+                  <p class="tab-title" style="color:var(--primary)">创造私有 Agent</p>
+                  <p class="tab-sub">UGC 自定义工作流部署</p>
+                </div>
+              </button>
             </div>
             
             <!-- Main Content Area -->
@@ -334,6 +351,63 @@
       </div>
     </div>
 
+    <!-- Agent 注册表单弹窗 -->
+    <div id="agent-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+      <div class="modal-container" style="background:#fff; width:90%; max-width:500px; border-radius:16px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; color:var(--text-dark);">➕ 部署专属 Agent</h3>
+          <button id="close-agent-modal" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:20px;">
+          在此处定义核心工作流！在真实商业级闭环中，它将被持久化安全存储，你哪怕换台机器依然能召回！
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:8px;">工作流名称：</label>
+          <input type="text" id="modal-agent-name" placeholder="例如：高考压轴题满分解析器" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:inherit; outline:none;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:8px;">一句话能力描述：</label>
+          <input type="text" id="modal-agent-desc" placeholder="例如：详细拆解答题步骤并打分..." style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:inherit; outline:none;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:8px;">核心 System Prompt（大模型底层思想指令）：</label>
+          <textarea id="modal-agent-prompt" rows="5" placeholder="例如：你是一位省重点高三数学名师，请针对用户提供的题目给出详细的教学解析思路..." style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; resize:vertical; font-family:inherit; outline:none;"></textarea>
+        </div>
+        
+        <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+          <button id="submit-agent" class="button primary" style="padding:10px 24px;">将其纳入引擎列阵</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 登录注册弹窗 -->
+    <div id="auth-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+      <div class="modal-container" style="background:#fff; width:90%; max-width:400px; border-radius:16px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; color:var(--text-dark);">开启全栈云生态 ☁️</h3>
+          <button id="close-auth-modal" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:20px;" id="auth-tip">
+          连接到 Supabase 真实数据库环境体验账户体系与云存档。如果当前 URL 尚未配置到 app.js 中，将自动降级为安全的“游牧本地模式”。
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:8px;">邮箱账号：</label>
+          <input type="email" id="auth-email" placeholder="输入任意测试邮箱" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:inherit; outline:none;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:8px;">密码（至少6位）：</label>
+          <input type="password" id="auth-password" placeholder="建议输入123456" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:inherit; outline:none;">
+        </div>
+        <p id="auth-error" style="color:#d9534f; font-size:0.85rem; margin-bottom:16px; min-height: 20px;"></p>
+        <div style="display:flex; gap:12px; margin-top:12px;">
+          <button id="auth-btn-login" class="button primary" style="flex:1;">直接登录</button>
+          <button id="auth-btn-signup" class="button secondary" style="flex:1;">新注册</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 云端鉴权与动态代理层 -->
+    <script src="./cloud.js" defer></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

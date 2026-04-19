@@ -563,6 +563,20 @@ function setupAIGCWorkspace() {
     });
   });
 
+  // 监听来自 cloud.js 的用户自建智能体切换事件
+  document.addEventListener('AgentSwitch', (e) => {
+    currentAgent = e.detail;
+  });
+
+  function getSystemPrompt(id) {
+    if (agentPrompts[id]) return agentPrompts[id].system;
+    if (window.customAgentCollection) {
+      const custom = window.customAgentCollection.find(a => a.id === id);
+      if (custom) return custom.system_prompt;
+    }
+    return "你是一名拥有无限创造力的AI教育助手。";
+  }
+
   const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions";
   const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
   const AI_API_KEY = kp.join("");
@@ -591,7 +605,7 @@ function setupAIGCWorkspace() {
         body: JSON.stringify({
           model: AI_MODEL_NAME,
           messages: [
-            { role: "system", content: agentPrompts[currentAgent].system },
+            { role: "system", content: getSystemPrompt(currentAgent) },
             { role: "user", content: text }
           ],
           temperature: 0.7
