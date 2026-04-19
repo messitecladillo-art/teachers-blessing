@@ -311,8 +311,8 @@ function setupAIAssistant() {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${AI_API_KEY}`,
-          "HTTP-Referer": window.location.href, // OpenRouter 鉴权需要
-          "X-Title": "老师一站式服务平台"       // OpenRouter 统计需要
+          "HTTP-Referer": window.location.href, 
+          "X-Title": "TeacherServiceHub" // ⚠️ 之前这里填了中文导致你的浏览器底层直接报错拦截了！HTTP 请求头必须是纯英文
         },
         body: JSON.stringify({
           model: AI_MODEL_NAME,
