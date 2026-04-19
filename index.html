@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>师范生成长驿站 — 一站式服务平台</title>
+    <meta name="description" content="面向师范生的一站式学习、实践与就业服务平台，整合考证、实习、就业与资源服务。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;800;900&family=ZCOOL+XiaoWei&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- 背景粒子 -->
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+    <div class="page-shell">
+      <!-- ===== HEADER / HERO ===== -->
+      <header class="hero" data-reveal>
+        <nav class="topbar">
+          <div class="brand">
+            <span class="brand-mark" id="brand-icon">师</span>
+            <div>
+              <p class="eyebrow">Teacher Service Hub</p>
+              <h1 id="site-name">师范生成长驿站</h1>
+            </div>
+          </div>
+          <div class="nav-links" id="quick-links"></div>
+        </nav>
+
+        <section class="hero-content">
+          <div class="hero-copy">
+            <p class="badge">
+              <span class="badge-dot"></span>
+              一站式服务网站原型
+            </p>
+            <h2 id="site-subtitle"></h2>
+            <p class="hero-text">
+              把考证、实习、就业、资源与咨询整合到一个入口里，让师范生少切页面、多做准备。
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#services">
+                <span>查看服务入口</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <a class="button secondary" href="#contact">提交咨询</a>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="panel-header">
+              <span class="pulse-dot"></span>
+              <p class="panel-title">本周重点提醒</p>
+            </div>
+            <ul id="announcement-highlights" class="highlight-list"></ul>
+          </div>
+        </section>
+
+        <section id="hero-stats" class="stats-grid"></section>
+      </header>
+
+      <!-- ===== MAIN ===== -->
+      <main>
+        <!-- 服务矩阵 -->
+        <section id="services" class="section" data-reveal>
+          <div class="section-heading">
+            <p class="section-kicker">服务矩阵</p>
+            <h3>覆盖考证、实践、就业与成长支持</h3>
+            <div class="heading-line"></div>
+          </div>
+          <div id="service-grid" class="card-grid"></div>
+        </section>
+
+        <!-- 通知 + 活动 -->
+        <section class="section split-layout" data-reveal>
+          <div class="panel-card">
+            <div class="section-heading compact">
+              <p class="section-kicker">通知公告</p>
+              <h3>近期安排</h3>
+            </div>
+            <div id="announcement-list" class="stack-list"></div>
+          </div>
+
+          <div class="panel-card warm">
+            <div class="section-heading compact">
+              <p class="section-kicker">活动日历</p>
+              <h3>本周活动</h3>
+            </div>
+            <div id="event-list" class="stack-list"></div>
+          </div>
+        </section>
+
+        <!-- 资源中心 -->
+        <section class="section" data-reveal>
+          <div class="section-heading">
+            <p class="section-kicker">资源中心</p>
+            <h3>常用模板与资料快速获取</h3>
+            <div class="heading-line"></div>
+          </div>
+          <div id="resource-grid" class="resource-grid"></div>
+        </section>
+
+        <!-- 在线咨询 -->
+        <section class="section contact-section" id="contact" data-reveal>
+          <div class="contact-copy">
+            <p class="section-kicker">在线咨询</p>
+            <h3>把问题发给服务中心</h3>
+            <p>
+              这里预留了一个首版咨询表单，后续可以接入登录系统、工单分配、邮件通知和管理后台。
+            </p>
+            <div class="mini-panel">
+              <p class="mini-title">已接收的最近留言</p>
+              <div id="message-list" class="message-list"></div>
+            </div>
+          </div>
+
+          <form id="contact-form" class="contact-form">
+            <label>
+              <span class="label-text">姓名</span>
+              <input name="name" type="text" placeholder="请输入你的姓名" required />
+            </label>
+            <label>
+              <span class="label-text">身份</span>
+              <select name="role" required>
+                <option value="">请选择</option>
+                <option value="本科师范生">本科师范生</option>
+                <option value="研究生">研究生</option>
+                <option value="辅导员">辅导员</option>
+                <option value="教学秘书">教学秘书</option>
+              </select>
+            </label>
+            <label>
+              <span class="label-text">咨询主题</span>
+              <input name="topic" type="text" placeholder="例如：实习申请" required />
+            </label>
+            <label>
+              <span class="label-text">具体内容</span>
+              <textarea
+                name="message"
+                rows="5"
+                placeholder="请描述你遇到的问题或需要的帮助"
+                required
+              ></textarea>
+            </label>
+            <button class="button primary full" type="submit" id="submit-btn">
+              <span>提交咨询</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+            <p id="form-status" class="form-status" aria-live="polite"></p>
+          </form>
+        </section>
+      </main>
+
+      <!-- ===== FOOTER ===== -->
+      <footer class="site-footer" data-reveal>
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <span class="brand-mark small">师</span>
+            <div>
+              <p class="footer-title">师范生成长驿站</p>
+              <p class="footer-sub">Teacher Service Hub</p>
+            </div>
+          </div>
+          <p class="footer-copy">&copy; 2026 师范生成长驿站 · 一站式服务原型</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- 回到顶部 -->
+    <button class="back-to-top" id="back-to-top" aria-label="回到顶部">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
