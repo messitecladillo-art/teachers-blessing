@@ -237,6 +237,111 @@ function setupBackToTop() {
   });
 }
 
+// ===== 悬浮的 LongcatAI 助手核心逻辑 =====
+function setupAIAssistant() {
+  const toggleBtn = document.getElementById("ai-chat-toggle");
+  const closeBtn = document.getElementById("ai-chat-close");
+  const chatWindow = document.getElementById("ai-chat-window");
+  const msgBox = document.getElementById("ai-chat-messages");
+  const form = document.getElementById("ai-chat-input-form");
+  const input = document.getElementById("ai-chat-input");
+  const sendBtn = document.getElementById("ai-chat-send");
+  
+  let isChatOpen = false;
+  
+  // ==========================================
+  // 【重要】：这里是预设的兼容大部分国产大模型的标准接口格式
+  // 如果 LongcatAI 的 API 地址不是下方这个，你只需修改这里：
+  const AI_API_URL = "https://api.longcat.ai/v1/chat/completions"; 
+  const AI_API_KEY = "ak_2gF51m2vL3xF96V1kc0Kk3Uc8dB1c";
+  const AI_MODEL_NAME = "longcat-default"; // 根据实际要求的模型名称更换
+  // ==========================================
+
+  // 为模型写入系统设定
+  let chatHistory = [
+    { role: "system", content: "你是一个温柔、专业、有求必应的师范生成长助手 LongcatAI。你在网页右下角进行回复，请不要回复过于冗长的答案，使用纯文本回答为主。" }
+  ];
+
+  toggleBtn.addEventListener("click", () => {
+    isChatOpen = !isChatOpen;
+    chatWindow.classList.toggle("hidden", !isChatOpen);
+    if(isChatOpen) input.focus();
+  });
+
+  closeBtn.addEventListener("click", () => {
+    isChatOpen = false;
+    chatWindow.classList.add("hidden");
+  });
+
+  function appendChatRow(text, isUser = false) {
+    const el = document.createElement("div");
+    el.className = isUser ? "msg-user" : "msg-ai";
+    el.textContent = text;
+    msgBox.appendChild(el);
+    msgBox.scrollTop = msgBox.scrollHeight;
+  }
+
+  function toggleLoading(show) {
+    if (show) {
+      const el = document.createElement("div");
+      el.className = "msg-ai msg-loading-box";
+      el.innerHTML = '<div class="msg-loading"><span></span><span></span><span></span></div>';
+      msgBox.appendChild(el);
+      msgBox.scrollTop = msgBox.scrollHeight;
+    } else {
+      const el = msgBox.querySelector(".msg-loading-box");
+      if (el) el.remove();
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if(!text) return;
+
+    appendChatRow(text, true);
+    input.value = "";
+    sendBtn.disabled = true;
+    chatHistory.push({ role: "user", content: text });
+    
+    toggleLoading(true);
+    
+    try {
+      const res = await fetch(AI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: AI_MODEL_NAME,
+          messages: chatHistory,
+          temperature: 0.7
+        })
+      });
+
+      if(!res.ok) throw new Error(`请求报错（代码 ${res.status}）`);
+
+      const data = await res.json();
+      toggleLoading(false);
+
+      const aiReply = data.choices && data.choices[0] && data.choices[0].message.content 
+                      ? data.choices[0].message.content 
+                      : "糟糕，没收到正确格式的回复呀。";
+                      
+      appendChatRow(aiReply, false);
+      chatHistory.push({ role: "assistant", content: aiReply });
+      
+    } catch(err) {
+      toggleLoading(false);
+      appendChatRow(`❌ 无法连接到大模型。\n原因可能是：\n1. LongcatAI 的默认调用地址不同\n2. 浏览器拦截了跨域访问 (CORS)\n错误详情: ${err.message}`, false);
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+}
+
 // ===== 背景粒子 =====
 function setupParticles() {
   const canvas = document.getElementById("bg-canvas");
@@ -314,6 +419,7 @@ async function bootstrap() {
   setupParticles();
   setupScrollReveal();
   setupBackToTop();
+  setupAIAssistant(); // 启动 AI 助手
 
   try {
     await Promise.all([loadContent(), loadMessages()]);
