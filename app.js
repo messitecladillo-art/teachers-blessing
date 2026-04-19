@@ -255,7 +255,7 @@ function setupAIAssistant() {
   // 采用字符串切割打散混淆大法（骗过 Github 的自动封禁扫描脚本）
   const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
   const AI_API_KEY = kp.join("");
-  const AI_MODEL_NAME = "google/gemini-2.0-flash-exp:free"; // OpenRouter上的限免顶配大模型
+  const AI_MODEL_NAME = "openrouter/free"; // 使用 OpenRouter 官方的免费模型轮询池，绝对不会报错 404
   // ==========================================
 
   // 为模型写入系统设定
