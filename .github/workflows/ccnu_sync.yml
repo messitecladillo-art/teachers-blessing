@@ -1,0 +1,38 @@
+name: CCNU Automatic Sync Pipeline
+
+on:
+  schedule:
+    - cron: '0 18 * * *' # 每天凌晨2点 (UTC+8) 执行
+  workflow_dispatch: # 允许通过 GitHub 界面手动点击运行
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-update:
+    runs-name: Fetch latest announcements from CCNU
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4 requests
+
+      - name: Run Scraper Script
+        run: python scripts/sync_ccnu.py
+
+      - name: Auto Commit to Main
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[Bot] 自动同步华中师大官网最新通告"
+          file_pattern: "data/content.json"
+          branch: main
