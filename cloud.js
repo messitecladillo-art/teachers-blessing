@@ -55,12 +55,12 @@ function updateAuthUI() {
     btnLogoutNav.classList.add("hidden");
     
     if(!isCloudMode) {
-      btnLoginNav.textContent = "当前为本地游牧模式";
-      btnLoginNav.disabled = true;
-      btnLoginNav.style.opacity = 0.6;
+      btnLoginNav.textContent = "全栈云生态 (游牧模式)";
+      btnLoginNav.style.opacity = 0.8;
     }
   }
 }
+updateAuthUI(); // 初始化加载时立刻执行一次
 
 // 检查现有会话
 async function checkUserSession() {
@@ -74,7 +74,12 @@ async function checkUserSession() {
 
 if(btnLoginNav) {
   btnLoginNav.addEventListener("click", () => {
-    if(isCloudMode) authModal.classList.remove("hidden");
+    authModal.classList.remove("hidden");
+    if(!isCloudMode) {
+      setTimeout(() => {
+        authError.textContent = "游牧模式：系统检测到未配置云密钥。云端登录注册已锁止，但不影响纯本地模式开发 Agent！";
+      }, 100);
+    }
   });
 }
 
@@ -94,17 +99,22 @@ if(btnLogoutNav) {
 if(btnLoginSubmit) {
   btnLoginSubmit.addEventListener("click", async () => {
     authError.textContent = "登录中...";
-    if(!isCloudMode) return authError.textContent = "未配置后端，无法登录";
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: authEmail.value.trim(),
-      password: authPass.value.trim(),
-    });
-    if(error) {
-      authError.textContent = "账户或密码错误";
-    } else {
-      currentUser = data.user;
-      authModal.classList.add("hidden");
-      updateAuthUI();
+    if(!isCloudMode) return authError.textContent = "拒绝访问：必须在代码中正确配置 Supabase 后台密钥方可启用此功能。";
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail.value.trim(),
+        password: authPass.value.trim(),
+      });
+      if(error) {
+        authError.textContent = "账户或密码错误";
+      } else {
+        currentUser = data.user;
+        authModal.classList.add("hidden");
+        updateAuthUI();
+      }
+    } catch(err) {
+      authError.textContent = "网络通讯异常：可能是您代码里随便填写的 URL 无效导致崩溃！";
     }
   });
 }
@@ -112,16 +122,21 @@ if(btnLoginSubmit) {
 if(btnSignupSubmit) {
   btnSignupSubmit.addEventListener("click", async () => {
     authError.textContent = "注册请求中...";
-    if(!isCloudMode) return authError.textContent = "未配置后端，无法注册";
-    const { data, error } = await supabase.auth.signUp({
-      email: authEmail.value.trim(),
-      password: authPass.value.trim(),
-    });
-    if(error) {
-      authError.textContent = error.message;
-    } else {
-      authError.textContent = "✅ 注册成功！由于免费数据库限制，可能需要去您的邮箱点击一下验证链接，或者可以直接用刚刚的密码登录。";
-      authError.style.color = "#2f6f61";
+    if(!isCloudMode) return authError.textContent = "拒绝构建：请按 walkthrough 指引前往 Supabase 获取正确的数据集 URL 开启云端！";
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail.value.trim(),
+        password: authPass.value.trim(),
+      });
+      if(error) {
+        authError.textContent = error.message;
+      } else {
+        authError.textContent = "✅ 注册成功！可能需要去您的邮箱点击验证链接，或者直接登录。";
+        authError.style.color = "#2f6f61";
+      }
+    } catch(err) {
+      authError.textContent = "网络异常：请检查您的 URL 和 Anon Key 是否真的是合法的数据库资源池！";
     }
   });
 }
