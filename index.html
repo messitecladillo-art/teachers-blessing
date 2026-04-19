@@ -12,6 +12,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
   </head>
   <body>
     <!-- 背景粒子 -->
@@ -64,6 +65,22 @@
 
       <!-- ===== MAIN ===== -->
       <main>
+        <!-- AI 师范生多维能力评测雷达图 -->
+        <section id="competency-radar" class="section glass-section" data-reveal>
+          <div class="section-heading">
+            <p class="section-kicker">多模态 AI 评测</p>
+            <h3>师范生核心能力动态画像</h3>
+            <div class="heading-line"></div>
+          </div>
+          <div class="radar-container">
+            <div id="radar-chart" class="chart-box"></div>
+            <div class="radar-info">
+              <h4>🎯 当前能力综合评价：<span style="color:var(--primary-dark)">优秀</span></h4>
+              <p>系统基于你近期的微格考核、专业测试与听课记录评估生成。<br>目前 <strong>“教育技术”</strong> 与 <strong>“学科素养”</strong> 板块表现异常突出，建议在下周实训中重点专攻 <strong>“班级管理”</strong> 的实操短板，以确保未来考编万无一失。</p>
+            </div>
+          </div>
+        </section>
+
         <!-- 服务矩阵 -->
         <section id="services" class="section" data-reveal>
           <div class="section-heading">
@@ -72,6 +89,51 @@
             <div class="heading-line"></div>
           </div>
           <div id="service-grid" class="card-grid"></div>
+        </section>
+
+        <!-- 成长时间轴 -->
+        <section id="growth-timeline" class="section" data-reveal>
+          <div class="section-heading">
+            <p class="section-kicker">游戏化成长路径</p>
+            <h3>师范阶段修炼时间轴</h3>
+            <div class="heading-line"></div>
+          </div>
+          <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div class="timeline-item" data-reveal>
+              <div class="timeline-dot completed"></div>
+              <div class="timeline-content">
+                <span class="timeline-date">大一基础期</span>
+                <h4>见习萌新 🌟</h4>
+                <p>完成教心基础理论学习，参与首次学校实地见习互动，收集教育前线第一手感悟。</p>
+              </div>
+            </div>
+            <div class="timeline-item" data-reveal>
+              <div class="timeline-dot completed"></div>
+              <div class="timeline-content">
+                <span class="timeline-date">大二演练期</span>
+                <h4>微格小分队 🎤</h4>
+                <p>参与结构化微格教学实训，磨炼粉笔板书、PPT交互与镜头前教姿教态等硬核执教技能。</p>
+              </div>
+            </div>
+            <div class="timeline-item" data-reveal>
+              <div class="timeline-dot active pulsating"></div>
+              <div class="timeline-content active-card">
+                <span class="timeline-date" style="color:var(--primary-dark)">大三实战期 (你在这里)</span>
+                <h4>准班主任 🎓</h4>
+                <p>深入一线中学顶岗实习，独立应对班级突发管理事件，撰写全流程教学反思日记。</p>
+                <div class="timeline-badge">🎉 成就点亮：实习先锋徽章</div>
+              </div>
+            </div>
+            <div class="timeline-item locked" data-reveal>
+              <div class="timeline-dot locked"></div>
+              <div class="timeline-content locked-card">
+                <span class="timeline-date">大四冲刺期</span>
+                <h4>教资大牛 🏆</h4>
+                <p>死磕国家教师资格证统考，全力备战并拿下公立体系教师编制！（任务待解锁）</p>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- 通知 + 活动 -->
@@ -101,6 +163,27 @@
             <div class="heading-line"></div>
           </div>
           <div id="resource-grid" class="resource-grid"></div>
+        </section>
+
+        <!-- AI 微格试讲 / 面试官诊断 -->
+        <section id="ai-interviewer" class="section dark-section" data-reveal>
+          <div class="section-heading dark-heading">
+            <p class="section-kicker">特级评委对线</p>
+            <h3>AI 结构化面试评估厅</h3>
+            <p class="subtitle-text">把你模拟试讲的片段、班主任答辩稿或教案丢进来，让大模型充当“骨灰级老评委”对你进行毒舌点评和打分。</p>
+          </div>
+          <div class="ai-interviewer-panel">
+            <div class="ai-interviewer-input">
+              <textarea id="ai-interviewer-text" placeholder="例如：考官好，今天我试讲《赤壁赋》。由于学生古文基础薄弱，我决定以苏轼被贬的心境切入，先播放一段凄婉的古筝音乐……"></textarea>
+              <button id="ai-interviewer-submit" class="button action-btn">提交给 AI 评委诊断</button>
+            </div>
+            <div id="ai-interviewer-report" class="ai-interviewer-report hidden">
+              <div class="report-header">
+                <h5>📋 权威评委全方位诊断报告</h5>
+              </div>
+              <div id="ai-interviewer-result" class="report-body"></div>
+            </div>
+          </div>
         </section>
 
         <!-- 在线咨询 -->

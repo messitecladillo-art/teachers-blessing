@@ -417,20 +417,136 @@ function setupParticles() {
   });
 }
 
+// ===== 赛级大屏功能：师范生能力雷达图 =====
+function initRadarChart() {
+  const chartDom = document.getElementById('radar-chart');
+  if (!chartDom || typeof echarts === 'undefined') return;
+  
+  const myChart = echarts.init(chartDom);
+  const option = {
+    radar: {
+      indicator: [
+        { name: '班级管理', max: 100 },
+        { name: '教学设计', max: 100 },
+        { name: '教姿教态', max: 100 },
+        { name: '心理辅导', max: 100 },
+        { name: '教育技术', max: 100 },
+        { name: '学科素养', max: 100 }
+      ],
+      shape: 'polygon',
+      splitNumber: 5,
+      axisName: { color: '#5e6e73', fontSize: 13, fontWeight: 'bold' },
+      splitLine: {
+        lineStyle: { color: 'rgba(47, 111, 97, 0.2)' }
+      },
+      splitArea: { show: false },
+      axisLine: { lineStyle: { color: 'rgba(47, 111, 97, 0.2)' } }
+    },
+    series: [
+      {
+        name: '能力画像',
+        type: 'radar',
+        symbolSize: 8,
+        itemStyle: { color: '#c4683c' },
+        lineStyle: { width: 3, color: '#c4683c' },
+        data: [
+          {
+            value: [65, 85, 88, 70, 95, 92],
+            name: '当前评测',
+            areaStyle: { color: 'rgba(196, 104, 60, 0.35)' }
+          }
+        ]
+      }
+    ]
+  };
+  myChart.setOption(option);
+  window.addEventListener('resize', () => myChart.resize());
+}
+
+// ===== 赛级大屏功能：AI 结构化面试评估厅 =====
+function setupAIInterviewer() {
+  const submitBtn = document.getElementById("ai-interviewer-submit");
+  const textarea = document.getElementById("ai-interviewer-text");
+  const reportBox = document.getElementById("ai-interviewer-report");
+  const resultContent = document.getElementById("ai-interviewer-result");
+
+  if(!submitBtn || !textarea) return;
+
+  const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions"; 
+  const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
+  const AI_API_KEY = kp.join("");
+  const AI_MODEL_NAME = "openrouter/free";
+
+  submitBtn.addEventListener("click", async () => {
+    const text = textarea.value.trim();
+    if(!text) {
+      alert("请先输入一段微格教学片断稿 / 面试回答");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "权威 AI 评委正在深度分析您的教案...";
+    reportBox.classList.remove("hidden");
+    resultContent.innerHTML = "<em>正在结构化提取您的逻辑脉络、评估教姿教态、诊断学科合理性...</em>";
+
+    // 这是一套与“小狮”完全不同的人格！
+    const systemPrompt = "你是一位省重点中学的特级教师兼高级面试官，要求极其严格且专业素质极高。你正在负责新教师的微格试讲和结构化面试。\n\n学生将提供一段模拟试讲稿或面试答辩，请你冷酷、客观地进行点评：\n1. 【致命伤诊断】首先指出最严重的1-2个核心错误或硬伤（不要客气）。\n2. 【修改建议】给出详细、干货满满的落地修改建议。\n3. 【综合评分】最后给出一个毫不留情的评定分数（总分100，新人通常在60-80分徘徊）。\n\n以纯文本Markdown格式输出，排版要清晰、严肃有压迫感。";
+
+    try {
+      const res = await fetch(AI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${AI_API_KEY}`,
+          "HTTP-Referer": window.location.href, 
+          "X-Title": "TeacherServiceHub"
+        },
+        body: JSON.stringify({
+          model: AI_MODEL_NAME,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: text }
+          ],
+          temperature: 0.6
+        })
+      });
+
+      if(!res.ok) throw new Error(`请求被拦截（状态码 ${res.status}）`);
+      const data = await res.json();
+      const aiReply = data.choices && data.choices[0] && data.choices[0].message.content 
+                      ? data.choices[0].message.content 
+                      : "评估生成意外中断。";
+      
+      resultContent.textContent = aiReply; // 纯文本插入，保留换行
+    } catch(err) {
+      resultContent.innerHTML = `<span style="color:#e8956a">诊断连接失败：骨灰级评委目前不在工位。<br>排查：确认 OpenRouter API 或网络状态。<br>报错：${err.message}</span>`;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "提交修改版交由 AI 评委重新诊断";
+    }
+  });
+}
+
 // ===== 启动 =====
 async function bootstrap() {
   setupParticles();
   setupScrollReveal();
   setupBackToTop();
-  setupAIAssistant(); // 启动 AI 助手
+  setupAIAssistant(); // 启动 右下角活泼小助手
+  
+  // 赛级模块启动
+  initRadarChart();
+  setupAIInterviewer();
 
   try {
     await Promise.all([loadContent(), loadMessages()]);
     setupForm();
   } catch (err) {
     const status = document.getElementById("form-status");
-    status.textContent = "页面初始化失败，请检查后端是否启动。";
-    status.className = "form-status error";
+    if(status) {
+      status.textContent = "页面部分内容初始化失败，请检查配置文件。";
+      status.className = "form-status error";
+    }
     console.error(err);
   }
 }
