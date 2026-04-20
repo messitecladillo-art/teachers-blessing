@@ -750,21 +750,21 @@ function setupIDEWorkspace() {
       // 类别 Header
       palette.innerHTML += `
         <div style="margin-top: 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-          <div style="width: 4px; height: 12px; background: linear-gradient(180deg, #00d2ff, #3a7bd5); border-radius: 4px;"></div>
-          <span style="color:rgba(255,255,255,0.85); font-weight:800; font-size:0.75rem; letter-spacing:1px; text-shadow:0 1px 2px rgba(0,0,0,0.5);">${cat}</span>
+          <div style="width: 4px; height: 12px; background: var(--primary); border-radius: 4px;"></div>
+          <span style="color:var(--ink); font-weight:800; font-size:0.8rem; letter-spacing:1px;">${cat}</span>
         </div>
       `;
       // 子应用 Nodes
       groups[cat].forEach(a => {
         const isUGC = !builtinAgents.find(ba => ba.id === a.id);
         palette.innerHTML += `
-          <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); display:flex; flex-direction:column; gap:4px; margin-bottom: 6px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+          <div style="background:rgba(25,50,60,0.02); padding:10px 14px; border-radius:8px; border:1px solid rgba(25,50,60,0.05); display:flex; flex-direction:column; gap:4px; margin-bottom: 6px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="color:#e2e8f0; font-size:0.85rem; font-weight:700;">${a.name}</span>
-              ${isUGC ? '<span style="color:#4ec9b0; font-size:0.65rem; background:rgba(78,201,176,0.1); padding:2px 6px; border-radius:4px;">[UGC]</span>' : '<span style="color:#00d2ff; font-size:0.65rem; background:rgba(0,210,255,0.1); padding:2px 6px; border-radius:4px;">[SYS]</span>'}
+              <span style="color:var(--ink); font-size:0.85rem; font-weight:800;">${a.name}</span>
+              ${isUGC ? '<span style="color:#2f6f61; font-size:0.65rem; background:rgba(47,111,97,0.1); padding:2px 6px; border-radius:4px; font-weight:700;">[UGC]</span>' : '<span style="color:var(--primary); font-size:0.65rem; background:rgba(196,104,60,0.1); padding:2px 6px; border-radius:4px; font-weight:700;">[SYS]</span>'}
             </div>
-            <span style="color:rgba(255,255,255,0.4); font-size:0.75rem; font-family:'Noto Sans SC'; line-height:1.4;">${a.desc}</span>
-            <span style="color:rgba(255,255,255,0.15); font-size:0.6rem; font-family:monospace; margin-top:2px;">// ID: ${a.id}</span>
+            <span style="color:var(--muted); font-size:0.75rem; font-family:'Noto Sans SC'; line-height:1.4;">${a.desc}</span>
+            <span style="color:rgba(25,50,60,0.25); font-size:0.55rem; font-family:monospace; margin-top:2px;">// ID: ${a.id}</span>
           </div>
         `;
       });

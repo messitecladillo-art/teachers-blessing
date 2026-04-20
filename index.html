@@ -411,55 +411,55 @@
       </div>
     </div>
 
-    <!-- 极客 IDE 智能体工作流工作台 (深色满屏弹窗) -->
-    <div id="ide-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(8, 14, 22, 0.85); z-index:10000; display:flex; flex-direction:column; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+    <!-- 极客 IDE 智能体工作流工作台 (与主站色系统一的毛玻璃浅色系) -->
+    <div id="ide-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(244, 239, 230, 0.75); z-index:10000; display:flex; flex-direction:column; backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);">
       <!-- IDE HEADER -->
-      <div class="ide-header" style="height:64px; padding:0 32px; border-bottom:1px solid rgba(255,255,255,0.1); background:linear-gradient(90deg, rgba(15,25,40,0.8), rgba(8,14,22,0.7)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
-        <div style="color:#fff; font-family:'Noto Sans SC'; display:flex; align-items:center; gap:16px;">
-          <span style="background:linear-gradient(135deg, #00d2ff, #3a7bd5); box-shadow:0 0 15px rgba(0,210,255,0.4); padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.85rem; letter-spacing:1px; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,0.2);">Agent Studio</span>
-          <span style="color:rgba(255,255,255,0.6); font-size:0.9rem; font-weight:500;">[ Auto-Router Pipeline ] 一站式智能大模型控制流</span>
+      <div class="ide-header" style="height:64px; padding:0 32px; border-bottom:1px solid rgba(25,50,60,0.06); background:var(--surface); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm);">
+        <div style="color:var(--ink); font-family:'Noto Sans SC'; display:flex; align-items:center; gap:16px;">
+          <span style="background:var(--primary); padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.85rem; letter-spacing:1px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.1);">Agent Studio</span>
+          <span style="color:var(--muted); font-size:0.9rem; font-weight:500;">[ Auto-Router Pipeline ] 一站式智能大模型控制流</span>
         </div>
-        <button id="close-ide-modal" style="background:transparent; border:none; color:rgba(255,255,255,0.5); font-size:2rem; cursor:pointer; line-height:1; transition:all 0.3s; text-shadow: 0 0 10px rgba(0,0,0,0.5);">&times;</button>
+        <button id="close-ide-modal" style="background:transparent; border:none; color:var(--muted); font-size:2.2rem; cursor:pointer; line-height:1; transition:all 0.3s;">&times;</button>
       </div>
 
       <!-- IDE BODY -->
       <div class="ide-body" style="flex:1; display:flex; overflow:hidden;">
         <!-- Left: Agent Palette -->
-        <div class="ide-sidebar" style="width:280px; border-right:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.4); padding:20px; display:flex; flex-direction:column; overflow-y:auto; gap:16px; box-shadow: inset -10px 0 20px rgba(0,0,0,0.3);">
-          <p style="color:rgba(255,255,255,0.8); font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;"><span style="font-size:1.2rem;">📚</span> 算力矩阵库 (Agents)</p>
+        <div class="ide-sidebar" style="width:280px; border-right:1px solid rgba(25,50,60,0.06); background:rgba(255,255,255,0.4); padding:20px; display:flex; flex-direction:column; overflow-y:auto; gap:16px; box-shadow: inset -10px 0 20px rgba(25,50,60,0.02);">
+          <p style="color:var(--ink); font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;"><span style="font-size:1.2rem;">📚</span> 算力矩阵库 (Agents)</p>
           <div id="ide-agent-palette" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
 
         <!-- Center: Code / Prompt Editor -->
-        <div class="ide-editor" style="flex:1; display:flex; flex-direction:column; border-right:1px solid rgba(255,255,255,0.06); background:rgba(18,25,35,0.6); position:relative;">
-          <div style="background:rgba(0,0,0,0.3); padding:10px 20px; color:rgba(255,255,255,0.5); font-size:0.85rem; font-family:monospace; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;">
+        <div class="ide-editor" style="flex:1; display:flex; flex-direction:column; border-right:1px solid rgba(25,50,60,0.06); background:rgba(255,255,255,0.7); position:relative;">
+          <div style="background:rgba(25,50,60,0.03); padding:10px 20px; color:var(--muted); font-size:0.85rem; font-family:monospace; border-bottom:1px solid rgba(25,50,60,0.05); display:flex; justify-content:space-between;">
             <span>> root / workspace / prompt.workflow</span>
-            <span style="color:#4ec9b0; font-weight:700;">[NLP Engine V1.2]</span>
+            <span style="color:var(--primary-dark); font-weight:700;">[NLP Engine V1.2]</span>
           </div>
-          <textarea id="ide-input" placeholder="// 在此书写您的高层意图流，按下 Ctrl+Enter 运行流水线&#10;// 例：&#10;// '要求苏格拉底导师针对早恋问题给出引导话术，然后让SVG达人画一个对应的心理模型拆解图。'&#10;// Router大模型将接管一切，自动在后台按需呼叫对应Agent..." style="flex:1; background:transparent; border:none; color:#e2e8f0; padding:24px; font-family:'Consolas', monospace; font-size:1.05rem; line-height:1.7; resize:none; outline:none; white-space: pre-wrap; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"></textarea>
-          <div style="padding:16px 24px; border-top:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center;">
-             <span style="color:rgba(255,255,255,0.4); font-size:0.8rem; font-family:monospace;">IDE Mode Powered by OpenRouter AI Core</span>
-             <button id="ide-btn-run" class="button" style="padding:10px 32px; border-radius:8px; font-family:monospace; font-weight:800; font-size:0.95rem; background:linear-gradient(135deg, #00d2ff, #3a7bd5); color:#fff; border:none; box-shadow:0 4px 20px rgba(0,210,255,0.4); display:flex; align-items:center; gap:8px; cursor:pointer; min-width:200px; justify-content:center; transition: all 0.3s; transform:scale(1);">
+          <textarea id="ide-input" placeholder="// 在此书写您的高层意图流，按下 Ctrl+Enter 运行流水线&#10;// 例：&#10;// '要求苏格拉底导师针对早恋问题给出引导话术，然后让SVG达人画一个对应的心理模型拆解图。'&#10;// Router大模型将接管一切，自动在后台按需呼叫对应Agent..." style="flex:1; background:transparent; border:none; color:var(--ink); padding:24px; font-family:'Consolas', monospace; font-size:1.05rem; line-height:1.7; resize:none; outline:none; white-space: pre-wrap;"></textarea>
+          <div style="padding:16px 24px; border-top:1px solid rgba(25,50,60,0.06); background:var(--surface); display:flex; justify-content:space-between; align-items:center;">
+             <span style="color:var(--muted); font-size:0.8rem; font-family:monospace;">IDE Mode Powered by OpenRouter AI Core</span>
+             <button id="ide-btn-run" class="button" style="padding:10px 32px; border-radius:8px; font-family:'Noto Sans SC', sans-serif; font-weight:800; font-size:0.95rem; background:var(--primary); color:#fff; border:none; box-shadow:0 4px 15px rgba(196,104,60,0.3); display:flex; align-items:center; gap:8px; cursor:pointer; min-width:200px; justify-content:center; transition: all 0.3s;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9V3z"/></svg> RUN PIPELINE
             </button>
           </div>
         </div>
 
         <!-- Right: Terminal & Preview -->
-        <div class="ide-right-panel" style="width:42%; display:flex; flex-direction:column; background:rgba(18,25,35,0.4);">
+        <div class="ide-right-panel" style="width:42%; display:flex; flex-direction:column; background:rgba(255,255,255,0.5);">
           <!-- Top Right Terminal -->
-          <div style="height:35%; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.6); display:flex; flex-direction:column; box-shadow: inset 0 -10px 20px rgba(0,0,0,0.3);">
-            <div style="background:rgba(0,0,0,0.5); padding:8px 20px; color:rgba(255,255,255,0.6); font-size:0.8rem; font-family:monospace; border-bottom:1px solid rgba(255,255,255,0.02); display:flex; justify-content:space-between;">
+          <div style="height:35%; border-bottom:1px solid rgba(25,50,60,0.06); background:var(--ink); display:flex; flex-direction:column; box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2);">
+            <div style="background:rgba(0,0,0,0.2); padding:8px 20px; color:rgba(255,255,255,0.6); font-size:0.8rem; font-family:monospace; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;">
               <span>TERMINAL LOG (Pipeline Execution)</span>
-              <span id="ide-terminal-status" style="color:#dcdcaa; font-weight:700;">Waiting...</span>
+              <span id="ide-terminal-status" style="color:var(--primary-light); font-weight:700;">Waiting...</span>
             </div>
-            <div id="ide-terminal" style="flex:1; padding:16px 20px; color:#cccccc; font-family:'Consolas', monospace; font-size:0.85rem; overflow-y:auto; line-height:1.7; text-shadow:0 1px 2px rgba(0,0,0,0.8);"></div>
+            <div id="ide-terminal" style="flex:1; padding:16px 20px; color:#e0e0e0; font-family:'Consolas', monospace; font-size:0.85rem; overflow-y:auto; line-height:1.7;"></div>
           </div>
           <!-- Bottom Right Preview -->
-          <div style="flex:1; display:flex; flex-direction:column; background:rgba(250,250,252,0.98); border-radius:16px 0 0 0; margin-top:2px;">
-            <div style="background:linear-gradient(180deg, #f3f4f6, #fff); padding:10px 20px; color:#475569; font-size:0.85rem; font-family:monospace; border-bottom:1px solid #e2e8f0; border-radius:16px 0 0 0; font-weight:700;">PREVIEW.MD (Aggregated Output)</div>
+          <div style="flex:1; display:flex; flex-direction:column; background:var(--surface-strong); border-radius:16px 0 0 0; margin-top:2px;">
+            <div style="background:var(--bg); padding:10px 20px; color:var(--ink); font-size:0.85rem; font-family:monospace; border-bottom:1px solid rgba(25,50,60,0.06); border-radius:16px 0 0 0; font-weight:800;">PREVIEW.MD (Aggregated Output)</div>
             <div id="ide-preview" class="markdown-body" style="flex:1; padding:32px; overflow-y:auto; font-size:1rem;">
-              <div style="color:#cbd5e1; text-align:center; padding-top:20%; font-size:1rem; font-weight:300;">执行控制流... 等待终端回传画面</div>
+              <div style="color:var(--muted); text-align:center; padding-top:20%; font-size:1rem; font-weight:300;">执行控制流... 等待终端回传画面</div>
             </div>
           </div>
         </div>
