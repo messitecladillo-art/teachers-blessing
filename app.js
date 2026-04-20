@@ -788,7 +788,8 @@ function setupIDEWorkspace() {
   const AI_API_KEY = kp.join("");
   const AI_MODEL_NAME = "openrouter/free";
 
-  async function callAgent(systemPrompt, userPrompt) {
+  // 带流式拦截的 Agent 核心调用（大幅优化感知速度）
+  async function callAgentStream(systemPrompt, userPrompt, onChunk) {
     const res = await fetch(AI_API_URL, {
       method: "POST",
       headers: {
@@ -799,6 +800,7 @@ function setupIDEWorkspace() {
       },
       body: JSON.stringify({
         model: AI_MODEL_NAME,
+        stream: true, // 开启流式响应
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
@@ -806,9 +808,39 @@ function setupIDEWorkspace() {
         temperature: 0.7
       })
     });
+    
     if(!res.ok) throw new Error("API Network Error");
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || "";
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+    let buffer = "";
+
+    while(true) {
+      const { done, value } = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\\n');
+      buffer = lines.pop(); // 保留不完整的截断块
+      
+      for(const line of lines) {
+        const trimmed = line.trim();
+        if(trimmed.startsWith("data: ") && !trimmed.includes("[DONE]")) {
+          try {
+            const data = JSON.parse(trimmed.slice(6));
+            const delta = data.choices[0]?.delta?.content || "";
+            fullText += delta;
+            if(onChunk) onChunk(fullText, delta);
+          } catch(err) {} 
+        }
+      }
+    }
+    return fullText;
+  }
+  
+  // 保持原有给路由识别打底的异步接口
+  async function callAgent(sys, user) {
+     return await callAgentStream(sys, user, null);
   }
 
   btnRun.addEventListener("click", async () => {
@@ -847,26 +879,31 @@ function setupIDEWorkspace() {
       return;
     }
 
-    // Pipeline Execution
-    termStatus.textContent = "Executing Chaining...";
-    termStatus.style.color = "#dcdcaa";
+    // 流式并发 Pipeline 执行层 (极速增强)
+    termStatus.textContent = "Concurrent Streaming...";
+    termStatus.style.color = "var(--primary)";
     
-    let combinedMarkdown = "";
-    preview.innerHTML = "<div style='color:#ccc; text-align:center; padding-top:20%; font-size:0.9rem;'>正在实时生成中...</div>";
+    preview.innerHTML = "";
+    
+    // 预先为并发准备 DOM 槽位
+    plan.forEach((step, i) => {
+      const agentDef = getAllAgents().find(a => a.id === step.agentId) || {name: '系统分发'};
+      preview.innerHTML += `
+        <div id="step-box-${i}" style="margin: 10px 0 20px 0; border-top:2px dashed rgba(25,50,60,0.1); padding-top:20px;">
+          <span style="background:var(--primary); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-bottom:12px; display:inline-block; font-weight:700;">并流执行区: ${agentDef.name}</span>
+          <div id="step-content-${i}" style="margin-top:12px; min-height: 40px; color:var(--muted); font-size:0.9rem;">正在唤醒模型建立实时通信...</div>
+        </div>
+      `;
+    });
 
-    for(let i=0; i<plan.length; i++) {
-      const step = plan[i];
+    // 开始高并发处理所有大模型请求
+    const promises = plan.map(async (step, i) => {
       const agentDef = getAllAgents().find(a => a.id === step.agentId);
-      if(!agentDef) {
-        logTerminal(`跳过非法路由节点: 找不到 ID 为 [${step.agentId}] 的 Agent。`, "error");
-        continue;
-      }
+      if(!agentDef) return;
 
-      logTerminal(`----------`);
-      logTerminal(`唤醒子节点 [${agentDef.name}]...`);
-      logTerminal(`注入指令: ${step.prompt}`, "warn");
+      logTerminal(`[并发通道 ${i+1}/${plan.length}] 启动子节点 [${agentDef.name}]...`);
 
-      // 提取它的专属 system prompt (可能在 builtin, 可能在 customAgentCollection)
+      // 获取人设
       let sp = "你是一个专业AI助手。";
       if(agentDef.id === 'lesson') sp = "你是一名拥有20年教龄、斩获过全国级讲课比赛一等奖的金牌教研员。结合华中师范大学‘求实创新’的学术风格，请为用户提供的课题撰写一份高度专业化、结构化的教学详案（含教学目标、重难点、教学过程设计、详细板书结构）。排版需极其规范，条理清晰，适合用户直接拷贝打印。";
       else if(agentDef.id === 'ppt') sp = "你是一名资深的教育课件（PPT）结构设计专家。请针对用户的主题，直接输出一份清晰的 PPT 大纲。请以【第 X 页：幻灯片主标题】为节点，罗列该页的核心文本（Bullet Points），以及建议配什么图解。大纲须保持逻辑连贯。";
@@ -880,24 +917,26 @@ function setupIDEWorkspace() {
       else if(agentDef.id === 'english_scene') sp = "You are an Elite ESL Drama Coach for secondary education. Generate an immersive, highly-engaging English dialogue script (Scene context + Person A and B) related to the given topic. Only output pure English dialogues with vivid acting directions. Do NOT use Chinese.";
       else if(agentDef.system_prompt) sp = agentDef.system_prompt; // 自建的
 
+      const domTarget = document.getElementById(`step-content-${i}`);
       try {
-        const stepRes = await callAgent(sp, step.prompt);
-        logTerminal(`[${agentDef.name}] 处理完毕。数据量：${stepRes.length} 字符。`, "success");
-        
-        // 拼接展示
-        combinedMarkdown += `\n\n<div style="margin: 20px 0; border-top:2px dashed #eee; padding-top:20px;"><span style="background:var(--primary); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-bottom:12px; display:inline-block;">产出源：${agentDef.name}</span></div>\n\n` + stepRes;
-        
-        // 流式替换 preview
-        if(i === 0) preview.innerHTML = "";
-        preview.innerHTML = marked.parse(combinedMarkdown);
-        preview.scrollTop = preview.scrollHeight;
-
+        await callAgentStream(sp, step.prompt, (fullText) => {
+           domTarget.innerHTML = marked.parse(fullText);
+           // 平滑跟随主视图的底部（防止闪屏）
+           const isScrolledToBottom = preview.scrollHeight - preview.clientHeight <= preview.scrollTop + 100;
+           if(isScrolledToBottom) {
+             preview.scrollTop = preview.scrollHeight;
+           }
+        });
+        logTerminal(`[${agentDef.name}] 并发管道传输完毕。`, "success");
       } catch(err) {
-        logTerminal(`[${agentDef.name}] 执行挂起: ${err.message}`, "error");
+        logTerminal(`[${agentDef.name}] 管道碎裂: ${err.message}`, "error");
+        domTarget.innerHTML = `<span style="color:red">执行超时挂起</span>`;
       }
-    }
+    });
 
-    logTerminal("=== Pipeline 链路全生命周期结束 ===", "system");
+    await Promise.all(promises);
+
+    logTerminal("=== Multi Agent 流水线全满载并发终结 ===", "system");
     termStatus.textContent = "Done";
     termStatus.style.color = "#89d185";
     btnRun.disabled = false;
