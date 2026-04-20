@@ -716,6 +716,51 @@ window.generateRealPPT = function(jsonData) {
   }
 };
 
+window.triggerPPTExport = function(btnElement) {
+  try {
+    const mainTitleEl = document.getElementById("ppt-main-title-text");
+    const container = document.getElementById("ppt-slides-container");
+    if (!container) return window.showToast("找不到幻灯片实体", "error");
+
+    const pptTitle = mainTitleEl ? mainTitleEl.innerText.replace("[可视化预览]", "").trim() : "学术课件生成";
+    const slidesData = [];
+    
+    const cards = container.querySelectorAll(".ppt-slide-card");
+    cards.forEach(card => {
+       const titleEl = card.querySelector(".ppt-slide-title");
+       const bulletEls = card.querySelectorAll(".ppt-bullet-item");
+       
+       const titleTxt = titleEl ? titleEl.innerText.trim() : "";
+       const bullets = [];
+       bulletEls.forEach(li => {
+          if(li.innerText.trim()) bullets.push(li.innerText.trim());
+       });
+       
+       slidesData.push({ title: titleTxt, bullets: bullets });
+    });
+
+    const finalJSON = { title: pptTitle, slides: slidesData };
+    
+    // 下载保护及交互反馈
+    if(btnElement) {
+      btnElement.innerText = "⏳ 正在装订...";
+      btnElement.disabled = true;
+    }
+    window.generateRealPPT(finalJSON);
+    
+    setTimeout(() => {
+       if(btnElement) {
+         btnElement.innerText = "📥 改好了，无损导出为 .pptx";
+         btnElement.disabled = false;
+       }
+    }, 2000);
+
+  } catch(e) {
+    console.error(e);
+    window.showToast("导出失败，请检查结构", "error");
+  }
+};
+
 // ===== IDE工作流 (多智能体自动路由) =====
 function setupIDEWorkspace() {
   const btnEnter = document.getElementById("btn-enter-ide");
@@ -948,13 +993,13 @@ function setupIDEWorkspace() {
               // 构造可视化预览的幻灯片网格
               let slidesHtml = "";
               if (pptData.slides && Array.isArray(pptData.slides)) {
-                slidesHtml = `<div style="display:flex; gap:16px; overflow-x:auto; padding:10px 4px 16px 4px; margin-top:12px; scroll-snap-type:x mandatory; scrollbar-width:thin;">`;
+                slidesHtml = `<div id="ppt-slides-container" style="display:flex; gap:16px; overflow-x:auto; padding:10px 4px 16px 4px; margin-top:12px; scroll-snap-type:x mandatory; scrollbar-width:thin;">`;
                 pptData.slides.forEach((s, idx) => {
-                   let bulletsHtml = Array.isArray(s.bullets) ? s.bullets.map(b => `<li style="margin-bottom:6px; line-height:1.4;">${b}</li>`).join("") : `<p style="line-height:1.4">${s.bullets || ''}</p>`;
+                   let bulletsHtml = Array.isArray(s.bullets) ? s.bullets.map(b => `<li class="ppt-bullet-item" contenteditable="true" style="margin-bottom:6px; line-height:1.4; outline:none; transition:all 0.2s; border-radius:4px; padding:2px 4px;" onfocus="this.style.background='rgba(196,104,60,0.1)'" onblur="this.style.background='transparent'">${b}</li>`).join("") : `<p class="ppt-bullet-item" contenteditable="true" style="line-height:1.4; outline:none; padding:2px; transition:all 0.2s;" onfocus="this.style.background='rgba(196,104,60,0.1)'" onblur="this.style.background='transparent'">${s.bullets || ''}</p>`;
                    slidesHtml += `
-                     <div style="flex:0 0 260px; height:146px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; padding:16px; scroll-snap-align:start; display:flex; flex-direction:column; box-shadow:0 4px 12px rgba(0,0,0,0.04); text-align:left; position:relative;">
+                     <div class="ppt-slide-card" style="flex:0 0 260px; height:146px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; padding:16px; scroll-snap-align:start; display:flex; flex-direction:column; box-shadow:0 4px 12px rgba(0,0,0,0.04); text-align:left; position:relative;">
                        <span style="font-size:0.6rem; color:#94a3b8; font-weight:800; font-family:monospace;">SLIDE ${idx+1}</span>
-                       <h4 style="color:var(--primary); font-size:0.95rem; font-weight:800; margin:6px 0 10px 0; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${s.title}</h4>
+                       <h4 class="ppt-slide-title" contenteditable="true" style="color:var(--primary); font-size:0.95rem; font-weight:800; margin:6px 0 10px 0; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; outline:none; border-bottom:1px dashed transparent; transition:all 0.2s; padding-bottom:2px;" onfocus="this.style.borderBottomColor='var(--primary)'" onblur="this.style.borderBottomColor='transparent'">${s.title}</h4>
                        <ul style="color:var(--muted); font-size:0.75rem; flex:1; overflow-y:auto; padding-left:14px; margin:0; font-family:'Noto Sans SC';">
                          ${bulletsHtml}
                        </ul>
@@ -965,18 +1010,22 @@ function setupIDEWorkspace() {
               }
 
               resultComponent = `
-                <div style="background:#fcfbf9; padding:24px; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+                <div style="background:#fcfbf9; padding:24px; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 8px 24px rgba(0,0,0,0.04); position:relative;">
                   <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px dashed #e2e8f0; padding-bottom:12px;">
                     <div>
                       <h3 style="color:var(--ink); font-size: 1.15rem; font-weight:800; margin:0 0 6px 0; display:flex; align-items:center; gap:8px;">
-                        <span>📊</span> [可视化预览] ${pptData.title || '幻灯片工程'} 
+                        <span>📊</span> <span id="ppt-main-title-text" contenteditable="true" style="outline:none; border-bottom:1px dashed transparent; transition:border 0.2s;" onfocus="this.style.borderBottomColor='var(--primary)'" onblur="this.style.borderBottomColor='transparent'">[可视化预览] ${pptData.title || '幻灯片工程'}</span> 
                       </h3>
-                      <p style="color:var(--muted); font-size:0.8rem; margin:0;">共计构建 ${pptData.slides ? pptData.slides.length : 0} 页切片。实体 .pptx 源文件同步下载中...</p>
+                      <p style="color:var(--primary); font-weight:600; font-size:0.8rem; margin:0;">✨ 生成完毕！鼠标点击【幻灯片标题/列表内容】即可直接涂改编辑。</p>
                     </div>
                   </div>
                   ${slidesHtml}
+                  <div style="text-align:right; margin-top:8px;">
+                    <button onclick="window.triggerPPTExport(this)" style="background:var(--primary); color:#fff; border:none; border-radius:6px; padding:10px 24px; font-weight:800; font-size:0.85rem; font-family:'Noto Sans SC'; cursor:pointer; box-shadow:0 4px 12px rgba(196,104,60,0.25); transition:all 0.3s; display:inline-flex; align-items:center; gap:6px;">
+                      📥 改好了，无损导出为 .pptx
+                    </button>
+                  </div>
                 </div>`;
-              setTimeout(() => { if(window.generateRealPPT) window.generateRealPPT(pptData); }, 1500);
             } catch(e) {
               resultComponent = marked.parse(stepRes);
             }
