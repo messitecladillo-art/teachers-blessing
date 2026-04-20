@@ -732,11 +732,13 @@ function setupIDEWorkspace() {
 
   btnEnter.addEventListener("click", () => {
     modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden"; // 防止滚动穿透
     renderPalette();
   });
 
   btnClose.addEventListener("click", () => {
     modal.classList.add("hidden");
+    document.body.style.overflow = ""; // 恢复正常滚动
   });
 
   // 快捷键运行
