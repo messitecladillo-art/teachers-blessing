@@ -885,9 +885,10 @@ function setupIDEWorkspace() {
     const routerSys = `你是一个多智能体路由网关(Orchestrator)。目前系统里注册了以下Agent：\n${allAgentsStr}\n\n你的任务是：根据用户的真实意图，决定调用哪几个Agent组合链式完成最终目标。\n\n【核心铁律】：\n1. 如果用户指令中明确提到“ppt”、“幻灯片”、“课件”等产出要求，你【必须且最后一步强制】调用 ID 为 \`ppt\` 的节点，并将前方 Agent (如 math_exp, lesson) 的输出成果一并作为 prompt 交给它排版！只有调用 \`ppt\` 引擎才会触发前端的高保真渲染！\n\n请输出纯净的 JSON 数组格式，不要输出其他废话，格式如下：\n [{"agentId": "调用的Agent ID", "prompt": "给它的明确指令（可将上一步的结果作为背景）"}]`;
     
     let plan = [];
+    let planRes = "";
     try {
       logTerminal("正在请求大模型 Router 规划任务切分路径...", "warn");
-      const planRes = await callAgent(routerSys, userIntent);
+      planRes = await callAgent(routerSys, userIntent);
       
       // 提取 JSON
       let jsonStr = planRes;
@@ -912,7 +913,8 @@ function setupIDEWorkspace() {
 
       logTerminal(`Router 规划成功！共拆解出 ${plan.length} 个子任务节点。`, "success");
     } catch(err) {
-      logTerminal("Router 请求或 JSON 解析失败（免费大模型可能未返回标准结构）。请更换提示或重试。", "error");
+      let rawSnippet = planRes ? planRes.substring(0, 80).replace(/\n/g, '') : "API空响应";
+      logTerminal(`Router 解析失败: ${err.message}。拦截到的下发文本 [${rawSnippet}...]`, "error");
       termStatus.textContent = "Failed";
       btnRun.disabled = false;
       return;
