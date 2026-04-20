@@ -870,7 +870,7 @@ function setupIDEWorkspace() {
       const planRes = await callAgent(routerSys, userIntent);
       
       // 提取 JSON
-      const jsonMatch = planRes.match(/\\[.*\\]/s);
+      const jsonMatch = planRes.match(/\[[\s\S]*\]/);
       const jsonStr = jsonMatch ? jsonMatch[0] : planRes;
       plan = JSON.parse(jsonStr);
 
