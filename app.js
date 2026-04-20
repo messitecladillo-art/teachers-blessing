@@ -861,7 +861,10 @@ function setupIDEWorkspace() {
         temperature: 0.7
       })
     });
-    if(!res.ok) throw new Error("API Network Error");
+    if(!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(`API Error [${res.status}]: ` + errTxt.substring(0, 50));
+    }
     const data = await res.json();
     return data.choices?.[0]?.message?.content || "";
   }
