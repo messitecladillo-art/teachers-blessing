@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
     <!-- 背景粒子 -->
@@ -173,11 +174,15 @@
 
         <!-- AIGC 教学效能工作台 -->
         <section id="aigc-workspace" class="section glass-section" data-reveal>
-          <div class="section-heading">
+          <div class="section-heading" style="position:relative;">
             <p class="section-kicker">Agent 工作流</p>
             <h3>AIGC 教学效能引擎</h3>
             <p style="color: var(--muted); margin-top:8px; font-size:0.95rem;">依托多模态大模型，我们抽象了三位独立的虚拟专家。一键为您生成合规的教学文档资产，实现教案、课件的工业化生产。</p>
             <div class="heading-line"></div>
+            <button id="btn-enter-ide" class="button secondary" style="position:absolute; right:0; top:0; background:var(--ink); color:#fff; border:none; box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              &nbsp;启动 Agent Studio (全自动串联 IDE)
+            </button>
           </div>
           <div class="aigc-layout">
             <!-- Sidebar Tabs -->
@@ -406,8 +411,66 @@
       </div>
     </div>
 
+    <!-- 极客 IDE 智能体工作流工作台 (深色满屏弹窗) -->
+    <div id="ide-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(15, 20, 25, 0.98); z-index:10000; display:flex; flex-direction:column; backdrop-filter: blur(15px);">
+      <!-- IDE HEADER -->
+      <div class="ide-header" style="height:56px; padding:0 24px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:#fff; font-family:'Noto Sans SC'; display:flex; align-items:center; gap:12px;">
+          <span style="background:var(--primary); padding:4px 8px; border-radius:4px; font-weight:800; font-size:0.8rem; letter-spacing:1px; color:#fff">Agent Studio</span>
+          <span style="color:#888; font-size:0.85rem;">[ Auto-Router Pipeline ] 一站式智能大模型控制流</span>
+        </div>
+        <button id="close-ide-modal" style="background:transparent; border:none; color:#888; font-size:1.8rem; cursor:pointer; line-height:1; transition:color 0.2s;">&times;</button>
+      </div>
+
+      <!-- IDE BODY -->
+      <div class="ide-body" style="flex:1; display:flex; overflow:hidden;">
+        <!-- Left: Agent Palette -->
+        <div class="ide-sidebar" style="width:260px; border-right:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.15); padding:16px; display:flex; flex-direction:column; overflow-y:auto; gap:16px;">
+          <p style="color:#666; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; font-weight:700; margin:0;">📚 算力矩阵库 (Agents)</p>
+          <div id="ide-agent-palette" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Center: Code / Prompt Editor -->
+        <div class="ide-editor" style="flex:1; display:flex; flex-direction:column; border-right:1px solid rgba(255,255,255,0.06); background:#1e1e1e; position:relative;">
+          <div style="background:#252526; padding:8px 16px; color:#858585; font-size:0.8rem; font-family:monospace; border-bottom:1px solid rgba(255,255,255,0.02); display:flex; justify-content:space-between;">
+            <span>> root / workspace / prompt.workflow</span>
+            <span style="color:#4ec9b0;">[JS Engine V1.0]</span>
+          </div>
+          <textarea id="ide-input" placeholder="// 在此书写您的高层意图流，按下 Ctrl+Enter 或点击按钮运行&#10;// 例如：&#10;// '帮我设计一节五年级语文课《落花生》，并给我配3个课堂游戏。'&#10;// 中央 Router 引擎将全自动分析意图，并向适合的 Agent 节点接力分发任务..." style="flex:1; background:transparent; border:none; color:#d4d4d4; padding:24px; font-family:'Consolas', monospace; font-size:1.05rem; line-height:1.6; resize:none; outline:none; white-space: pre-wrap;"></textarea>
+          <div style="padding:16px; border-top:1px solid rgba(255,255,255,0.06); background:#1e1e1e; display:flex; justify-content:space-between; align-items:center;">
+             <span style="color:#888; font-size:0.8rem; font-family:monospace;">IDE Mode Powered by OpenRouter Router AI</span>
+             <button id="ide-btn-run" class="button" style="padding:10px 24px; border-radius:4px; font-family:monospace; font-weight:700; font-size:0.9rem; background:#0e639c; color:#fff; border:none; box-shadow:0 4px 12px rgba(14,99,156,0.2); display:flex; align-items:center; gap:8px; cursor:pointer; min-width:180px; justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9V3z"/></svg> RUN PIPELINE
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Terminal & Preview -->
+        <div class="ide-right-panel" style="width:40%; display:flex; flex-direction:column; background:#1e1e1e;">
+          <!-- Top Right Terminal -->
+          <div style="height:35%; border-bottom:1px solid rgba(255,255,255,0.06); background:#181818; display:flex; flex-direction:column;">
+            <div style="background:#252526; padding:8px 16px; color:#858585; font-size:0.8rem; font-family:monospace; border-bottom:1px solid rgba(255,255,255,0.02); display:flex; justify-content:space-between;">
+              <span>TERMINAL LOG (Pipeline Execution)</span>
+              <span id="ide-terminal-status" style="color:#dcdcaa;">Waiting...</span>
+            </div>
+            <div id="ide-terminal" style="flex:1; padding:12px 16px; color:#cccccc; font-family:'Consolas', monospace; font-size:0.85rem; overflow-y:auto; line-height:1.7;"></div>
+          </div>
+          <!-- Bottom Right Preview -->
+          <div style="flex:1; display:flex; flex-direction:column; background:#ffffff;">
+            <div style="background:#f3f3f3; padding:8px 16px; color:#666; font-size:0.8rem; font-family:monospace; border-bottom:1px solid #ddd;">PREVIEW.MD (Aggregated Output)</div>
+            <div id="ide-preview" class="markdown-body" style="flex:1; padding:32px; overflow-y:auto; font-size:0.95rem;">
+              <div style="color:#ccc; text-align:center; padding-top:20%; font-size:0.9rem;">等待工作流管道完成并回传渲染...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 云端鉴权与动态代理层 -->
     <script src="./cloud.js" defer></script>
     <script src="./app.js" defer></script>
+
+    <!-- 全局系统 Toast 容器 -->
+    <div id="toast-container" style="position:fixed; top:24px; right:24px; z-index:10000; display:flex; flex-direction:column; gap:10px;"></div>
   </body>
 </html>

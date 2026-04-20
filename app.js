@@ -24,6 +24,22 @@ function el(tag, className, text) {
   return node;
 }
 
+window.showToast = function(msg, type = "info") {
+  const container = document.getElementById("toast-container");
+  if(!container) return;
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-icon">${type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}</span> <span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add("show"), 10);
+  
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+};
+
 // ===== 渲染函数 =====
 function renderQuickLinks(links) {
   const box = document.getElementById("quick-links");
@@ -472,6 +488,14 @@ function setupAIInterviewer() {
 
   if(!submitBtn || !textarea) return;
 
+  textarea.addEventListener("keydown", (e) => {
+    // 按下 Enter 发送，配合 Shift+Enter 进行换行
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitBtn.click();
+    }
+  });
+
   const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions"; 
   const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
   const AI_API_KEY = kp.join("");
@@ -480,7 +504,7 @@ function setupAIInterviewer() {
   submitBtn.addEventListener("click", async () => {
     const text = textarea.value.trim();
     if(!text) {
-      alert("请先输入一段微格教学片断稿 / 面试回答");
+      window.showToast("请先输入一段微格教学片断稿 / 面试回答", "error");
       return;
     }
 
@@ -582,10 +606,17 @@ function setupAIGCWorkspace() {
   const AI_API_KEY = kp.join("");
   const AI_MODEL_NAME = "openrouter/free";
 
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitBtn.click();
+    }
+  });
+
   submitBtn.addEventListener('click', async () => {
     const text = input.value.trim();
     if (!text) {
-      alert("请先输入您的教案或课件主题！");
+      window.showToast("请先输入您的教案或课件主题！", "error");
       return;
     }
 
@@ -619,18 +650,219 @@ function setupAIGCWorkspace() {
                       ? data.choices[0].message.content 
                       : "生成中断，未收到文本。";
                       
-      // 简单正则转换将纯文本里的 Markdown 首标转换为 HTML 从而具备排版美感
-      aiReply = aiReply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-      aiReply = aiReply.replace(/### (.*?)\n/g, "<h3>$1</h3>\n");
-      aiReply = aiReply.replace(/## (.*?)\n/g, "<h2>$1</h2>\n");
+      // 使用 marked 解析
+      const htmlContent = marked.parse(aiReply);
       
-      resultBox.innerHTML = aiReply;
+      // 打字机效果
+      resultBox.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "markdown-body";
+      div.innerHTML = htmlContent;
+      
+      const elements = Array.from(div.childNodes);
+      resultBox.innerHTML = "";
+      
+      let i = 0;
+      function typeWriter() {
+        if(i < elements.length) {
+          resultBox.appendChild(elements[i].cloneNode(true));
+          resultBox.scrollTop = resultBox.scrollHeight;
+          i++;
+          setTimeout(typeWriter, 50); // 调整打字机速度
+        }
+      }
+      typeWriter();
+
     } catch(err) {
       resultBox.innerHTML = `<span style="color:#e8956a">生成失败，请确认网络连接。错误信息：${err.message}</span>`;
+      window.showToast("生成失败，请检查网络", "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<span>启动分发</span> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
     }
+  });
+}
+
+// ===== IDE工作流 (多智能体自动路由) =====
+function setupIDEWorkspace() {
+  const btnEnter = document.getElementById("btn-enter-ide");
+  const modal = document.getElementById("ide-modal");
+  const btnClose = document.getElementById("close-ide-modal");
+  const palette = document.getElementById("ide-agent-palette");
+  const input = document.getElementById("ide-input");
+  const btnRun = document.getElementById("ide-btn-run");
+  const terminal = document.getElementById("ide-terminal");
+  const termStatus = document.getElementById("ide-terminal-status");
+  const preview = document.getElementById("ide-preview");
+
+  if(!btnEnter || !modal) return;
+
+  btnEnter.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    renderPalette();
+  });
+
+  btnClose.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  // 快捷键运行
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.ctrlKey) {
+      e.preventDefault();
+      btnRun.click();
+    }
+  });
+
+  const builtinAgents = [
+    { id: 'lesson', name: '金牌教研员', desc: '一键生成标准详案' },
+    { id: 'ppt', name: '课件结构师', desc: '智能规划 PPT 提纲' },
+    { id: 'game', name: '破冰策划器', desc: '设计课堂互动游戏' }
+  ];
+
+  function getAllAgents() {
+    return [...builtinAgents, ...(window.customAgentCollection || [])];
+  }
+
+  function renderPalette() {
+    palette.innerHTML = "";
+    getAllAgents().forEach(a => {
+      const isUGC = !builtinAgents.find(ba => ba.id === a.id);
+      palette.innerHTML += `
+        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.03); display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#d4d4d4; font-size:0.85rem; font-weight:700;">${a.name}</span>
+            ${isUGC ? '<span style="color:#4ec9b0; font-size:0.7rem;">[UGC]</span>' : '<span style="color:#569cd6; font-size:0.7rem;">[SYS]</span>'}
+          </div>
+          <span style="color:#858585; font-size:0.75rem;">ID: ${a.id}</span>
+        </div>
+      `;
+    });
+  }
+
+  function logTerminal(msg, type = "info") {
+    const time = new Date().toLocaleTimeString();
+    let color = "#cccccc";
+    if(type === "error") color = "#f48771";
+    if(type === "success") color = "#89d185";
+    if(type === "warn") color = "#dcdcaa";
+    if(type === "system") color = "#569cd6";
+
+    terminal.innerHTML += `<div style="color:${color};"><span style="color:#858585;">[${time}]</span> ${msg}</div>`;
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+  const kp = ["sk-","or-","v1-","d4d277d5af","fef7b9b056","1188817ef5fbcc","9c8db4f8f48de","49c843f10e56783b5"];
+  const AI_API_KEY = kp.join("");
+  const AI_MODEL_NAME = "openrouter/free";
+
+  async function callAgent(systemPrompt, userPrompt) {
+    const res = await fetch(AI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${AI_API_KEY}`,
+        "HTTP-Referer": window.location.href, 
+        "X-Title": "TeacherServiceHub_IDE"
+      },
+      body: JSON.stringify({
+        model: AI_MODEL_NAME,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.7
+      })
+    });
+    if(!res.ok) throw new Error("API Network Error");
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  }
+
+  btnRun.addEventListener("click", async () => {
+    const userIntent = input.value.trim();
+    if(!userIntent) return window.showToast("IDE工作流输入不可为空", "error");
+
+    btnRun.disabled = true;
+    termStatus.textContent = "Running Router...";
+    termStatus.style.color = "#569cd6";
+    terminal.innerHTML = "";
+    preview.innerHTML = "";
+
+    logTerminal("=== 启动流水线引擎 Pipeline ===", "system");
+    logTerminal(`提取全局可用算力中心...共检出 ${getAllAgents().length} 个 Agent Nodes。`);
+
+    const allAgentsStr = getAllAgents().map(a => `- ID: ${a.id}, 功能: ${a.name}(${a.desc})`).join("\\n");
+    
+    // Router System Prompt
+    const routerSys = `你是一个多智能体路由网关(Orchestrator)。目前系统里注册了以下Agent：\n${allAgentsStr}\n\n你的任务是：根据用户的真实意图，决定你需要调用哪几个Agent来链式完成最终目标。请给出一个执行计划序列。你必须输出纯净的 JSON 数组格式，不要输出其他废话，JSON格式如下：\n [{"agentId": "调用的Agent ID", "prompt": "给它的明确指令（可将上一步的结果作为背景）"}]`;
+
+    let plan = [];
+    try {
+      logTerminal("正在请求大模型 Router 规划任务切分路径...", "warn");
+      const planRes = await callAgent(routerSys, userIntent);
+      
+      // 提取 JSON
+      const jsonMatch = planRes.match(/\\[.*\\]/s);
+      const jsonStr = jsonMatch ? jsonMatch[0] : planRes;
+      plan = JSON.parse(jsonStr);
+
+      logTerminal(`Router 规划成功！共拆解出 ${plan.length} 个子任务节点。`, "success");
+    } catch(err) {
+      logTerminal("Router 请求或 JSON 解析失败（免费大模型可能未返回标准结构）。请更换提示或重试。", "error");
+      termStatus.textContent = "Failed";
+      btnRun.disabled = false;
+      return;
+    }
+
+    // Pipeline Execution
+    termStatus.textContent = "Executing Chaining...";
+    termStatus.style.color = "#dcdcaa";
+    
+    let combinedMarkdown = "";
+    preview.innerHTML = "<div style='color:#ccc; text-align:center; padding-top:20%; font-size:0.9rem;'>正在实时生成中...</div>";
+
+    for(let i=0; i<plan.length; i++) {
+      const step = plan[i];
+      const agentDef = getAllAgents().find(a => a.id === step.agentId);
+      if(!agentDef) {
+        logTerminal(`跳过非法路由节点: 找不到 ID 为 [${step.agentId}] 的 Agent。`, "error");
+        continue;
+      }
+
+      logTerminal(`----------`);
+      logTerminal(`唤醒子节点 [${agentDef.name}]...`);
+      logTerminal(`注入指令: ${step.prompt}`, "warn");
+
+      // 提取它的专属 system prompt (可能在 builtin, 可能在 customAgentCollection)
+      let sp = "你是一个专业AI助手。";
+      if(agentDef.id === 'lesson') sp = "你是一名拥有20年教龄、斩获过全国级讲课比赛一等奖的金牌教研员。结合华中师范大学‘求实创新’的学术风格，请为用户提供的课题撰写一份高度专业化、结构化的教学详案（含教学目标、重难点、教学过程设计、详细板书结构）。排版需极其规范，条理清晰，适合用户直接拷贝打印。";
+      else if(agentDef.id === 'ppt') sp = "你是一名资深的教育课件（PPT）结构设计专家。请针对用户的主题，直接输出一份清晰的 PPT 大纲。请以【第 X 页：幻灯片主标题】为节点，罗列该页的核心文本（Bullet Points），以及建议配什么图解。大纲须保持逻辑连贯。";
+      else if(agentDef.id === 'game') sp = "你是拥有超高人气的儿童心理与课堂活动策划专家。你的特长是利用最少的教具，把干瘪的知识点变成好玩的互动游戏。策划分5分钟级别的互动。";
+      else if(agentDef.system_prompt) sp = agentDef.system_prompt; // 自建的
+
+      try {
+        const stepRes = await callAgent(sp, step.prompt);
+        logTerminal(`[${agentDef.name}] 处理完毕。数据量：${stepRes.length} 字符。`, "success");
+        
+        // 拼接展示
+        combinedMarkdown += `\n\n<div style="margin: 20px 0; border-top:2px dashed #eee; padding-top:20px;"><span style="background:var(--primary); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-bottom:12px; display:inline-block;">产出源：${agentDef.name}</span></div>\n\n` + stepRes;
+        
+        // 流式替换 preview
+        if(i === 0) preview.innerHTML = "";
+        preview.innerHTML = marked.parse(combinedMarkdown);
+        preview.scrollTop = preview.scrollHeight;
+
+      } catch(err) {
+        logTerminal(`[${agentDef.name}] 执行挂起: ${err.message}`, "error");
+      }
+    }
+
+    logTerminal("=== Pipeline 链路全生命周期结束 ===", "system");
+    termStatus.textContent = "Done";
+    termStatus.style.color = "#89d185";
+    btnRun.disabled = false;
   });
 }
 
@@ -639,12 +871,13 @@ async function bootstrap() {
   setupParticles();
   setupScrollReveal();
   setupBackToTop();
-  setupAIAssistant(); // 启动 右下角活泼小助手
+  setupAIAssistant();
   
-  // 赛级模块启动
   initRadarChart();
   setupAIGCWorkspace();
   setupAIInterviewer();
+  setupIDEWorkspace(); // 启动 IDE 流水线系统
+
 
   try {
     await Promise.all([loadContent(), loadMessages()]);

@@ -1342,3 +1342,74 @@ textarea { resize: vertical; }
   display: none !important;
 }
 
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-msg {
+  font-size: 0.95rem;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+
+/* ===== SCROLLBAR RESTYLING ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 104, 60, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 104, 60, 0.6);
+}
+
+/* ===== MARKDOWN BODY STYLES ===== */
+.markdown-body {
+  font-family: inherit;
+  color: var(--ink);
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: var(--primary-dark);
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.3em;
+}
+.markdown-body p {
+  margin-bottom: 1em;
+  line-height: 1.8;
+}
+.markdown-body ul, .markdown-body ol {
+  margin-left: 20px;
+  margin-bottom: 1em;
+}
+.markdown-body li {
+  margin-bottom: 0.5em;
+}
+.markdown-body strong {
+  color: var(--primary);
+  font-weight: 700;
+}
+

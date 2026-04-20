@@ -87,6 +87,15 @@ if(closeAuthModal) {
   closeAuthModal.addEventListener("click", () => authModal.classList.add("hidden"));
 }
 
+if(authPass) {
+  authPass.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (btnLoginSubmit) btnLoginSubmit.click();
+    }
+  });
+}
+
 if(btnLogoutNav) {
   btnLogoutNav.addEventListener("click", async () => {
     if(!isCloudMode) return;
@@ -164,6 +173,16 @@ if(closeAgentModal) {
   });
 }
 
+if(fieldAgentPrompt) {
+  fieldAgentPrompt.addEventListener("keydown", (e) => {
+    // 文本域使用 Enter 发送，Shift+Enter 换行
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if(submitAgentBtn) submitAgentBtn.click();
+    }
+  });
+}
+
 if(submitAgentBtn) {
   submitAgentBtn.addEventListener("click", async () => {
     const name = fieldAgentName.value.trim();
@@ -171,7 +190,7 @@ if(submitAgentBtn) {
     const prompt = fieldAgentPrompt.value.trim();
     
     if(!name || !prompt) {
-      alert("抱歉，Agent 的名字和您的私有核心 prompt 是必填项！");
+      window.showToast("抱歉，Agent 的名字和您的私有核心 prompt 是必填项！", "error");
       return;
     }
     
@@ -193,7 +212,7 @@ if(submitAgentBtn) {
         const { error } = await supabase.from('custom_agents').insert([newAgent]);
         if(error) throw error;
       } catch(err) {
-        alert("云端拦截：请先确立您是否已在 Supabase 建立了对应的 `custom_agents` 数据表结构。\n本地降级缓存已自动启动。");
+        window.showToast("云端被拒：本地降级缓存已自动启动。\n请确认您在 Supabase 中建立了 custom_agents 表。", "error");
         saveToLocal(newAgent);
       }
     } else {
