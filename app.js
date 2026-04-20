@@ -743,7 +743,7 @@ function setupIDEWorkspace() {
 
   // 快捷键运行
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && e.ctrlKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       btnRun.click();
     }
