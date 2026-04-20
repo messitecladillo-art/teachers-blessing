@@ -683,6 +683,39 @@ function setupAIGCWorkspace() {
   });
 }
 
+// ===== 纯前端 PPT 生成引擎 (PptxGenJS) =====
+window.generateRealPPT = function(jsonData) {
+  try {
+    let pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_16x9';
+
+    // Cover Slide
+    let slideCover = pptx.addSlide();
+    slideCover.background = { color: "19323c" }; 
+    slideCover.addText(jsonData.title || "学术课件生成", { x:1, y:2, w:8, h:1.5, fontSize:44, color:"ffffff", bold:true, align:"center" });
+    slideCover.addText("Powered by Teacher Service Hub · Agent Studio", { x:1, y:4, w:8, h:1, fontSize:18, color:"e8956a", align:"center" });
+
+    if (jsonData.slides && Array.isArray(jsonData.slides)) {
+      jsonData.slides.forEach(page => {
+        let slide = pptx.addSlide();
+        slide.background = { color: "f4efe6" }; 
+        // 标题块
+        slide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:1.2, fill:{ color:"c4683c" } }); 
+        slide.addText(page.title, { x:0.5, y:0.1, w:9, h:1, fontSize:32, color:"ffffff", bold:true });
+        
+        let bulletText = Array.isArray(page.bullets) ? page.bullets.join("\n\n") : page.bullets;
+        slide.addText(bulletText, { x:0.5, y:1.5, w:9, h:3.5, fontSize:22, color:"19323c", bullet: true });
+      });
+    }
+
+    const filename = (jsonData.title || "TeacherHub_PPT") + ".pptx";
+    pptx.writeFile({ fileName: filename });
+  } catch (e) {
+    console.error("PPT Build Error:", e);
+    window.showToast("PPT合并出错，请检查数据", "error");
+  }
+};
+
 // ===== IDE工作流 (多智能体自动路由) =====
 function setupIDEWorkspace() {
   const btnEnter = document.getElementById("btn-enter-ide");
@@ -871,7 +904,7 @@ function setupIDEWorkspace() {
       // 提取它的专属 system prompt (可能在 builtin, 可能在 customAgentCollection)
       let sp = "你是一个专业AI助手。";
       if(agentDef.id === 'lesson') sp = "你是一名拥有20年教龄、斩获过全国级讲课比赛一等奖的金牌教研员。结合华中师范大学‘求实创新’的学术风格，请为用户提供的课题撰写一份高度专业化、结构化的教学详案（含教学目标、重难点、教学过程设计、详细板书结构）。排版需极其规范，条理清晰，适合用户直接拷贝打印。";
-      else if(agentDef.id === 'ppt') sp = "你是一名资深的教育课件（PPT）结构设计专家。请针对用户的主题，直接输出一份清晰的 PPT 大纲。请以【第 X 页：幻灯片主标题】为节点，罗列该页的核心文本（Bullet Points），以及建议配什么图解。大纲须保持逻辑连贯。";
+      else if(agentDef.id === 'ppt') sp = "你是一个强硬的后台大纲编译机。根据用户的要求，你【绝不能】输出多余的Markdown解释或文本，你的唯一出口是一段合法的JSON格式字符串：\n{\"title\": \"总幻灯片极简标题\", \"slides\": [{\"title\":\"第一页小标\", \"bullets\":[\"核心点1\",\"核心点2\"]}, {\"title\":\"第二页小标\", \"bullets\":[\"核心1\",\"核心2\"]}]}";
       else if(agentDef.id === 'game') sp = "你是拥有超高人气的儿童心理与课堂活动策划专家。你的特长是利用最少的教具，把干瘪的知识点变成好玩的互动游戏。策划分5分钟级别的互动。";
       else if(agentDef.id === 'socratic') sp = "你是一个苏格拉底式的智慧导师。面对用户的问题，你【绝对不能】直接给出干瘪的答案！你需要通过一系列层层递进、具有启发性的【反问】，引导学生自己去思考并最终悟出真理。你的语气应该深邃且耐心。";
       else if(agentDef.id === 'logic') sp = "你是一个逻辑梳理大师。你的任务是无论输入的文本多么混乱无序，你都要用极其严谨的思维导图格式（采用多级无序列表或Markdown层级），将其核心论点、论据、因果关系清晰地解构出来。必须突出主要矛盾和次要矛盾。";
@@ -886,12 +919,39 @@ function setupIDEWorkspace() {
         const stepRes = await callAgent(sp, step.prompt);
         logTerminal(`[${agentDef.name}] 处理完毕。数据量：${stepRes.length} 字符。`, "success");
         
-        // 拼接展示
-        combinedMarkdown += `\n\n<div style="margin: 20px 0; border-top:2px dashed #eee; padding-top:20px;"><span style="background:var(--primary); color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-bottom:12px; display:inline-block;">产出源：${agentDef.name}</span></div>\n\n` + stepRes;
-        
-        // 流式替换 preview
+        // Markdown 转码层 / 特殊节点拦截层
+        let resultComponent = "";
+        if (agentDef.id === 'ppt') {
+          const match = stepRes.match(/\{[\s\S]*\}/);
+          if (match) {
+            try {
+              const pptData = JSON.parse(match[0]);
+              resultComponent = `
+                <div style="background:#f4efe6; padding:20px; border-radius:12px; border:1px solid var(--line); text-align:center;">
+                  <h3 style="color:var(--ink); margin-bottom:10px; font-size: 1.1rem; font-weight:800;">🚀 [成果下发] ${pptData.title || ''} .pptx</h3>
+                  <p style="color:var(--muted); font-size:0.85rem; margin-bottom:15px;">全自动编译出 ${pptData.slides ? pptData.slides.length : 0} 页格式化课件。已拦截输出，转交本地装订流...</p>
+                </div>`;
+              setTimeout(() => { if(window.generateRealPPT) window.generateRealPPT(pptData); }, 1500);
+            } catch(e) {
+              resultComponent = marked.parse(stepRes);
+            }
+          } else {
+            resultComponent = marked.parse(stepRes);
+          }
+        } else {
+          resultComponent = marked.parse(stepRes);
+        }
+
         if(i === 0) preview.innerHTML = "";
-        preview.innerHTML = marked.parse(combinedMarkdown);
+        
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+          <div style="margin: 20px 0; border-top:2px dashed #e2e8f0; padding-top:20px;">
+            <span style="background:var(--primary); color:white; padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-bottom:12px; display:inline-block;">节点追踪：${agentDef.name}</span>
+          </div>
+        ` + resultComponent;
+        
+        preview.appendChild(wrapper);
         preview.scrollTop = preview.scrollHeight;
 
       } catch(err) {
