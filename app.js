@@ -872,9 +872,25 @@ function setupIDEWorkspace() {
       const planRes = await callAgent(routerSys, userIntent);
       
       // 提取 JSON
-      const jsonMatch = planRes.match(/\[[\s\S]*\]/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : planRes;
-      plan = JSON.parse(jsonStr);
+      let jsonStr = planRes;
+      const arrayMatch = planRes.match(/\[[\s\S]*\]/);
+      const objectMatch = planRes.match(/\{[\s\S]*\}/);
+      
+      if (arrayMatch) {
+         jsonStr = arrayMatch[0];
+      } else if (objectMatch) {
+         jsonStr = objectMatch[0];
+      }
+
+      let parsed = JSON.parse(jsonStr);
+      if (!Array.isArray(parsed)) {
+         // 做 fallback 兼容，如果模型吐出单个对象则包裹成数组
+         if (parsed.agentId) plan = [parsed];
+         else if (parsed.plan) plan = Array.isArray(parsed.plan) ? parsed.plan : [parsed.plan];
+         else plan = [parsed];
+      } else {
+         plan = parsed;
+      }
 
       logTerminal(`Router 规划成功！共拆解出 ${plan.length} 个子任务节点。`, "success");
     } catch(err) {
