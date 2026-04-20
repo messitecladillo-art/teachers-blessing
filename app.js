@@ -926,10 +926,37 @@ function setupIDEWorkspace() {
           if (match) {
             try {
               const pptData = JSON.parse(match[0]);
+              
+              // 构造可视化预览的幻灯片网格
+              let slidesHtml = "";
+              if (pptData.slides && Array.isArray(pptData.slides)) {
+                slidesHtml = `<div style="display:flex; gap:16px; overflow-x:auto; padding:10px 4px 16px 4px; margin-top:12px; scroll-snap-type:x mandatory; scrollbar-width:thin;">`;
+                pptData.slides.forEach((s, idx) => {
+                   let bulletsHtml = Array.isArray(s.bullets) ? s.bullets.map(b => `<li style="margin-bottom:6px; line-height:1.4;">${b}</li>`).join("") : `<p style="line-height:1.4">${s.bullets || ''}</p>`;
+                   slidesHtml += `
+                     <div style="flex:0 0 260px; height:146px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; padding:16px; scroll-snap-align:start; display:flex; flex-direction:column; box-shadow:0 4px 12px rgba(0,0,0,0.04); text-align:left; position:relative;">
+                       <span style="font-size:0.6rem; color:#94a3b8; font-weight:800; font-family:monospace;">SLIDE ${idx+1}</span>
+                       <h4 style="color:var(--primary); font-size:0.95rem; font-weight:800; margin:6px 0 10px 0; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${s.title}</h4>
+                       <ul style="color:var(--muted); font-size:0.75rem; flex:1; overflow-y:auto; padding-left:14px; margin:0; font-family:'Noto Sans SC';">
+                         ${bulletsHtml}
+                       </ul>
+                     </div>
+                   `;
+                });
+                slidesHtml += `</div>`;
+              }
+
               resultComponent = `
-                <div style="background:#f4efe6; padding:20px; border-radius:12px; border:1px solid var(--line); text-align:center;">
-                  <h3 style="color:var(--ink); margin-bottom:10px; font-size: 1.1rem; font-weight:800;">🚀 [成果下发] ${pptData.title || ''} .pptx</h3>
-                  <p style="color:var(--muted); font-size:0.85rem; margin-bottom:15px;">全自动编译出 ${pptData.slides ? pptData.slides.length : 0} 页格式化课件。已拦截输出，转交本地装订流...</p>
+                <div style="background:#fcfbf9; padding:24px; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px dashed #e2e8f0; padding-bottom:12px;">
+                    <div>
+                      <h3 style="color:var(--ink); font-size: 1.15rem; font-weight:800; margin:0 0 6px 0; display:flex; align-items:center; gap:8px;">
+                        <span>📊</span> [可视化预览] ${pptData.title || '幻灯片工程'} 
+                      </h3>
+                      <p style="color:var(--muted); font-size:0.8rem; margin:0;">共计构建 ${pptData.slides ? pptData.slides.length : 0} 页切片。实体 .pptx 源文件同步下载中...</p>
+                    </div>
+                  </div>
+                  ${slidesHtml}
                 </div>`;
               setTimeout(() => { if(window.generateRealPPT) window.generateRealPPT(pptData); }, 1500);
             } catch(e) {
