@@ -692,8 +692,14 @@ window.generateRealPPT = function(jsonData) {
     // Cover Slide
     let slideCover = pptx.addSlide();
     slideCover.background = { color: "19323c" }; 
-    slideCover.addText(jsonData.title || "学术课件生成", { x:1, y:2, w:8, h:1.5, fontSize:44, color:"ffffff", bold:true, align:"center" });
+    slideCover.addText(jsonData.title || "学术课件生成", { x:1, y:2, w:8, h:1.5, fontSize:44, color:"ffffff", bold:true, align:"center", fontFace: jsonData.titleFont || 'Microsoft YaHei' });
     slideCover.addText("Powered by Teacher Service Hub · Agent Studio", { x:1, y:4, w:8, h:1, fontSize:18, color:"e8956a", align:"center" });
+    
+    if(jsonData.coverImages && Array.isArray(jsonData.coverImages)) {
+       jsonData.coverImages.forEach(img => {
+          slideCover.addImage({ data: img.data, x: img.x || 2, y: img.y || 2, w: img.w || 3, h: img.h || 3 });
+       });
+    }
 
     if (jsonData.slides && Array.isArray(jsonData.slides)) {
       jsonData.slides.forEach(page => {
@@ -701,10 +707,22 @@ window.generateRealPPT = function(jsonData) {
         slide.background = { color: "f4efe6" }; 
         // 标题块
         slide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:1.2, fill:{ color:"c4683c" } }); 
-        slide.addText(page.title, { x:0.5, y:0.1, w:9, h:1, fontSize:32, color:"ffffff", bold:true });
+        slide.addText(page.title, { x:0.5, y:0.1, w:9, h:1, fontSize:32, color:"ffffff", bold:true, fontFace: page.titleFont || 'Microsoft YaHei' });
         
-        let bulletText = Array.isArray(page.bullets) ? page.bullets.join("\n\n") : page.bullets;
-        slide.addText(bulletText, { x:0.5, y:1.5, w:9, h:3.5, fontSize:22, color:"19323c", bullet: true });
+        let bulletsArr = Array.isArray(page.bullets) ? page.bullets : [page.bullets];
+        let startY = 1.6;
+        bulletsArr.forEach((txt, idx) => {
+            if(!txt) return;
+            let ff = (page.bulletFonts && page.bulletFonts[idx]) ? page.bulletFonts[idx] : "Microsoft YaHei";
+            slide.addText(txt, { x:0.5, y:startY, w:9, h:0.5, fontSize:22, color:"19323c", bullet: true, fontFace: ff });
+            startY += 0.6;
+        });
+
+        if(page.images && Array.isArray(page.images)) {
+           page.images.forEach(img => {
+              slide.addImage({ data: img.data, x: img.x || 2, y: img.y || 2, w: img.w || 3, h: img.h || 3 });
+           });
+        }
       });
     }
 
@@ -713,51 +731,6 @@ window.generateRealPPT = function(jsonData) {
   } catch (e) {
     console.error("PPT Build Error:", e);
     window.showToast("PPT合并出错，请检查数据", "error");
-  }
-};
-
-window.triggerPPTExport = function(btnElement) {
-  try {
-    const container = document.getElementById("ppt-slides-container");
-    if (!container) return window.showToast("找不到幻灯片实体", "error");
-
-    const coverTitleEl = container.querySelector(".ppt-cover-title");
-    const pptTitle = coverTitleEl ? coverTitleEl.innerText.trim() : "学术课件生成";
-    
-    const slidesData = [];
-    const cards = container.querySelectorAll(".ppt-slide-card");
-    cards.forEach(card => {
-       const titleEl = card.querySelector(".ppt-slide-title");
-       const bulletEls = card.querySelectorAll(".ppt-bullet-item");
-       
-       const titleTxt = titleEl ? titleEl.innerText.trim() : "";
-       const bullets = [];
-       bulletEls.forEach(li => {
-          if(li.innerText.trim()) bullets.push(li.innerText.trim());
-       });
-       
-       slidesData.push({ title: titleTxt, bullets: bullets });
-    });
-
-    const finalJSON = { title: pptTitle, slides: slidesData };
-    
-    // 下载保护及交互反馈
-    if(btnElement) {
-      btnElement.innerText = "⏳ 正在装订...";
-      btnElement.disabled = true;
-    }
-    window.generateRealPPT(finalJSON);
-    
-    setTimeout(() => {
-       if(btnElement) {
-         btnElement.innerText = "📥 改好了，无损导出为 .pptx";
-         btnElement.disabled = false;
-       }
-    }, 2000);
-
-  } catch(e) {
-    console.error(e);
-    window.showToast("导出失败，请检查结构", "error");
   }
 };
 
@@ -990,58 +963,19 @@ function setupIDEWorkspace() {
             try {
               const pptData = JSON.parse(match[0]);
               
-              // 构造高保真可视化幻灯片网格
-              let slidesHtml = "";
-              if (pptData.slides && Array.isArray(pptData.slides)) {
-                slidesHtml = `<div id="ppt-slides-container" style="display:flex; gap:24px; overflow-x:auto; padding:16px 8px 24px 8px; margin-top:12px; scroll-snap-type:x mandatory; scrollbar-width:thin;">`;
-                
-                // 强制植入第一帧：1:1复刻深蓝封面
-                slidesHtml += `
-                 <div style="flex:0 0 320px; height:180px; background:#19323c; border:4px solid #334155; border-radius:4px; box-shadow:0 8px 20px rgba(0,0,0,0.25); scroll-snap-align:start; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; overflow:hidden;">
-                    <h4 class="ppt-cover-title" contenteditable="true" style="color:#ffffff; font-size:1.4rem; font-weight:800; font-family:'Noto Sans SC'; margin:0 0 16px 0; padding:0 16px; outline:none; text-align:center; border-bottom:1px dashed transparent; transition:all 0.2s;" onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'" onblur="this.style.borderBottomColor='transparent'">${pptData.title || "学术课件生成"}</h4>
-                    <p style="color:#e8956a; font-size:0.7rem; font-family:'Noto Sans SC'; margin:0;">Powered by Teacher Service Hub</p>
-                 </div>
-                `;
-
-                // 强制植入后续帧：1:1复刻内页画板
-                pptData.slides.forEach((s, idx) => {
-                   let bulletsHtml = Array.isArray(s.bullets) ? s.bullets.map(b => `<li class="ppt-bullet-item" contenteditable="true" style="margin-bottom:8px; line-height:1.4; outline:none; transition:all 0.2s; border-radius:4px; padding:2px 4px;" onfocus="this.style.background='rgba(196,104,60,0.1)'" onblur="this.style.background='transparent'">${b}</li>`).join("") : `<p class="ppt-bullet-item" contenteditable="true" style="line-height:1.4; outline:none; padding:2px; transition:all 0.2s;" onfocus="this.style.background='rgba(196,104,60,0.1)'" onblur="this.style.background='transparent'">${s.bullets || ''}</p>`;
-                   slidesHtml += `
-                     <div class="ppt-slide-card" style="flex:0 0 320px; height:180px; background:#f4efe6; border-radius:4px; border:1px solid #cbd5e1; box-shadow:0 8px 20px rgba(0,0,0,0.1); scroll-snap-align:start; display:flex; flex-direction:column; position:relative; overflow:hidden;">
-                       <!-- 复刻 PptxGenJS 内页页眉 -->
-                       <div style="background:#c4683c; height:38px; width:100%; display:flex; align-items:center; padding:0 20px; box-sizing:border-box;">
-                         <h4 class="ppt-slide-title" contenteditable="true" style="color:#ffffff; font-size:0.95rem; font-family:'Noto Sans SC'; font-weight:800; margin:0; outline:none; width:100%; white-space:nowrap; overflow:hidden; border-bottom:1px dashed transparent; transition:all 0.2s;" onfocus="this.style.borderBottomColor='rgba(255,255,255,0.5)'" onblur="this.style.borderBottomColor='transparent'">${s.title}</h4>
-                       </div>
-                       <!-- 复刻 PptxGenJS 正文区 -->
-                       <div style="flex:1; padding:16px 20px; overflow-y:auto;">
-                         <ul style="color:#19323c; font-size:0.75rem; font-family:'Noto Sans SC'; padding-left:14px; margin:0;">
-                           ${bulletsHtml}
-                         </ul>
-                       </div>
-                       <span style="position:absolute; bottom:6px; right:10px; font-size:0.5rem; color:#94a3b8; font-family:monospace;">${idx+2}</span>
-                     </div>
-                   `;
-                });
-                slidesHtml += `</div>`;
-              }
-
+              const mountId = `ppt-editor-root-${Date.now()}`;
               resultComponent = `
-                <div style="background:#faf9f6; padding:24px; border-radius:12px; border:2px solid var(--primary-light); box-shadow:0 12px 32px rgba(0,0,0,0.08); position:relative;">
-                  <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px dashed #e2e8f0; padding-bottom:12px;">
-                    <div>
-                      <h3 style="color:var(--ink); font-size: 1.15rem; font-weight:900; font-family:'Noto Sans SC'; margin:0 0 6px 0; display:flex; align-items:center; gap:8px;">
-                        <span>🎨</span> 高保真幻灯片源视口 (Viewport)
-                      </h3>
-                      <p style="color:var(--primary); font-weight:700; font-size:0.8rem; margin:0;">✨ 下方视界采用 1:1 像素映射技术复刻出最终 .pptx 图层。鼠标直击对应版面即可对大纲发起微雕。</p>
-                    </div>
-                  </div>
-                  ${slidesHtml}
-                  <div style="text-align:right; margin-top:8px;">
-                    <button onclick="window.triggerPPTExport(this)" style="background:var(--primary); color:#fff; border:none; border-radius:6px; padding:10px 24px; font-weight:800; font-size:0.85rem; font-family:'Noto Sans SC'; cursor:pointer; box-shadow:0 4px 12px rgba(196,104,60,0.25); transition:all 0.3s; display:inline-flex; align-items:center; gap:6px;">
-                      📥 改好了，执行 .pptx 源码装订流汇出
-                    </button>
-                  </div>
+                <div style="background:#faf9f6; padding:0; border-radius:12px; border:2px solid var(--primary-light); box-shadow:0 12px 32px rgba(0,0,0,0.08); position:relative; overflow:hidden;">
+                  <div id="${mountId}" style="width:100%; height:500px; display:flex;"></div>
                 </div>`;
+              
+              setTimeout(() => {
+                if(window.initFullPPTEngine) {
+                  window.initFullPPTEngine(mountId, pptData);
+                } else {
+                  console.error("PPT Editor Engine missing");
+                }
+              }, 100);
             } catch(e) {
               resultComponent = marked.parse(stepRes);
             }
