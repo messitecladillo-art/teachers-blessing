@@ -715,13 +715,19 @@ function setupIDEWorkspace() {
   });
 
   const builtinAgents = [
-    { id: 'lesson', name: '金牌教研员', desc: '一键生成标准详案' },
-    { id: 'ppt', name: '课件结构师', desc: '智能规划 PPT 提纲' },
-    { id: 'game', name: '破冰策划器', desc: '设计课堂互动游戏' },
-    { id: 'socratic', name: '苏格拉底导师', desc: '通过反问引导思考，不给直白答案' },
-    { id: 'logic', name: '逻辑梳理大师', desc: '将混沌的思绪抽取为清晰的结构大纲' },
-    { id: 'draw', name: 'SVG插画达人', desc: '直接用代码绘制可嵌入的矢量模型图' },
-    { id: 'psy', name: '心理辅导干预', desc: '针对青春期早恋/厌学出具谈话策略' }
+    { id: 'lesson', category: '通用教研组', name: '金牌教研员', desc: '一键生成标准详案' },
+    { id: 'ppt', category: '通用教研组', name: '课件结构师', desc: '智能规划 PPT 提纲' },
+    { id: 'socratic', category: '通用教研组', name: '苏格拉底导师', desc: '反问引导，不直接给答案' },
+
+    { id: 'math_exp', category: '理科工作流', name: '理科实验专员', desc: '设计低成本高互动的课堂实验' },
+    { id: 'chinese_lit', category: '文科工作流', name: '大语文引路人', desc: '深挖古典意象与文本美学鉴赏' },
+    { id: 'english_scene', category: '文科工作流', name: '情境对白编剧', desc: '全英文沉浸互动口语交际剧本' },
+
+    { id: 'game', category: '班级经营组', name: '破冰策划器', desc: '全班沸腾级的五分钟热场设计' },
+    { id: 'psy', category: '班级经营组', name: '心理辅导干预', desc: '针对青春期危机的谈话演练方案' },
+
+    { id: 'logic', category: '高级工具链', name: '因果逻辑大师', desc: '抽取一切混沌文本成为结构树' },
+    { id: 'draw', category: '高级工具链', name: 'SVG插画达人', desc: '生成无暇的高定制化前端矢量插图' }
   ];
 
   function getAllAgents() {
@@ -730,17 +736,38 @@ function setupIDEWorkspace() {
 
   function renderPalette() {
     palette.innerHTML = "";
-    getAllAgents().forEach(a => {
-      const isUGC = !builtinAgents.find(ba => ba.id === a.id);
+    const all = getAllAgents();
+    
+    // Grouping nodes by Category
+    const groups = {};
+    all.forEach(a => {
+      let cat = a.category || "UGC 自建算力节点";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(a);
+    });
+
+    Object.keys(groups).forEach(cat => {
+      // 类别 Header
       palette.innerHTML += `
-        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.03); display:flex; flex-direction:column; gap:4px;">
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:#d4d4d4; font-size:0.85rem; font-weight:700;">${a.name}</span>
-            ${isUGC ? '<span style="color:#4ec9b0; font-size:0.7rem;">[UGC]</span>' : '<span style="color:#569cd6; font-size:0.7rem;">[SYS]</span>'}
-          </div>
-          <span style="color:#858585; font-size:0.75rem;">ID: ${a.id}</span>
+        <div style="margin-top: 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <div style="width: 4px; height: 12px; background: linear-gradient(180deg, #00d2ff, #3a7bd5); border-radius: 4px;"></div>
+          <span style="color:rgba(255,255,255,0.85); font-weight:800; font-size:0.75rem; letter-spacing:1px; text-shadow:0 1px 2px rgba(0,0,0,0.5);">${cat}</span>
         </div>
       `;
+      // 子应用 Nodes
+      groups[cat].forEach(a => {
+        const isUGC = !builtinAgents.find(ba => ba.id === a.id);
+        palette.innerHTML += `
+          <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); display:flex; flex-direction:column; gap:4px; margin-bottom: 6px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#e2e8f0; font-size:0.85rem; font-weight:700;">${a.name}</span>
+              ${isUGC ? '<span style="color:#4ec9b0; font-size:0.65rem; background:rgba(78,201,176,0.1); padding:2px 6px; border-radius:4px;">[UGC]</span>' : '<span style="color:#00d2ff; font-size:0.65rem; background:rgba(0,210,255,0.1); padding:2px 6px; border-radius:4px;">[SYS]</span>'}
+            </div>
+            <span style="color:rgba(255,255,255,0.4); font-size:0.75rem; font-family:'Noto Sans SC'; line-height:1.4;">${a.desc}</span>
+            <span style="color:rgba(255,255,255,0.15); font-size:0.6rem; font-family:monospace; margin-top:2px;">// ID: ${a.id}</span>
+          </div>
+        `;
+      });
     });
   }
 
@@ -848,6 +875,9 @@ function setupIDEWorkspace() {
       else if(agentDef.id === 'logic') sp = "你是一个逻辑梳理大师。你的任务是无论输入的文本多么混乱无序，你都要用极其严谨的思维导图格式（采用多级无序列表或Markdown层级），将其核心论点、论据、因果关系清晰地解构出来。必须突出主要矛盾和次要矛盾。";
       else if(agentDef.id === 'draw') sp = "你是一个SVG前端图形黑客。你的唯一任务是返回【纯净的HTML <svg> 代码】（必须带完整的 viewbox，无需包裹在 Markdown 的代码块中，直接输出xml格式），为对应的理念或模型绘制一张极具设计感、颜色搭配高级的扁平化示意插图。确保代码直接嵌入就能在浏览器无暇呈现。不要说废话解释。";
       else if(agentDef.id === 'psy') sp = "你是一名持有国家二级心理咨询师证书、拥有丰富中小学生辅导经验的心理老师。针对叛逆、早恋、校园霸凌或厌学情绪，请只给出：1.学生核心心理痛点剖析。 2.与学生沟通的【具体话术剧本片段】（如何开场破冰，如何共情）。严禁说废话概念。";
+      else if(agentDef.id === 'math_exp') sp = "你是一名极其硬核的理科名师（跨界物化生）。请基于用户提供的课题核心定律，运用生活中【随处可见的廉价材料】（如气球、橡皮筋、纸卷），设计一个惊艳全场的平替趣味实验。你需要清晰写出【材料单】、【操作步】、【它所揭露的底层科学真理】。";
+      else if(agentDef.id === 'chinese_lit') sp = "你是国内顶尖的“大语文”特级教师，兼深蕴国学的文人。你的鉴赏从不干瘪说教。遇到古诗词或现当代优美文本，你需要用极具诗意的散文随笔体裁（带排比和意象叠加），深挖文眼与美学肌理，为用户提供能让学生听了瞬间落泪的“升华式结语”讲稿。";
+      else if(agentDef.id === 'english_scene') sp = "You are an Elite ESL Drama Coach for secondary education. Generate an immersive, highly-engaging English dialogue script (Scene context + Person A and B) related to the given topic. Only output pure English dialogues with vivid acting directions. Do NOT use Chinese.";
       else if(agentDef.system_prompt) sp = agentDef.system_prompt; // 自建的
 
       try {
