@@ -1,19 +1,19 @@
 {
   "site": {
-    "name": "师范生成长驿站",
-    "subtitle": "面向师范生的一站式学习、实践与就业服务平台",
+    "name": "循证一课 · 师范生成长驿站",
+    "subtitle": "把课堂证据，变成一节可审阅的课",
     "heroStats": [
       {
-        "label": "可预约服务",
-        "value": "12项"
+        "label": "教师工作流",
+        "value": "统计 → 备课"
       },
       {
-        "label": "合作实践基地",
-        "value": "28个"
+        "label": "CSV 处理位置",
+        "value": "本机"
       },
       {
-        "label": "本周活动",
-        "value": "6场"
+        "label": "当前阶段",
+        "value": "功能原型"
       }
     ]
   },
@@ -43,32 +43,32 @@
     {
       "title": "2026年春季教育实习双选说明会",
       "date": "2026-04-23",
-      "category": "实习通知"
+      "category": "示例 · 实习通知"
     },
     {
       "title": "教师资格证面试模拟训练报名开启",
       "date": "2026-04-25",
-      "category": "考证活动"
+      "category": "示例 · 考证活动"
     },
     {
       "title": "师范生简历优化工作坊开放预约",
       "date": "2026-04-27",
-      "category": "就业服务"
+      "category": "示例 · 就业服务"
     }
   ],
   "events": [
     {
-      "title": "说课技巧提升营",
+      "title": "【示例】说课技巧提升营",
       "time": "周二 19:00",
       "location": "线上腾讯会议"
     },
     {
-      "title": "班主任沟通案例分享",
+      "title": "【示例】班主任沟通案例分享",
       "time": "周四 15:30",
       "location": "文科楼 A302"
     },
     {
-      "title": "招教面试模拟答辩",
+      "title": "【示例】招教面试模拟答辩",
       "time": "周六 09:00",
       "location": "教师发展中心"
     }
@@ -92,11 +92,21 @@
     }
   ],
   "quickLinks": [
-    "报名日历",
-    "证书办理",
-    "实习申请",
-    "就业公告",
-    "资源下载",
-    "在线咨询"
+    {
+      "label": "循证一课",
+      "href": "#evidence-classroom"
+    },
+    {
+      "label": "教案与课件",
+      "href": "#aigc-workspace"
+    },
+    {
+      "label": "成长服务",
+      "href": "#services"
+    },
+    {
+      "label": "教学演练",
+      "href": "#ai-interviewer"
+    }
   ]
 }

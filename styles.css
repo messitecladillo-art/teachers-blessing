@@ -1278,7 +1278,7 @@ textarea { resize: vertical; }
   display: flex;
   gap: 12px;
 }
-.aigc-input-area input {
+.aigc-input-area input, .aigc-input-area textarea {
   flex-grow: 1;
   padding: 14px 16px;
   border: 1px solid var(--border);
@@ -1287,8 +1287,12 @@ textarea { resize: vertical; }
   outline: none;
   transition: border-color 0.2s;
   background: white;
+  min-width: 0;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
 }
-.aigc-input-area input:focus {
+.aigc-input-area input:focus, .aigc-input-area textarea:focus {
   border-color: var(--primary);
 }
 .aigc-output-area {

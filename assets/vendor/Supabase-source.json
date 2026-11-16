@@ -1,0 +1,29 @@
+{
+  "name": "@supabase/supabase-js",
+  "version": "2.49.4",
+  "metadataUrl": "https://registry.npmjs.org/%40supabase%2Fsupabase-js/2.49.4",
+  "tarballUrl": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.49.4.tgz",
+  "distIntegrity": "sha512-jUF0uRUmS8BKt37t01qaZ88H9yV1mbGYnqLeuFWLcdV+x1P4fl0yP9DGtaEhFPZcwSom7u16GkLEH9QJZOqOkw==",
+  "verifiedIntegrity": "sha512-jUF0uRUmS8BKt37t01qaZ88H9yV1mbGYnqLeuFWLcdV+x1P4fl0yP9DGtaEhFPZcwSom7u16GkLEH9QJZOqOkw==",
+  "tarballSha256": "d1a41bab7cca3501565a943064dd4e410551a7e89a75ca1ac86ceb5c57ff410e",
+  "license": "MIT",
+  "fetchedAt": "2026-11-16T05:51:57.959Z",
+  "schema": "vendored-browser-asset/v1",
+  "browserTarEntry": "package/dist/umd/supabase.js",
+  "browserArtifact": "supabase.js",
+  "browserSha256": "fda9d67f80cce4074f78d6373bb136e84c34cb235b8a91c5e4284068da6ddc42",
+  "browserBytes": 115810,
+  "artifactModified": false,
+  "licenseArtifact": "Supabase-LICENSE",
+  "licenseArtifactSha256": "334dd6820e2eaeab2064e7c59001b810566728a28a41a7c1dbf69bbee17d0936",
+  "licenseEntries": [
+    {
+      "tarEntry": "package/LICENSE",
+      "sha256": "334dd6820e2eaeab2064e7c59001b810566728a28a41a7c1dbf69bbee17d0936",
+      "bytes": 1065
+    }
+  ],
+  "verification": "tarball SHA-512 matched npm dist.integrity before extraction; no install or lifecycle scripts executed",
+  "compatibilityNote": "Modern browser UMD uses native WebSocket. Upstream optional 591.supabase.js chunk is a Node-ws browser rejection stub used only without native WebSocket; it is not vendored. No Node use is supported by this browser-only asset.",
+  "browserGlobal": "supabase"
+}

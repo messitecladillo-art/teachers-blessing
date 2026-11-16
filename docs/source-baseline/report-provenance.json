@@ -1,0 +1,40 @@
+[
+  {
+    "path": "docs/reverse/Mentrix-浏览器端逆向报告-v0.2.md",
+    "source_sha256": "bc766e6345eee2c05d1b1cc58a2c1eaa03ffced2cb7ab5fff4cf8b7b5067b039",
+    "public_sha256": "6c5116db278d7cf57f72fdaf8fb2eab377fd72a03f7b548c95f5f3bb04630859",
+    "transformation": "public-safe report; local paths removed; scope banner added"
+  },
+  {
+    "path": "docs/reverse/独立复现规格-v0.1.md",
+    "source_sha256": "550bf926eeaaf12192c04c63450891047777f0de81345738efde8684df814030",
+    "public_sha256": "bbf3bdbeec6710263a1a163d92f306dee8c38c49ed6403a723137a7d5dacafa4",
+    "transformation": "public-safe report; local paths removed; scope banner added"
+  },
+  {
+    "path": "docs/reverse/api-contracts.md",
+    "source_sha256": "ccc188b3f397b668544e65077a607580254c7ac56708803825e373204cdff752",
+    "public_sha256": "30220bfef10eac325c88979bdfc3a1a376e5665055502a63f082c755c1cb58bf",
+    "transformation": "public-safe report; local paths removed; scope banner added"
+  },
+  {
+    "path": "docs/reverse/bundle-analysis.md",
+    "source_sha256": "f180b4106184ff4f9450bec687d41cb1a3ba4cd72c0f5fdb78899784f4b01ffc",
+    "public_sha256": "1f9307e9f4d3a8b700dd0e94729782fabd768aac80a2518d40f0a21e8dab6d42",
+    "transformation": "public-safe report; local paths removed; scope banner added"
+  },
+  {
+    "path": "docs/参赛副本详细改造方案-v1.md",
+    "source_sha256": "b45fb562c877ebbe9833008e980d1ab012288b0c0f8f7d443e610097766340d4",
+    "public_sha256": "1def68ae7b5f73f190c2d4699c77b69e03870b5b21f002ccad5925c66e9bbc4d",
+    "transformation": "public-safe report; local paths removed; scope banner added"
+  },
+  {
+    "path": "docs/reverse/route-table.csv",
+    "sha256": "efd7cf8e5b73d4091640cca83df8411c31ffdd886d819a53facbd9739c9d9ac7"
+  },
+  {
+    "path": "docs/reverse/endpoint-candidates.csv",
+    "sha256": "ff8998ae2fe9c49c199dcbd6cc7b228d73df6b6b0cea800d588f4f76b135abb6"
+  }
+]

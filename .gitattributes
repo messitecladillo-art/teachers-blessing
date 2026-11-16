@@ -1,0 +1,4 @@
+# Preserve the independently copied source snapshot byte for byte.
+/platform/evix/** -text -whitespace
+# Third-party distributions are preserved with their original bytes and license text.
+/assets/vendor/** -text -whitespace

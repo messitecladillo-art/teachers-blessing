@@ -1,0 +1,12 @@
+{
+  "name": "teachers-blessing-education-aigc",
+  "version": "0.2.0",
+  "private": true,
+  "description": "循证一课：师范生成长门户与教育AIGC教学原型",
+  "engines": { "node": ">=22.16" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test tests/ai-client.test.mjs tests/ai-server.test.mjs tests/evidence-classroom.test.cjs",
+    "check": "node --check app.js && node --check cloud.js && node --check ppt-editor.js && node --check evidence-classroom.js && node --check ai-client.js && node --check server.mjs"
+  }
+}

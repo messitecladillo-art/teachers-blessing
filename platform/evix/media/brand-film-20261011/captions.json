@@ -1,0 +1,16 @@
+[
+  { "start": 6, "end": 12, "zh": "证见 EVI-X · 代码生成影像", "en": "EVI-X · A FILM GENERATED WITH CODE", "type": "credit", "placement": "lower", "small": true },
+  { "start": 15, "end": 21, "zh": "未见之光", "en": "THE UNSEEN LIGHT", "type": "title", "placement": "center" },
+  { "start": 30, "end": 37, "zh": "我们听见了谁？", "en": "Whose voices did we hear?", "type": "card", "placement": "lower" },
+  { "start": 70, "end": 78, "zh": "记录如此整齐。", "en": "The records were perfectly ordered.", "type": "card", "placement": "lower" },
+  { "start": 104, "end": 111, "zh": "可有一扇窗，不在其中。", "en": "But one window was missing.", "type": "card", "placement": "lower" },
+  { "start": 131, "end": 139, "zh": "它一直亮着。", "en": "Its light had been there all along.", "type": "card", "placement": "lower" },
+  { "start": 147, "end": 155, "zh": "只是，我们没有问。", "en": "We had never asked.", "type": "card", "placement": "lower" },
+  { "start": 176, "end": 184, "zh": "让问题，再打开一次。", "en": "Open the question again.", "type": "card", "placement": "lower" },
+  { "start": 192, "end": 196.5, "zh": "Q  问题\n从真正的问题开始", "en": "QUESTION\nStart with the real question.", "type": "workflow", "placement": "lower" },
+  { "start": 199, "end": 203.5, "zh": "D  数据\n让记录保留来处", "en": "DATA\nKeep every record connected to its source.", "type": "workflow", "placement": "lower" },
+  { "start": 206, "end": 210.5, "zh": "I  洞察\n让判断经得起复核", "en": "INSIGHT\nMake every insight open to review.", "type": "workflow", "placement": "lower" },
+  { "start": 213, "end": 217.5, "zh": "A  行动\n把证据带回现实", "en": "ACTION\nBring evidence into the world.", "type": "workflow", "placement": "lower" },
+  { "start": 219, "end": 227, "zh": "证见 EVI-X\n让每个问题，都循证抵达行动。", "en": "EVIDENCE × INSIGHT × EXECUTION\nFrom questions, through evidence, to action.", "type": "title", "placement": "center" },
+  { "start": 228, "end": 239.8, "zh": "概念影像｜三维画面、原创配乐与音效均由代码生成\n\n证见 EVI-X 为独立研究辅助工具，非“正大杯”赛事官方产品，与赛事主办方、承办方及冠名单位无隶属、授权或合作关系。", "en": "CONCEPTUAL IMAGERY · PICTURES, ORIGINAL SCORE AND SOUND GENERATED WITH CODE\n\nEVI-X is an independent research tool, not an official product of the Zhengda Cup. It has no affiliation, authorization, or partnership with the competition organizers, hosts, or title sponsors.", "type": "end", "placement": "center", "small": true }
+]

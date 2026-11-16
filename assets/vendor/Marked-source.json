@@ -1,0 +1,28 @@
+{
+  "name": "marked",
+  "version": "15.0.12",
+  "metadataUrl": "https://registry.npmjs.org/marked/15.0.12",
+  "tarballUrl": "https://registry.npmjs.org/marked/-/marked-15.0.12.tgz",
+  "distIntegrity": "sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==",
+  "verifiedIntegrity": "sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==",
+  "tarballSha256": "39a847a896af15b2846f927da55d444619ea55a55c236e10333056474b793aaa",
+  "license": "MIT",
+  "fetchedAt": "2026-11-16T05:51:57.860Z",
+  "schema": "vendored-browser-asset/v1",
+  "browserTarEntry": "package/marked.min.js",
+  "browserArtifact": "marked.min.js",
+  "browserSha256": "3e7e7d7feb3e5d58cb6c804f68ab5c24cc7e5eb6270fd6e5cbb9124739217d0c",
+  "browserBytes": 39903,
+  "artifactModified": false,
+  "licenseArtifact": "Marked-LICENSE",
+  "licenseArtifactSha256": "8e3a3f82f59a60958f56ca08f445647c32a4733dc7ca6c2c46f6eb898471ab9c",
+  "licenseEntries": [
+    {
+      "tarEntry": "package/LICENSE.md",
+      "sha256": "8e3a3f82f59a60958f56ca08f445647c32a4733dc7ca6c2c46f6eb898471ab9c",
+      "bytes": 2942
+    }
+  ],
+  "verification": "tarball SHA-512 matched npm dist.integrity before extraction; no install or lifecycle scripts executed",
+  "browserGlobal": "marked"
+}

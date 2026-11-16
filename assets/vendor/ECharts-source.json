@@ -1,0 +1,39 @@
+{
+  "name": "echarts",
+  "version": "5.5.0",
+  "metadataUrl": "https://registry.npmjs.org/echarts/5.5.0",
+  "tarballUrl": "https://registry.npmjs.org/echarts/-/echarts-5.5.0.tgz",
+  "distIntegrity": "sha512-rNYnNCzqDAPCr4m/fqyUFv7fD9qIsd50S6GDFgO1DxZhncCsNsG7IfUlAlvZe5oSEQxtsjnHiUuppzccry93Xw==",
+  "verifiedIntegrity": "sha512-rNYnNCzqDAPCr4m/fqyUFv7fD9qIsd50S6GDFgO1DxZhncCsNsG7IfUlAlvZe5oSEQxtsjnHiUuppzccry93Xw==",
+  "tarballSha256": "9e5771738a966d74ca027b0987499cddafe24f5271767b23cee6badb010bf058",
+  "license": "Apache-2.0",
+  "fetchedAt": "2026-11-16T05:51:58.472Z",
+  "schema": "vendored-browser-asset/v1",
+  "browserTarEntry": "package/dist/echarts.min.js",
+  "browserArtifact": "echarts.min.js",
+  "browserSha256": "42f8329d989b6f6539dd2b15bbdf0d82025762ac112fbb60dc57b27d7bcf3946",
+  "browserBytes": 1029203,
+  "artifactModified": false,
+  "licenseArtifact": "ECharts-LICENSE",
+  "licenseArtifactSha256": "723bc33c6b1229c7412d0179780df51d60c6198c62c0518da9a0783e96e9dca2",
+  "licenseEntries": [
+    {
+      "tarEntry": "package/LICENSE",
+      "sha256": "634293835b43a6dd2094fa39182a3d9a6b9ca43b7fdb9ac354e8037af2a3093a",
+      "bytes": 11990
+    },
+    {
+      "tarEntry": "package/NOTICE",
+      "sha256": "fa99ac3af859d0e13166906dc53a73ad34a08898da7e8ae83407275496e9e30c",
+      "bytes": 168
+    },
+    {
+      "tarEntry": "package/licenses/LICENSE-d3",
+      "sha256": "e1211892da0b0e0585b7aebe8f98c1274fba15bafe47fa1f4ee8a7a502c06304",
+      "bytes": 1475
+    }
+  ],
+  "verification": "tarball SHA-512 matched npm dist.integrity before extraction; no install or lifecycle scripts executed",
+  "licenseNote": "ECharts-LICENSE preserves Apache-2.0 LICENSE, upstream NOTICE and bundled D3 BSD notice as clearly separated original text.",
+  "browserGlobal": "echarts"
+}

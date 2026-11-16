@@ -1,0 +1,42 @@
+{
+  "title_zh": "未见之光",
+  "title_en": "THE UNSEEN LIGHT",
+  "production_date": "2026-10-11",
+  "visual_mode": "public_promo",
+  "content_classification": "conceptual",
+  "production_assistance": "Current Codex session and its coordinated agents wrote original source code. Opus 5.5 was not invoked.",
+  "opening_credit": "证见 EVI-X · 代码生成影像",
+  "duration_seconds": 240,
+  "frames": 5760,
+  "fps": 24,
+  "width": 1920,
+  "height": 1080,
+  "actual_camera_shots": 31,
+  "story_beats": 24,
+  "assets": [
+    {"kind": "picture", "source": "scene.mjs", "method": "Seeded geometry, canvas textures and original environment maps, PBR materials, shadows, particles, shader postprocess, authored cameras", "external_images": false},
+    {"kind": "titles", "source": "captions.json and player.mjs", "method": "Canvas text compositing with timed bilingual cards"},
+    {"kind": "sound", "source": "score.py", "method": "Original NumPy waveform synthesis, score, envelopes, filtering, spatial effects and room ambience", "external_samples": false, "recorded_voices": false}
+  ],
+  "dependencies": [
+    {"name": "Three.js", "version": "0.186.1", "license": "MIT", "notice": "vendor/three/LICENSE", "bundled": true},
+    {"name": "NumPy", "version": "2.3.5", "license": "BSD-3-Clause", "bundled": false},
+    {"name": "Python", "version_used": "3.12.14", "bundled": false},
+    {"name": "Node.js", "version_used": "24.15.0", "bundled": false},
+    {"name": "FFmpeg", "version_used": "8.1.1", "use": "Local executable for mastering, H.264/AAC encoding and QA", "bundled": false},
+    {"name": "WebCodecs", "use": "Browser VideoEncoder, annex-B H.264"}
+  ],
+  "fonts": {"chinese": "Microsoft YaHei", "latin": "Arial", "font_files_distributed": false, "commercial_publication_license_review": "pending"},
+  "claims": {
+    "real_fieldwork_or_statistics": false,
+    "official_competition_affiliation": false,
+    "award_or_festival_selection": false,
+    "product_runtime_demonstration": false,
+    "external_publication_performed": false
+  },
+  "notes": [
+    "This is a rendered concept brand film, with realistic material cues in a stylized abstract world; it is not live-action photography.",
+    "All three-dimensional models, camera moves and audio waveforms are editable in the delivered source.",
+    "Static-frame, metadata and decode checks do not establish subjective film or music quality."
+  ]
+}

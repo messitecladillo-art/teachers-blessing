@@ -1,0 +1,46 @@
+{
+  "name": "pptxgenjs",
+  "version": "3.12.0",
+  "metadataUrl": "https://registry.npmjs.org/pptxgenjs/3.12.0",
+  "tarballUrl": "https://registry.npmjs.org/pptxgenjs/-/pptxgenjs-3.12.0.tgz",
+  "distIntegrity": "sha512-ZozkYKWb1MoPR4ucw3/aFYlHkVIJxo9czikEclcUVnS4Iw/M+r+TEwdlB3fyAWO9JY1USxJDt0Y0/r15IR/RUA==",
+  "verifiedIntegrity": "sha512-ZozkYKWb1MoPR4ucw3/aFYlHkVIJxo9czikEclcUVnS4Iw/M+r+TEwdlB3fyAWO9JY1USxJDt0Y0/r15IR/RUA==",
+  "tarballSha256": "a4a3ff574efd47818340e7bf23d4de842240f611292479c7ece39e2da56f3f69",
+  "license": "MIT",
+  "fetchedAt": "2026-11-16T05:51:57.858Z",
+  "schema": "vendored-browser-asset/v1",
+  "browserTarEntry": "package/dist/pptxgen.bundle.js",
+  "browserArtifact": "pptxgen.bundle.js",
+  "browserSha256": "cd078ca9e91c6f9e061ee0a3c310d6ff157c3a71b1dea7f40fd53818017266ff",
+  "browserBytes": 477529,
+  "artifactModified": false,
+  "licenseArtifact": "PptxGenJS-LICENSE",
+  "licenseArtifactSha256": "80cb7cddca0f35b30fa6b009d6f41d015a37448138d61408bb7a956a3304ddbb",
+  "licenseEntries": [
+    {
+      "tarEntry": "package/LICENSE",
+      "sha256": "7a2bfe96150786ed1908b8e63f98ebab88875c1e79e28faff6649e0f11f77e52",
+      "bytes": 1081
+    }
+  ],
+  "verification": "tarball SHA-512 matched npm dist.integrity before extraction; no install or lifecycle scripts executed",
+  "supplementalLicenseSources": [
+    {
+      "name": "jszip",
+      "version": "3.5.0",
+      "metadataUrl": "https://registry.npmjs.org/jszip/3.5.0",
+      "tarballUrl": "https://registry.npmjs.org/jszip/-/jszip-3.5.0.tgz",
+      "distIntegrity": "sha512-WRtu7TPCmYePR1nazfrtuF216cIVon/3GWOvHS9QR5bIwSbnxtdpma6un3jyGGNhHsKCSzn5Ypk+EkDRvTGiFA==",
+      "verifiedIntegrity": "sha512-WRtu7TPCmYePR1nazfrtuF216cIVon/3GWOvHS9QR5bIwSbnxtdpma6un3jyGGNhHsKCSzn5Ypk+EkDRvTGiFA==",
+      "tarballSha256": "e537cf5117bc8cd6482d6ea462e128fc3e736d300eb35d01ba7e62db23ed429f",
+      "license": "(MIT OR GPL-3.0)",
+      "fetchedAt": "2026-11-16T05:57:22.019Z",
+      "tarEntry": "package/LICENSE.markdown",
+      "sha256": "14450c78405ad2a2173e25740b56406556779149df9c4c83523a8c63d0686210",
+      "bytes": 33738,
+      "purpose": "License notice for the JSZip 3.5.0 implementation detected at runtime in the published PptxGenJS 3.12.0 browser bundle; no extra JS asset included"
+    }
+  ],
+  "licenseNote": "Original PptxGenJS MIT notice plus bundled JSZip 3.5.0 upstream license information preserved in clearly separated original text. Bundled JSZip version was checked by runtime export rather than inferred from package dependencies.",
+  "browserGlobal": "PptxGenJS"
+}

@@ -1,0 +1,3993 @@
+{
+  "snapshot_date": "2026-11-16",
+  "source_repository": "https://github.com/messitecladillo-art/-111",
+  "source_git_head": "06ddc6c12df478bce24d22cf2ad7b55509fdce13",
+  "includes_uncommitted_working_source": true,
+  "source_unchanged": true,
+  "copied_file_count": 794,
+  "copied_bytes": 35636969,
+  "files": [
+    {
+      "path": "platform/evix/.github/workflows/ci.yml",
+      "bytes": 2186,
+      "sha256": "b59ad3d84b880f4825214fa1c50cc9d99299b5c5a4c8e6173e3fc05f792fef00"
+    },
+    {
+      "path": "platform/evix/.gitignore",
+      "bytes": 484,
+      "sha256": "a59d7d6089200ee62010928f5d388b04f5d7e3a4304b78e18ee175ae7245dcc8"
+    },
+    {
+      "path": "platform/evix/AGENTS.md",
+      "bytes": 2236,
+      "sha256": "24811a167b781821ae592c3182b404b10b4d33c39ab36980bda6898b1dbe9e33"
+    },
+    {
+      "path": "platform/evix/README.md",
+      "bytes": 14161,
+      "sha256": "0e8762ed5b7724795800e1651d01359b5acfd71612499f8735485bedb84b00d3"
+    },
+    {
+      "path": "platform/evix/RELEASE_AUDIT.md",
+      "bytes": 15838,
+      "source_sha256": "1465c510fac0e108a5252afd5d1c487f5dda25d326243c2e1d10a88fd5084a0d",
+      "sha256": "9b4ecd3bf2d0c5019ffb66ca402c2be55bc4963390aa63f3362c5af947ba5dc8",
+      "public_transformation": "Only local user path metadata redacted; source project unchanged"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/.gitignore",
+      "bytes": 61,
+      "sha256": "f689fb99ebb9e3096380c92c74ae1cce3bb9b0ffa761627fe1bb750a98a7b146"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/README.md",
+      "bytes": 7965,
+      "sha256": "c9feb9da11aa0faf9c266f5d9526d1486ea538cbb5659e2d1ea27fa597de2824"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/acceptance/handoff-epoch2.json",
+      "bytes": 3813,
+      "sha256": "f9ef5ad9345389ce3bd4cfcd8499b6fef22ccaec0d22dfa9bd5c839b49537288"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/acceptance/production-epoch2.sha256",
+      "bytes": 990,
+      "sha256": "a323b676c979e0330c376e0ce47fa0b28d00f3334fb595b15bc394540a972928"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/acceptance/pytest-epoch2.log",
+      "bytes": 4554,
+      "sha256": "8b8f87e4fc184eb4f9eb2d135c1f511bef5d58fcf48544d25481f56d9a42d019",
+      "source_sha256": "b7b160ee8b7171bd99ac29165e99b030180f2228441ee6f729bfcab7ce403ac7",
+      "public_transformation": "Only local user path metadata redacted; source project unchanged"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/acceptance/source-epoch2.sha256",
+      "bytes": 1827,
+      "sha256": "7f983df39bf2038ca757d9bd027718e83bf0975453bfdca6b1d3c916d890eb04"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/alembic.ini",
+      "bytes": 393,
+      "sha256": "131832d758d2e07d4ecf4dd3f22cf24f1eed8707fab88cdcc46244060129c22d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/env.py",
+      "bytes": 961,
+      "sha256": "50d72cbe9401b60dd4b88dbee4893261adb0077e0ac2b37d0b486b18028a406d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/versions/0001_p0.py",
+      "bytes": 7418,
+      "sha256": "531c7291712e9c6f427f9407c8dcd7e4cba6cd6ef95cf051729f60d2786ab3fb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/versions/0002_silicon_runs.py",
+      "bytes": 1890,
+      "sha256": "3032350f451308c7d7a3933fc71480956591602014051a4c79a74e8e6c23026a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/versions/0003_survey_collection.py",
+      "bytes": 5867,
+      "sha256": "62a3fea7f38953d599122c894bf3338df91bae080f70e73f1925ec2405502afd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/versions/0004_project_reports.py",
+      "bytes": 1818,
+      "sha256": "123299e2b97bea9e682d6582fd071d2089bdec11c9d3a63de7e657fe2629362a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/migrations/versions/0005_workflows.py",
+      "bytes": 7934,
+      "sha256": "86ad1b2c715390d584c937fb003652cfc846f1eb5952f414b275b2ac3c7bbfed"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/pyproject.toml",
+      "bytes": 773,
+      "sha256": "c125a7f07c59bafbea87b59bdbe26dd1f13f0c9b8752e76135cf4342706a903b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/__init__.py",
+      "bytes": 89,
+      "sha256": "0fa0038b1b4d8dc930917fdd7224dec4542a05a56284a7c519c115da045a23bb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/app.py",
+      "bytes": 48780,
+      "sha256": "eee9c684aee58cba17877d52dc36c3846788d13044e476f906163018c98a9ada"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/contracts.py",
+      "bytes": 6559,
+      "sha256": "f827f4e145b4071bcf9222d5a20d83f96493106c3f1f034bf75259d1c86a5999"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/database.py",
+      "bytes": 2752,
+      "sha256": "9477a6c07e6f802dfa32eed843733d5e3df2f6c09ba12e9c6983427325cd10df"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/latex.py",
+      "bytes": 21220,
+      "sha256": "39b07b2647ee466ad5563022c9c20b4d06c5e7721aa41ae36784e8c73f66f881"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/mail.py",
+      "bytes": 2291,
+      "sha256": "3947c08391667aea9d3ed0566b075f7f1ddfe8370e2dfc92c43ef3204ce644c1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/models.py",
+      "bytes": 9227,
+      "sha256": "0f6097bb2ea7a42fe4db6e63d1b40e139373e16276c3b2c0f5325ee76fc856fb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/provider.py",
+      "bytes": 9872,
+      "sha256": "fdde4f5e22c5cc2d3356594044d23a009c3df5b8900e9e6abdf189c99cfe1d21"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/reports.py",
+      "bytes": 9262,
+      "sha256": "b374b6336d6c90dd17c897e52778d055f6eb6dd161f3a55bca1af4769337dbe9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/security.py",
+      "bytes": 1764,
+      "sha256": "e898128c2551536c7edf4a3c2494b0054301f799457a0e72eee72864e6f92155"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/settings.py",
+      "bytes": 8344,
+      "sha256": "b0f4fb2aedca3bbda9f3c7543f12f763691a2b01ecc00366b4ef5b9d0b820d22"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/silicon.py",
+      "bytes": 14119,
+      "sha256": "03d33939165cdd72df8483216cf444cdd6fe5cfa2e0ed12bb411571cf3e7d7f2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/surveys.py",
+      "bytes": 16576,
+      "sha256": "195f967b9d2605efb329830dd640d78d06537e79c5f8940ac4743a28b246cc03"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/workflow_celery.py",
+      "bytes": 4008,
+      "sha256": "702d4ea53921234c47527d755636b0f2a36dfaf0b511ac9d1b24522e75926a42"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/workflow_models.py",
+      "bytes": 9235,
+      "sha256": "680df4a2f8ada391e52ed019e99d27df1ea99e9bc62c1364f0b6fc0391e54327"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/workflow_runner.py",
+      "bytes": 57081,
+      "sha256": "d65dd5f2fefc1ab6d4be53c59a0b046cda41ea01b6e7d7476bfd8220365a2c69"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/workflow_worker.py",
+      "bytes": 5476,
+      "sha256": "62f1e866ec663cc59513d0778a240f3320daed99e839ad2c16a67d1276e4b9e3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/src/evix_api/workflows.py",
+      "bytes": 54071,
+      "sha256": "7791d7c08472344b46ec4d92582bb9924854e1e2bb453f09a865495aeae1ccb9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/conftest.py",
+      "bytes": 4433,
+      "sha256": "576be379dff3f76d08c0cfc1bab380f3b74abe9f5769bf3eddcfe6658e18c385"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/fixtures/silicon-parity.json",
+      "bytes": 9987,
+      "sha256": "ebeb9764b20035a8774d17711c7619c1888bab4c14616bfc032c5b4b600d7f0f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_concurrency.py",
+      "bytes": 7389,
+      "sha256": "b1d110347b782cf111673242725c2b4250c8ee09a7e3dbb25e1fd8eb27eda2f4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_contracts.py",
+      "bytes": 3974,
+      "sha256": "7cdd51caeb7327e326b0a526577b0620af09e4f6f47d8990cf010dff9161216f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_latex.py",
+      "bytes": 17342,
+      "sha256": "7e3d393c33ba872ac2cd3741707c74ce5f063507267b8e01d3513f726c29354c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_postgres.py",
+      "bytes": 16095,
+      "sha256": "9fa8b8011bf2db38bff69c920daf5a1f78ce4d0f8417b7df959a5c629507322d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_provider.py",
+      "bytes": 3724,
+      "sha256": "944d06d7faa6b224a1c3e7b2de8a265e1bbf340d2ee1068ae1f844e4a2956417"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_reports.py",
+      "bytes": 7581,
+      "sha256": "5441639c874517070874424f724a2c27e77651bf63309ed104bf29f95810ab3c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_silicon.py",
+      "bytes": 13824,
+      "sha256": "2aa702fcfc210f5206eadf80278197506e7225047f60bc89f56e22f77efe8bb5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_silicon_unknown.py",
+      "bytes": 2921,
+      "sha256": "a233ceddeeca811a547015b7861414c7f7d3bb7f7f1964e50198b955274bfe4e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_surveys.py",
+      "bytes": 7062,
+      "sha256": "d26c5cc891e7450761c48128155fbd5e4a0c73a43cadabb34013782896cee98d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_surveys_postgres.py",
+      "bytes": 13538,
+      "sha256": "5a78f835d9c84b6c3f7fd6555e4c24a8beb8d29f33f338822604728936743664"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_workflow_worker.py",
+      "bytes": 17217,
+      "sha256": "6e519181ff8455965f5f186a4dec9175c34a2b987696d2adc323504e59cac73c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/tests/test_workflows.py",
+      "bytes": 38321,
+      "sha256": "103770d4f1dbc5f85f5dacbad74bc9a0233d272c6960a0e08f62627af5aac9d7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-api/uv.lock",
+      "bytes": 73269,
+      "sha256": "57e3e85bf3ef2a40823214ef201b8cc436c82b2fb916408a60f0e301e04d90fe"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/.gitignore",
+      "bytes": 699,
+      "sha256": "1435bbbf3f8f448fb9da6749c576ce5d386285958df9c95791e96c4dfe1c9e12"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/AGENTS.md",
+      "bytes": 678,
+      "sha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/CLAUDE.md",
+      "bytes": 11,
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/README.md",
+      "bytes": 14576,
+      "sha256": "01bd6c081c32d946c713306c3b268b1dfcd42cec94a6794494ac8a6d7560eb9d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/THIRD_PARTY_NOTICES.md",
+      "bytes": 1672,
+      "sha256": "ef9d7c9c7e0f22404dcb6bd2660724e95532bd5b940f5e08727f10778bec20b0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/_lib/diagnosis.ts",
+      "bytes": 7786,
+      "sha256": "0f17835d87764d10081ff6330271dbc110ba1716860fe8fe0beb427085b6d2d3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/_lib/editor-auth.ts",
+      "bytes": 3245,
+      "sha256": "6a0c92ddf29b9072f4eb930944b46162f0dbbef930bca9bbcd1840c67395de8a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/_lib/http.ts",
+      "bytes": 5659,
+      "sha256": "391d3af3b8788a1dc67a4ef1674682f35f90cd8fe46ea1012b2e5ca34899669b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/_lib/security.ts",
+      "bytes": 3662,
+      "sha256": "1bf0550e7751e2e1d2e3d64ac9f52764a7e91352e5f2979b9b856bc5896c6eef"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/_lib/storage.ts",
+      "bytes": 1011,
+      "sha256": "1884480e44c0339cfe3d1853450b3c65a99e6e65458054645ad27848bcdd1078"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/agent/_shared.ts",
+      "bytes": 4719,
+      "sha256": "7bade977be2660e0c41690fb07ceb9a0804ccb159dc52fe8b99f0fb1d554076e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/cases/[id]/route.ts",
+      "bytes": 1032,
+      "sha256": "ce5ca30ce7ff7010d8a8d417ee2e0d61c4b07da6ac3a678b67072614086b1603"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/cases/route.ts",
+      "bytes": 3422,
+      "sha256": "8f9b77e592a1b9f6fe23416f4b5e29498aada5c3d65c0686b96479003f864b70"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/control-contract/route.ts",
+      "bytes": 718,
+      "sha256": "2563aa9a9dddf84da891bc4e20733d8127df592bdc816b2ff6daca8a1b232101"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/diagnose/route.ts",
+      "bytes": 1862,
+      "sha256": "b52b1e47294fa4d9786c5e86f43db49f0a59a38d5de6c2ce21951507519f4a5c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/drafts/files/_upload.ts",
+      "bytes": 4109,
+      "sha256": "7120aa67f27806dba12c824ca9b45cef186289e95bf16afe9cd7eb20353e4e7a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/drafts/questionnaires/_input.ts",
+      "bytes": 2015,
+      "sha256": "3b07c965e17b621b8b746d32a1828529d98a70ffaf931ef8830dd7da64d7f514"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/drafts/session/_recovery.ts",
+      "bytes": 2521,
+      "sha256": "6f13c7c39cfc1c879521b2d82b944eb894cd5caf521b8b171cff5bc5f97b308c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/api/rules/route.ts",
+      "bytes": 4229,
+      "sha256": "ba0b2d418344a24e5502630c49b53bff7252027d4b678d51f573273e84194672"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/chatgpt-auth.ts",
+      "bytes": 2640,
+      "sha256": "e19651c2d1db12696883ae3eb79d4f09dce249f7afa1144a62d544e2e18299ca"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/chronicle/page.tsx",
+      "bytes": 390,
+      "sha256": "dd7e4c2b1c5f839a7d8477be67c43fb8905172d5bb484f8eb807236e1bdae2ac"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/explore/page.tsx",
+      "bytes": 2113,
+      "sha256": "a32c3cdecf3993d54ffb45d135355f66675e85f71584df7e4654d158782d5748"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/globals.css",
+      "bytes": 41654,
+      "sha256": "3aad0549ba15a96b9f06bbadfec82a52d9a1a384adf74204c3ce8aa3b400d578"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/hosted.css",
+      "bytes": 21550,
+      "sha256": "71de998e2939b104cb53c886444af9a67dfeba23410757dc4c37fb87de722e9a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/icon.svg",
+      "bytes": 1111,
+      "sha256": "03f95209a62728fc56cac5b5b518ebbaa830bd2ed12162e27de0f9556638e759"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/layout.tsx",
+      "bytes": 1283,
+      "sha256": "c256a3c5fdbba92f01a79600fcdb76bb504d294f6c560331662e38700e93494b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/login/page.tsx",
+      "bytes": 310,
+      "sha256": "98d6dea36c81c1d90cb4b787ffddcdd23e31c3d9b01ac743a74657c1e90be949"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/page.tsx",
+      "bytes": 809,
+      "sha256": "c9491d2892905535df57866c76c8d332a53c1f2a767060067f6fc9f9bd3c8f41"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/projects/[projectId]/page.tsx",
+      "bytes": 476,
+      "sha256": "46aa17243886f1a524b3dd87881437782607c0e3cb040697913581d6a3962442"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/projects/page.tsx",
+      "bytes": 334,
+      "sha256": "0aeaad465f74544be2231e96f52df302c094e81a07e455adae85f9629e72e0b3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/s/[token]/page.tsx",
+      "bytes": 478,
+      "sha256": "0d3e8dfe5c5b0f355c40cba5b125a734c5910a1d1a9bdad57bc729c880eff941"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/services/page.tsx",
+      "bytes": 346,
+      "sha256": "c904c2cf27d68e998f14573aef1367545ffc163cf3f9e971a7aefc0d76c4ce94"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/workbench.css",
+      "bytes": 41436,
+      "sha256": "04b9fb84d34cc6674c5d5fd0de9c8b2e4cea0af3b1637c9c2b90be203b816b87"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/app/workspace/page.tsx",
+      "bytes": 236,
+      "sha256": "25681dc1ed1931f104ee84476bae2e508bd137f3f7a22b8478a70f5c797a0514"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/build/sites-vite-plugin.ts",
+      "bytes": 1299,
+      "sha256": "abd6bc3a592961e978ab72fceb8ee7647824d9a2321ee5b5777b2a05d69526cc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/AgentServiceStudio.module.css",
+      "bytes": 4133,
+      "sha256": "a457a5c60705ca15be414f75a515fdea0c1d180634c2f3316b4e9a4dc6e3b9cd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/AgentServiceStudio.tsx",
+      "bytes": 16002,
+      "sha256": "77303f2b0e686162c61f30fbc304c091ced09874e753d4a951f69e567979af5e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/ChoiceGroup.module.css",
+      "bytes": 2699,
+      "sha256": "a2e8683036b4fc56dfb05976eb788fbd8a613dcfe9baaba88907c35584dc6922"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/ChoiceGroup.tsx",
+      "bytes": 2273,
+      "sha256": "7f731e2a38d67ed014d57d0f556d107d3e5f08e3072a6b7ace1a6d8293650e28"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/DiagnosisActions.module.css",
+      "bytes": 1410,
+      "sha256": "907a6c6af950274618e740d7b7253cf45943324b3fc29b9dde36153440470b4e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/DiagnosisActions.tsx",
+      "bytes": 1420,
+      "sha256": "010b4829ca081f500a385938c925ead095fa5e7ec2706683eb511ff07cca549d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/EviXPlatform.tsx",
+      "bytes": 59025,
+      "sha256": "c44d03b17d9c29bf213e0bcf55703e8e6266791fa74ec964173718cd6ba80235"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/EvidenceFlight.module.css",
+      "bytes": 7995,
+      "sha256": "ebe44326cab08d5f3044040d8e5b1731a13ceb2748f8e8266d2b7f3741f1a5ac"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/EvidenceFlight.tsx",
+      "bytes": 14829,
+      "sha256": "eb3232f06f138cfc20b4c8667f09047224acf1a15711a3a9b69fb57085a9848b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/LifecycleWarRoom.tsx",
+      "bytes": 57312,
+      "sha256": "59935e0802b10415ab1ab25e3f08971d787e24eea0bf3425da930aae7d019cf6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/WorkbenchShell.tsx",
+      "bytes": 9180,
+      "sha256": "771833d600bae5138bd7a24fae6662c20fe12a80ff5c75598bc35e738cec2733"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/AnalysisJourney.module.css",
+      "bytes": 6916,
+      "sha256": "79f210570971a22eaee8e85baac4e27087c14ff058fe5a6bce043b34fe724ffb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/AnalysisJourney.tsx",
+      "bytes": 7802,
+      "sha256": "13efabe69c2e7d0de59a3bb21c5cb0399f2e2702a2b12873e7901131d8a9773b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/AnalysisRecipeBoard.tsx",
+      "bytes": 37430,
+      "sha256": "a36ca8dcf205b35491aee1c699d66048bb5f9d7932be30ac6875b223b28811b9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/AnalysisRecipes.module.css",
+      "bytes": 14526,
+      "sha256": "4e350faab1d5d20ee0c898133da523c6d291800855b4f4e1d4e6b737e377e71e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ChartPreview.module.css",
+      "bytes": 1617,
+      "sha256": "a22a51ae8eb610a15235bbae7501f59db679cc11ab9a4a0f6d5d9c2a2984f236"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ChartPreview.tsx",
+      "bytes": 7598,
+      "sha256": "0c5e8a7f90883fba4696bc4311038fd5f292a095cb70e61390eb8877464bed8a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ChartStudio.module.css",
+      "bytes": 11821,
+      "sha256": "270f6eed5e245d12e2d703d037e37b0904d4f3d00b8aed809f6e9fe1e2e387ed"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ChartStudio.tsx",
+      "bytes": 22207,
+      "sha256": "733e5f8af254e1345f0519e7bd84b0ceef84a3d35d18a6f07aab59d60beb1997"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/QuestionnaireMapping.module.css",
+      "bytes": 5434,
+      "sha256": "d498866b05ccf196cadbc2b520c427303d0f63807c60e07a4e44f14f21e47509"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/QuestionnaireMapping.tsx",
+      "bytes": 11935,
+      "sha256": "925f6d536cc0dab7b7dcf4e212781b7049f7d13d7077f8a718741df9b06f92b2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ResearchFlow.module.css",
+      "bytes": 4127,
+      "sha256": "f4830851e7f73409542867c12fd0b05933117f7cab5d929f8a5a200ebd4eb2fb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ResearchFlow.tsx",
+      "bytes": 15745,
+      "sha256": "aab535b0f5dbddd5fdee4992c617a5951be134c3f4e9258bd27857da791fc076"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ResearchMethodGuide.module.css",
+      "bytes": 3288,
+      "sha256": "7120e65af237cc42d39784575a4f4329d5c3df67d94da01e655822dd329517e3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/ResearchMethodGuide.tsx",
+      "bytes": 2924,
+      "sha256": "05353cc2e01dbf510b983e4888ec9c62de8c8f7717b0b3e4dda2c081b97ff2ae"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/RoutingAudit.module.css",
+      "bytes": 4102,
+      "sha256": "f92a014eb1e478190a8331cf64097d956f04e76ea627cc4616916e692993c748"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/RoutingAudit.tsx",
+      "bytes": 5686,
+      "sha256": "1ccadd2eabb70f6dad6c84be910177a63f8942cef795c95da51cfa5ac4768e50"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/SurveyLab.module.css",
+      "bytes": 15182,
+      "sha256": "758017f8ef8e1e0ffb90e230916039974b31177b53d80dc60a011d55a503427f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/analysis/SurveyLab.tsx",
+      "bytes": 46189,
+      "sha256": "ad167261e2731c236da7193ebb4dd9683053507f4f08a528ced2bb896e1cd29a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/brand/BrandMark.tsx",
+      "bytes": 1116,
+      "sha256": "d869b21bc46998cd0e9b5425b17a4775ef9f77220dbaf71f22de773ebca26dd1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas-workspace/CanvasWorkspace.module.css",
+      "bytes": 1060,
+      "sha256": "2cd76bff950938e3041afe82da3bdc822a88c73246606fdd0eaf6e5ddb8eb89d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas-workspace/CanvasWorkspace.tsx",
+      "bytes": 4061,
+      "sha256": "3ac46f7cc93f0c8b70175b0fb851811497e71118496ea0074fe8762b332a9f8d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/CanvasChartFormat.tsx",
+      "bytes": 4566,
+      "sha256": "cc6f3801c366e0d9064712f7595400d9518812c29c798192e3a2acf3fb56c0f9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/CanvasConnectionPanel.tsx",
+      "bytes": 3260,
+      "sha256": "768a595a1f41651275299d183dfa297c2a48ba8969722f74aa6432e8572b6642"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/CanvasInspector.tsx",
+      "bytes": 10381,
+      "sha256": "c25723324d58c004b8a4f641cbd30ac49885cb63c0daa5c477c9a7268b94b9e7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/CanvasNodeView.tsx",
+      "bytes": 4236,
+      "sha256": "6743838a957064a3279c94a8554e527d1b9c0c453748b7334fc546e1557db152"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/CanvasResult.tsx",
+      "bytes": 3991,
+      "sha256": "9fac74c239395927e379862b637849b38ebd1a2d5651b05302dcd0d176d05602"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/ResearchCanvas.module.css",
+      "bytes": 20067,
+      "sha256": "1cc1150b23720248690d47a9e30eedba6bc70e689ffdade41993f713c3309606"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/ResearchCanvas.tsx",
+      "bytes": 59039,
+      "sha256": "1f102a1993f943eb5850025cb8e2cf7bfd23ffb23106c588b75823f045cd8a10"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/canvas-inspection.ts",
+      "bytes": 1768,
+      "sha256": "e41b255e86f3a35feb7c1fd7ba3cf0097c1f2e1b90299cc4add1eda08bceaabf"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/canvas-types.ts",
+      "bytes": 4326,
+      "sha256": "3149ed6ad50b8347080d1c447a95e352e763d60b1b8a40827d949c65e7d92e7b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/canvas/useCanvasProject.ts",
+      "bytes": 15296,
+      "sha256": "c0772c4a6f57f741c2388de019c28f6d669787c43ceb16e8966f107edf675f47"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/ActionEvidence.module.css",
+      "bytes": 5635,
+      "sha256": "9193eafc323d88fc5b841210b51ecde32d89303e40c8edb511d27b92c698e240"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/ActionEvidence.tsx",
+      "bytes": 12852,
+      "sha256": "ef9c6a9179a67bdc0ffdf4b63519c49ea1bb5daf636b3e20ae1a8bf8893589fd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/DefenseStudio.module.css",
+      "bytes": 8993,
+      "sha256": "a826c14fe34d1c8fc09d6bd3159c750ad4a1478e83e8fa40809d39a5cad0b6c0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/DefenseStudio.tsx",
+      "bytes": 15122,
+      "sha256": "5b682109a552de02b7008b57c48874613328233141b81318ad42bb35b0e56dd2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/PitchRehearsal.module.css",
+      "bytes": 4831,
+      "sha256": "8c6b1c77569419dcbb63df2f5f9012000e207a0581107e913d6dfcc6cb251e62"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/defense/PitchRehearsal.tsx",
+      "bytes": 13287,
+      "sha256": "6127a2f858756a32872fd3df046b6cf9e36d5a70dc730af7b4a10bdd725d91f6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/DiagnosisBriefProposal.module.css",
+      "bytes": 1551,
+      "sha256": "09bf3b97bb7f47d46960623c4f39442707a1f409ae1f9bd30511cf65a516d837"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/DiagnosisBriefProposal.tsx",
+      "bytes": 4425,
+      "sha256": "a3bf58db6ecbeee76267717d9d641d250bd12af693463a93a32c0434a0c9eb07"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionBlocks.tsx",
+      "bytes": 5055,
+      "sha256": "64b90a7716b9b664c89c071b8bdf41563927e70af954de9ff5e9b36d0c39cb10"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireLibrary.module.css",
+      "bytes": 4947,
+      "sha256": "6244ddf7d634a2d743d043cd89f6f2ad8209c194d8e562ec53685e3594c855fa"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireLibrary.tsx",
+      "bytes": 21604,
+      "sha256": "23db0dde3ed99a45dd3034182f7f467680c0f5a79b1dd943f8e83aba563bf7f2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireReview.module.css",
+      "bytes": 2699,
+      "sha256": "37514f346a441dfbf559350438d7fbedab43b04a4d4ccac24f697c96d610b1c6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireReview.tsx",
+      "bytes": 12236,
+      "sha256": "1b2e6ac083312b107d58ec23f7bf4983373ae76edba6a5ae50ab2bdb53dea651"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireStudio.module.css",
+      "bytes": 16295,
+      "sha256": "701a9a6107db938ec5a5f192b35f2a1a9af642e9ed1200b1fe73135212bd37c9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/QuestionnaireStudio.tsx",
+      "bytes": 49736,
+      "sha256": "97c0c28b07508b1a94c692cc024496fb7284ec2844450cd5c9b86c4cdf60aa36"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/design/ResearchBlocks.module.css",
+      "bytes": 2165,
+      "sha256": "3a09ef4ba01784315c38f10f64a331c53739752daf3cc3adf41355e42c3fdcce"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/EditingStudio.module.css",
+      "bytes": 17983,
+      "sha256": "a78d9af070d62b9afcdf05e8e2a0ad670d135951d4a5d0c14c90a79ac53ac0c8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/EditingStudio.tsx",
+      "bytes": 50976,
+      "sha256": "e1b6ec51e6398f49c0cc05f13663c9af1a5949f5c84e8eaa68574038011ac8ef"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/EditorRecovery.module.css",
+      "bytes": 4823,
+      "sha256": "90137f3a07ec647d17c503e3be90900792f6ed8712dad5f4e57652dd0197da41"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/EditorRecovery.tsx",
+      "bytes": 24613,
+      "sha256": "3cf9a79ac0c0474216576d2eafd6983160d81a0d231d268e8273761c1ded2e0b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/LatexWorkbench.module.css",
+      "bytes": 4530,
+      "sha256": "56cdb52177effb954009c40aed24183ba9d2c0388d047644c2c6b5edee5eec28"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/LatexWorkbench.tsx",
+      "bytes": 12753,
+      "sha256": "4cc0f4db11d3638b111755508ff9d3795a6a941e30335bef8004dbeb19cd3a01"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/OfficeFileLibrary.module.css",
+      "bytes": 11567,
+      "sha256": "825fb21cc2899352415c036621200bb260424f761485c8b502a38425820c066e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/OfficeFileLibrary.tsx",
+      "bytes": 39583,
+      "sha256": "bc272ee481a6d600468fbebf5877f1022d167991b3cc069656110f0403ea23bd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/OnlyOfficeEditor.module.css",
+      "bytes": 3835,
+      "sha256": "cc82a337d74d07ea84e9bb69d79d595b40ab5312ff9580e639c6cfe119fc9c4e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/OnlyOfficeEditor.tsx",
+      "bytes": 24001,
+      "sha256": "549db251c12b18707ef184085b5e1cb24ef63e7e7f961424f1671f4e4bc3066d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/PdfPreview.module.css",
+      "bytes": 1090,
+      "sha256": "e7d3d0ce8547587123aeb2047a59ca29ad8cee7fdcf35f66eea34824a7b28889"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/PdfPreview.tsx",
+      "bytes": 6987,
+      "sha256": "bea60925d26bfa6f60d67a9b4e3bf0036fd7bdea3f857df4d1f4efcbcf7d929b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/ReportFormatPanel.module.css",
+      "bytes": 3252,
+      "sha256": "05c5ac4c78c71212ea4660ae7742928a36a8ad82ae23c810097aaaed5dfab014"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/ReportFormatPanel.tsx",
+      "bytes": 6161,
+      "sha256": "84679ac665f95d19935a4afb0ebbbd97909293d567e5cdfa1d2c12806eae730c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/ReportStoryboard.module.css",
+      "bytes": 3750,
+      "sha256": "230e8e1a9fc141fa5771006310de5730b0084c08e76df07e6da788a3bed5e6a1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/editors/ReportStoryboard.tsx",
+      "bytes": 9728,
+      "sha256": "bfa04f6e0488a24ed4a5b03aa6241fbbea5a86ed4595ad54fa34cb58b4feb1e3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedDefense.module.css",
+      "bytes": 3794,
+      "sha256": "2eefc234b507718cc8837e5d3679cd6a80522096b9a0a1e2d1783b7a1543c95d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedDefense.tsx",
+      "bytes": 6787,
+      "sha256": "eb712acf4fc4680410177128b91f95bdd2bb7a15c7ef7e17fab1dfc648f57acf"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedFrame.tsx",
+      "bytes": 4295,
+      "sha256": "d5dfec47c82ea832e7d00b99bff051e49e98456f9118744f5265e6a53543e248"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedLogin.tsx",
+      "bytes": 3906,
+      "sha256": "bb9e6730cff7c01011f0a328fa996c55c523b33e58d11a8d08b65ad87ed2765b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedMembers.tsx",
+      "bytes": 4258,
+      "sha256": "a640d0e9dd6467d420148b28a05a0f1c2e413619792537f685e3a1de634e8020"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedProject.tsx",
+      "bytes": 37602,
+      "sha256": "20ca86c9846b72de89974a121281349a5229dd726e815547fbdbdea47b82ca50"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedProjects.tsx",
+      "bytes": 5422,
+      "sha256": "e3feb490d1caa26cd5e7763ff142883c841dc8a62cbabbed5cc8c665c42d9566"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedReport.tsx",
+      "bytes": 10161,
+      "sha256": "eb1f829dd4a334652933a15de01838eb81451363d7c3fd5461bd5e79ddebde53"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedServices.tsx",
+      "bytes": 10417,
+      "sha256": "03ed72327840c3b67d469d5fc5815fd256e8ae603dcbee55d28501bd6e005ebe"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/HostedSession.tsx",
+      "bytes": 8334,
+      "sha256": "4686641be7ebc455fadd479a9de4e0e6ea9b9b6d0dd4110c8ae6b03ad5e5b712"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/api-client.ts",
+      "bytes": 3675,
+      "sha256": "3ac17fb1da46f880cd79073fd0f73dc54712c6eecf4e1c5e9e3a1fb7e921dd1b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/hosted/silicon-runner.ts",
+      "bytes": 8619,
+      "sha256": "29f44ce8be975870de1bc0200c670f39ddf87bf6009eb8e7907c50730276bc31"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/ChroniclePage.module.css",
+      "bytes": 34737,
+      "sha256": "5293e641679fadc19a8bfe3a437f6509fb51ca36a0c1ac36d909381cd6b642e9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/ChroniclePage.tsx",
+      "bytes": 27555,
+      "sha256": "086989369895c7383dbfda648695b950c25ec97eca3bade2d8e68f5ca1d9d75c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/ChronicleScene.tsx",
+      "bytes": 18023,
+      "sha256": "aa7f7e4c88fb1f6a79e95267b38765f594fee6d88564335874ceaff5f3f727ca"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/LandingDemo.module.css",
+      "bytes": 15219,
+      "sha256": "d6b15959d97be0fc6140f8b322361d8570ef79f745bc2a267537523dd18212a3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/LandingDemo.tsx",
+      "bytes": 15886,
+      "sha256": "c0d42bce9ac13ae73291c3ee065179e7cb2184829a91c9d96fad25c288f8f76f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/LandingExplore.module.css",
+      "bytes": 2934,
+      "sha256": "46e4ac0e874325d2c5d9f3ce39ac58c4c65614468b184ae3f6c3caee93c764f6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/LandingPage.module.css",
+      "bytes": 51333,
+      "sha256": "31f03e54d3dd8833ee5e6c7c107e8359c143b955d0d4d93e12496a3978d08e2d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/landing/LandingPage.tsx",
+      "bytes": 50348,
+      "sha256": "878a9a521bc1449a28c48b13f2e7e0d655488458c74a34287f72193e3d899e4b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/motion/useWorkspaceMotion.ts",
+      "bytes": 1806,
+      "sha256": "1168408727b9d937a3bff62cdc0f053302f933c4bc7fa0de14a3ae42ab097aa2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/overview/CompetitionCalendar.tsx",
+      "bytes": 5733,
+      "sha256": "7d370994e68e824d869cea3bea00d0de14e17dcb3c3483d49f1a8953d7f644ec"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/overview/Overview.module.css",
+      "bytes": 7566,
+      "sha256": "dc489248df771bdbb9c796de1e320d1a0f8ce3ad130e0f033331d56167d0c232"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/overview/ResearchPipeline.tsx",
+      "bytes": 2080,
+      "sha256": "1cac8b41efd43d22abd12c4884b1625c2ea928624cc4257d501ea421ba29c2ca"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/AnswerChart.tsx",
+      "bytes": 7411,
+      "sha256": "e72fe4f6bf4037ef03364700fdd01ef00ba0544cebe93101a09d30bbbf26486b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/PanelDesigner.tsx",
+      "bytes": 9460,
+      "sha256": "05b86c0c415900be9bb4980d7e8267aa68267d609101aebf608b38fb5535f53d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/PersonaAvatar.tsx",
+      "bytes": 3361,
+      "sha256": "132ec5f1b622f41338ac8e901efe77ff1dcb2703dd72ad75d846c6285205894d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/PersonaStage.tsx",
+      "bytes": 38685,
+      "sha256": "8cb66e5d574a0dd4480dd6400ccd42bd81f8cb7bee36e2b7d24aeb82a471a4c6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/ResultsBoard.tsx",
+      "bytes": 17263,
+      "sha256": "96244eef78a0d939b465382a4f0652a379dff61358b1b6dfcc510419265313c1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/RunConsole.tsx",
+      "bytes": 6373,
+      "sha256": "79985e8ddc85002b2a4b03dae0a39bb916d7a9a9fe406561831ce5c4d4828fe7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/SiliconLab.module.css",
+      "bytes": 43051,
+      "sha256": "b881deab074f095440017b2782c23bcdaa5497e5fb701830a7ef412fc3911b73"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/SiliconLab.tsx",
+      "bytes": 31505,
+      "sha256": "0dda0f4cafddf631ecc238049279c960ba29d600f869891d94a326597f9f08da"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/silicon/SurveySetup.tsx",
+      "bytes": 7198,
+      "sha256": "c79c55cfac8dce332cf72459a13834e4d1ee210bb49ea56d6bd0941af0f6c06e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/survey/PublicSurvey.module.css",
+      "bytes": 3776,
+      "sha256": "b2252d57989900988c9858fa2917d2f5234f4870679ac06c840da136014ff873"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/survey/PublicSurvey.tsx",
+      "bytes": 10777,
+      "sha256": "05d7542f113210b257d6325edc8f34f64b6bd248c8b8ee99b07af2957a4ae998"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/survey/SurveyCollection.module.css",
+      "bytes": 4392,
+      "sha256": "7c51d0357c6b4f9e14cf30288c3cc9fd160ebc0b530ac137ef67ec4a069c813e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/survey/SurveyCollection.tsx",
+      "bytes": 11757,
+      "sha256": "60f05c92d79af0c45f1e045fccd6b58433729b68b928ad0ca655fac9a7f141d9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/BurstView.tsx",
+      "bytes": 9302,
+      "sha256": "6c17d04a430f65a3cde65f2b28d0808123de3d1e045dd966fc2c120e40f9ad6c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/Dandelion.tsx",
+      "bytes": 19240,
+      "sha256": "7ac4f4194f5f12fbb2ece8ec92f9a5bc5e2fbf3a3e6b3ccedc0b479c1af701e4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/EvidenceTree.tsx",
+      "bytes": 6584,
+      "sha256": "cadb7d669bf2a636e87120c2d148fe4e0dfe7f57e45cbff672d29fdaaedc818b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/KeywordMap.tsx",
+      "bytes": 21533,
+      "sha256": "26de0c89e3a224dc199e6260e30bbbf67186758077537a75ed68fa66e547d94a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/PaperNetwork.tsx",
+      "bytes": 22500,
+      "sha256": "15086b97cca3555ed6d5fa07ae3ce89eebd158d15a5d395adf695bf7bdd6af46"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/TopicLab.module.css",
+      "bytes": 32385,
+      "sha256": "c332522e511c8a6a5c5b761880b7b023daf0e301a4023d37fa23f1a8b3bbcdab"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/TopicLab.tsx",
+      "bytes": 21245,
+      "sha256": "ae867737aceaf364055b5abaa029484751cf4652ca20c68e83e1c3bf7009ce7a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/TopicStudio.tsx",
+      "bytes": 31189,
+      "sha256": "08a1b59d85522b77c6cb640088eb89bf97d4ee0660d09d7144009178542b17dc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/WordCloud.tsx",
+      "bytes": 8675,
+      "sha256": "4184c685fbb3268ffa193695aa21268c4901fee8299828e7e705c4a18508eccb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/exportSvg.ts",
+      "bytes": 6972,
+      "sha256": "ba77824f56148e04726b949b02b137c1249e37371ccf90541297c78d0192856a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/topic-lab/shared.tsx",
+      "bytes": 10746,
+      "sha256": "d73fee58212a105f0213b599d83d7172b5a95dc68b7f2f05815991e737789d0c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/components/workbench/shell-kit.tsx",
+      "bytes": 11679,
+      "sha256": "cd8918b724eeec50a20e302e815f17a21dbeff79b4d2cc9f245b45e7f0e852f2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/asset-provenance.json",
+      "bytes": 21780,
+      "sha256": "12ed8b5bb1524aec71cef79da3d0c7a0394bdbf905e159f8fadb27acce37664c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/award-cases.ts",
+      "bytes": 27030,
+      "sha256": "4214b72e4b3f575cfef9ae3bbc06a13867d5e8d96d245dd6e131b726c0eee9ff"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/case-types.ts",
+      "bytes": 1550,
+      "sha256": "92f9802dd49a70c7a9f3393a4bf531934fe5a78e055526b715dc1c9984afee03"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/competition-update.ts",
+      "bytes": 1770,
+      "sha256": "469a7a90e2706e50eb1ed94baaa6dfe51e2068c0445b4bbfa9c22719d7cf88ec"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/control-plane-contract.generated.ts",
+      "bytes": 6303,
+      "sha256": "e88e20aa9315882e8109ccdb411dc7d778d87ff695147b46abe8a7261623b022"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/control-plane-contract.snapshot.json",
+      "bytes": 21437,
+      "sha256": "06ff4fecfd4a0b35096787604caf4f9842b7f48dae8ca6b02f1479d32ed9930d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/control-portal.ts",
+      "bytes": 386,
+      "sha256": "fc9b5f0774ef027216689c0382a1a1e88a18807a2951acdad6f6fdc5ad18c8bb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/defense-corpus.json",
+      "bytes": 13586,
+      "sha256": "a1ee5b93b7b80e2aece56dcbacd8645849ce360203023a7d2b417fee30d61d8b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/edition17-calendar.ts",
+      "bytes": 6375,
+      "sha256": "9df26ed0253576768ed1338b27311bbdd0692c13a0e465159393223823074a86"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/rule-corpus.generated.ts",
+      "bytes": 9084,
+      "sha256": "c705b34d05fb983101df6abec3b33818ff9759f59c9b4766236a8f9d54e8a6a6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/data/rule-corpus.snapshot.json",
+      "bytes": 9429,
+      "sha256": "b2bcab5ebb11479fd39e0dda65c2a4fbe0937078cdb303b971fddb05db3bbffa"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/agent-account-repository.ts",
+      "bytes": 8590,
+      "sha256": "73b2c9db4935c15382535c0fd7ce837465aa3e29cc964d295804049a7892ec1b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/agent-run-repository.ts",
+      "bytes": 1641,
+      "sha256": "79f586a6485e922d5adff4b04573285f16d0d484e58b26361745d1753b0d09c7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/agent-service-repository.ts",
+      "bytes": 9465,
+      "sha256": "8a17a93e62378f2f2197f3dffc6eb9baca7d757d9e098e0f8f2bda0cb3812773"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/diagnosis-repository.ts",
+      "bytes": 859,
+      "sha256": "0294ac6887a7474c197bd31d9858082f8c27f94b1fd0dcf287f20ee4a2ba306e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/editor-recovery-repository.ts",
+      "bytes": 9862,
+      "sha256": "586b508fa4666bf8765b1506a2e894b95c08735d6e5db9914a5aea47fc2be712"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/editor-repository.ts",
+      "bytes": 6844,
+      "sha256": "69b4a6d34a5787fb396f4180fa4be4a3f3fe803d23622d39d67c97d8e07a8a33"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/index.ts",
+      "bytes": 839,
+      "sha256": "59e78f986ed975fbc4fc9c3e1b53538cfb4bc29767268dea5157a74b7874d8cf"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/native-editor-repository.ts",
+      "bytes": 14684,
+      "sha256": "19ec992d575c5c928106fdd9c656186df4a2fa32163507333131221665b45ea8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/office-repository.ts",
+      "bytes": 10194,
+      "sha256": "c612a568562acb2123291c3303fd25af3f9e6128e5e174447614242680f656cd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/project-repository.ts",
+      "bytes": 10500,
+      "sha256": "74184c4a57a6eabca42cb78d2621bb3594e1693f6acc557559595e61ca553258"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/questionnaire-repository.ts",
+      "bytes": 13962,
+      "sha256": "a3fe78fa3dd8412f41fbc028dc02376ecbd6eb7406fd32b217f9f2d1f793c4fe"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/questionnaire-review-integrity.ts",
+      "bytes": 2344,
+      "sha256": "26fe9cd662fafedd9a24d7b0965e1c6b030cfcd06c12c5ba0a869635f38051f3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/questionnaire-review-repository.ts",
+      "bytes": 3679,
+      "sha256": "7d3769f0f6ec5bce59a922be2947e789967825479aecf1897bf499df8d9ac4bb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/research-repository.ts",
+      "bytes": 9429,
+      "sha256": "905d4c43cc5469c3d61467fa5d15c6bc53ff635172873ea376f7168c7cf876ed"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/db/schema.ts",
+      "bytes": 19204,
+      "sha256": "ee27b37b45ca4de63dc070c1b6906b54de50fa659246b6d88857e5d75b796502"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/byok-framework.md",
+      "bytes": 8987,
+      "sha256": "ff808a3619584eaa25d72ea397b62eb1900a0bcdafcbac80c904b0e00dff9337"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/composable-research.md",
+      "bytes": 9941,
+      "sha256": "012314abe86c042f4a0d0e40f9c6ce75ecd20e0561de3319049814fc4351dbf2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/copy-audit.md",
+      "bytes": 2928,
+      "sha256": "c51dca1088d7e9c3597a79884c8aab954de31b02ee209849effabc7205f4b747"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/defense-rehearsal.md",
+      "bytes": 5119,
+      "sha256": "df9d88bbbced5e17d7ca1a4a1673fa77a413a7fdfec6344e701c7ccd39284a89"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/diagnosis-actions.md",
+      "bytes": 4137,
+      "sha256": "b868a5aebc664d4bffa28a6440fe926b166977900f27b98e8eeade5f3cca2efa"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/editor-recovery.md",
+      "bytes": 4905,
+      "sha256": "81e6bf754e2b31f40292e20204c1b8fb7b344e6466362bb444418c8452515bb2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/evidence-flight.md",
+      "bytes": 1886,
+      "sha256": "e9746bf811be70a5e23fac91ca97d42b540b49dbf4900112f551e0e1b45882b6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/live-editors.md",
+      "bytes": 5573,
+      "sha256": "221105ec7d74ae988a4bde50180ea7c111b1c6e24db415151a09af45a83d14cb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/office-files.md",
+      "bytes": 6081,
+      "sha256": "938096610697fc431dafb0bcf6d8b0dd855a7fa5e524e63ae26c34f6266aab73"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/onlyoffice-editor.md",
+      "bytes": 7404,
+      "sha256": "5120e35685a3e4fd957d1fd1a8c87e4ab41f157ef1aca57c5ea6097decc008db"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/questionnaire-library.md",
+      "bytes": 10588,
+      "sha256": "869a0d7d4c405dbe36426871c45fca910812297bcfb5c1c5f039398218f65446"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/questionnaire-studio.md",
+      "bytes": 5251,
+      "sha256": "23cb69872458a311621c285a7f9a4fc90f64d9ddf2cc928c207ce535a3f2cf4e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/runtime-validation.md",
+      "bytes": 2775,
+      "sha256": "d54d56eff43ae9114e6e843fd13959b783b906e4a8f94cb81ba35a9e8ddf3075"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/selection-controls.md",
+      "bytes": 5147,
+      "sha256": "83d08a2f2982f32defe6ba26319aea76a577bda0fefed46a184e6ef0224754c0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/silicon-samples.md",
+      "bytes": 4253,
+      "sha256": "059cd987ef756b5fe7ee0eeaac36912461f54064ec4ee61753eb1b5456467ec7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/survey-data-lab.md",
+      "bytes": 3937,
+      "sha256": "35e3fb09b59c129b80bc566d0ddd60ca1bb75b27fb1a5330bcb8a5060379f528"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/topic-lab.md",
+      "bytes": 10291,
+      "sha256": "6f16c7a394209cd5cc28bc682b1d86805601cc718ac6e1b0f5978f2c278fd5cf"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/docs/workbench-style.md",
+      "bytes": 2177,
+      "sha256": "0d0a6d7636f90c383792c03ffc99a8c3080063121e5a6af887592c3152338585"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle.config.ts",
+      "bytes": 155,
+      "sha256": "73d0807c58e541dc3eaf175909fb5acc966faed61f74ff659d9d55027bf3e25b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0000_hot_quasimodo.sql",
+      "bytes": 1627,
+      "sha256": "f2037e432aac6ee673447243345f17efa3aed0198cb9f37f54a9af186201e42b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0001_overjoyed_robin_chapel.sql",
+      "bytes": 2908,
+      "sha256": "adf7ddcc63b0297af04e7d56a9aa7165a295aa292a2a5a7d8458fbf659a88c29"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0002_happy_nemesis.sql",
+      "bytes": 362,
+      "sha256": "959aac2f956f4ebfbd0f2313b2867fbf73c318330633fbee64b02c1ea91b8e80"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0003_striped_thunderball.sql",
+      "bytes": 432,
+      "sha256": "4015bd8b9c605e1f137ec13b655bb6c87f8c57bcddec6299a1a01bd0a5ed1230"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0004_office_files.sql",
+      "bytes": 1856,
+      "sha256": "5c453452b29e799530e791a40912786024033158da7fdc18bc9b65e402042150"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0005_editor_recovery.sql",
+      "bytes": 2331,
+      "sha256": "5d072d194239eb0339198b286a921d94f25981196bd10c5acfbfb10e80f7eb5d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0006_editor_recovery_key_history.sql",
+      "bytes": 818,
+      "sha256": "7f96b03211fcdd356832fc4f079bcb8fc9b2028289cfadb7b18e44cfa0a03657"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0007_productive_miek.sql",
+      "bytes": 1907,
+      "sha256": "4a47086ecabdf94884e448d55099823365626856d6387a46e56a83a37b81b820"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0008_fancy_lizard.sql",
+      "bytes": 3207,
+      "sha256": "29e65a470cad5dd3ddc01d1867a84ca50534b572311108bab9bb6dcde5b013ac"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0009_huge_forgotten_one.sql",
+      "bytes": 1387,
+      "sha256": "d89df163e623de58f3c83fe9d170a4fe7f93629873889e0d6237f62abd3487b8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0010_sturdy_salo.sql",
+      "bytes": 1719,
+      "sha256": "6e4a550981377b56f9423b9f60e7e85e4897a99fd35a37b47ca12d3fd30f649c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0011_questionnaire_library.sql",
+      "bytes": 2205,
+      "sha256": "dd20a3279f3852ce3943004e8b916a4b1a106c9a767c26de0a280023fd5f800b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0012_questionnaire_design_reviews.sql",
+      "bytes": 2501,
+      "sha256": "0d130d7c410dc584007fb36c353dd0528ccd3afa2014e1df2e3b0d64e858df0a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0013_questionnaire_repair_origin.sql",
+      "bytes": 1497,
+      "sha256": "c873e020946f845ac6b622019eba31e98c27d1d42e0b3460ecab0ecc75701dc1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0016_agent_services.sql",
+      "bytes": 2713,
+      "sha256": "cc0a47b2b3ca5771403159d5993b4eb90b457e9546f4c2740dce3376f66434ad"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0017_agent_calls.sql",
+      "bytes": 492,
+      "sha256": "4b611d35a244436a868d07fa06eb1858024a7813d22060519d55d51c642478b8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/0018_agent_accounts.sql",
+      "bytes": 2372,
+      "sha256": "8f8a692d52f74a08c3f37cd8afafc3d2f4564162755ac1b38ac9b615becf0742"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0000_snapshot.json",
+      "bytes": 7170,
+      "sha256": "cb945f485c980a56d163eaff773cf85738006e0ad135f91355f93089464e2405"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0001_snapshot.json",
+      "bytes": 10269,
+      "sha256": "f09fe8926839a034e42f8671248b763998aac718f03ca1a339b3fdb916672d10"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0002_snapshot.json",
+      "bytes": 12005,
+      "sha256": "dfb62fc83b8c02019b945cba567e5bd04bed157ad42f602c0542af7a0320cc23"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0003_snapshot.json",
+      "bytes": 13957,
+      "sha256": "28b9f07086998b4c3d66ade3644a49cb1400d98ee7f73f439fec70574a5d37f9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0004_snapshot.json",
+      "bytes": 20374,
+      "sha256": "32064d4c259db9d5e18e50bd8c4740e093d35891bc0ccd7f91c61d09e5851959"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0005_snapshot.json",
+      "bytes": 25768,
+      "sha256": "62de6bbc840654ed7124d866a983dec30196f3dae2de11e0ad8da35bddfffd2e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0006_snapshot.json",
+      "bytes": 27922,
+      "sha256": "47275591bd2a929c53f5ea1d11717deb6a6c16711b414f036de015bf160cbd44"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0007_snapshot.json",
+      "bytes": 33655,
+      "sha256": "54466ffea3bdcd63f10da004a1ca61286310b730575f0313467e0692d2725579"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0008_snapshot.json",
+      "bytes": 34232,
+      "sha256": "33cd77d993c78ebe7253c03d3b4f3005fe8cd4c919ef197e7f5900d64a8f9927"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0009_snapshot.json",
+      "bytes": 37964,
+      "sha256": "b74c9d4eb23dac0b5ffd981f405e9aca4bce1a4b68049f6f1643219f49f337a9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0010_snapshot.json",
+      "bytes": 44038,
+      "sha256": "372759e3d781ea9f85fc6aaf3ab92fa5d93df0497773e06d48bb29ed799c49a4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0011_snapshot.json",
+      "bytes": 48656,
+      "sha256": "b251c7a055edce6fa389e40bde2d4f1b9ac6ae7c8ee7a7fb96c7905a700483df"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/0012_snapshot.json",
+      "bytes": 53115,
+      "sha256": "decc00c217a8011fc1daf7c3c33ef2eeda070a1706d8da0d3ae3506ab4b68e2f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/drizzle/meta/_journal.json",
+      "bytes": 1955,
+      "sha256": "d7f49d37ad142444d1a8d871f37716a60215a9ceb582a0aafefb06ecac573c92"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/eslint.config.mjs",
+      "bytes": 483,
+      "sha256": "275a07c13fc7c83a652efcfa9fb6a207c451a2f5088e6793415ce44281285720"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/README.md",
+      "bytes": 998,
+      "sha256": "37e950c6a27f8386e9d4a2d422c6d3ba519a7880237e5ad926e866e9cbdebcb7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/auth/code/route.ts",
+      "bytes": 1455,
+      "sha256": "9a08c5f98214b2b709eff99d3b897d325038c924c06a1e480dedd834fd29b283"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/auth/verify/route.ts",
+      "bytes": 1762,
+      "sha256": "33421fad53b883cbe69ecef5a476f4fe5dced89c88007857122642978cd5eff5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/services/[id]/call/route.ts",
+      "bytes": 3184,
+      "sha256": "389253524b587a6db4060c9f08e60917dee9994283402ce2991b711eedbf07b2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/services/[id]/route.ts",
+      "bytes": 647,
+      "sha256": "3d032b13285f6ee05ba041348c18315071a0b1a8953c52a22ebfb6bcda860911"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/services/route.ts",
+      "bytes": 1042,
+      "sha256": "a5da4992397f8b9fc2b6317bfe87ca38729664a8ae247da45560ac1f0c05205b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/agent/session/route.ts",
+      "bytes": 2261,
+      "sha256": "6c38753502ce20dfb3c09617b81ff312c39b06f28086c0e9586c20e7a97b8edb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/[id]/route.ts",
+      "bytes": 1522,
+      "sha256": "ba0349578345fc1fec09aca44407dd53f77f6b887684b3dbb1f5efdf30a149da"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/[id]/versions/[versionId]/route.ts",
+      "bytes": 672,
+      "sha256": "82359443dbee9d757d6992cddec25dddf3270d2782d528150f88d1067e44350d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/[id]/versions/route.ts",
+      "bytes": 1747,
+      "sha256": "a5eea763ff328346e7a2f2ac07d9a849d4f79fbc22e770ada5d0e5be6e5ee7fc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/files/[id]/route.ts",
+      "bytes": 935,
+      "sha256": "d3aa4de53e081f8df074c4efb388e1e9c5e7e4b225813c15c74f24a81804a598"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/files/[id]/versions/[versionId]/route.ts",
+      "bytes": 1684,
+      "sha256": "1a527b6957876e15bbbb28d2f6c7b44fc398eb871b6febf105b115953e1e71cf"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/files/route.ts",
+      "bytes": 761,
+      "sha256": "3322c2a2385d03503dac1f900dded858799a4c949df2c307d030fedc556cf168"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/recoveries/route.ts",
+      "bytes": 859,
+      "sha256": "c5e9eeeb41aeec67f3ee2d933810e63aa0b02bb6fb61f3384b1d56d2d02d03a7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/sessions/[key]/callback/route.ts",
+      "bytes": 5520,
+      "sha256": "2daaa91306ff67175b9fb6a2978caa659238a7065f2b170a844ed0953b081704"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/sessions/[key]/recovery/route.ts",
+      "bytes": 2385,
+      "sha256": "36a66f51e44ac77ec3f2e9ab1b3f1e935b1c284eb6098f1a94cfbd954f64df3c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/sessions/[key]/source/route.ts",
+      "bytes": 2366,
+      "sha256": "d89488488ac90d64ee7e786e8f94d6f52f6ea2d2ca0e63796769cbb5c40867c9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/sessions/[key]/status/route.ts",
+      "bytes": 1694,
+      "sha256": "f38e3a723035aa6cf81ce9cb0f9cae05aa269b78f68c9c7df4e18219bdcceac1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/sessions/route.ts",
+      "bytes": 2970,
+      "sha256": "9824a53d35bfa5680f0c88a544453587ca1b89db45c54dd136d5cb8497731400"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/native/status/route.ts",
+      "bytes": 633,
+      "sha256": "9778babace56edd5acf416518ada55ffa2726098b523a48d9b6f8f88e034399d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/questionnaires/[id]/route.ts",
+      "bytes": 622,
+      "sha256": "e98f16d3943b17f7280fb58d41f7cde7d886b711eaf8889a10e9dde7dd86efce"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/questionnaires/[id]/versions/[versionId]/review/route.ts",
+      "bytes": 2407,
+      "sha256": "c3a22250449e8f383227fc01ce89f331b89b8c45076927e9ec0fa7e75805baf1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/questionnaires/[id]/versions/[versionId]/route.ts",
+      "bytes": 685,
+      "sha256": "c75b6e08015758c4fe5322aa06d53c5e507ddbd595b3e3e35c21a20c3fcc25df"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/questionnaires/[id]/versions/route.ts",
+      "bytes": 1407,
+      "sha256": "66c03dcbbdf5168e7ba77a0d45a4d72dd165c433a2d6e09a1d2ea599365be255"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/questionnaires/route.ts",
+      "bytes": 1168,
+      "sha256": "c6cc6c2c74ee1566203690380ed693286e65d812df283e317cdf330dc52fe335"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/research-runs/[id]/route.ts",
+      "bytes": 1254,
+      "sha256": "d1fd065c91581c80b1584d253f23adc6004753a601c7c25a725308edce434279"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/research-runs/route.ts",
+      "bytes": 1471,
+      "sha256": "433d1f36adf99d266b9cec436d5e564d484ba53975b093b68bf7bc372d93506e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/route.ts",
+      "bytes": 1267,
+      "sha256": "ae70e742f2b1a074b856735907cc5fba123c5ea626b366a4b4c42a0aac9e2a26"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/session/recovery/route.ts",
+      "bytes": 1081,
+      "sha256": "40a3a27f9ec66e93e0b8cf3b6b33c4002ec5c6c1cc1df43f357904f987e03b18"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/session/restore/route.ts",
+      "bytes": 825,
+      "sha256": "5bb42a6aa2fb795624b779173e607b7d67cc0a1fe31971d24ed79ec3bc3636fb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/drafts/session/route.ts",
+      "bytes": 309,
+      "sha256": "04cd4812be924a13ee2103e782fc615fb8bbda252405e5d36e1922701e2bb581"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/projects/[id]/route.ts",
+      "bytes": 2114,
+      "sha256": "9b8d5632a81af8ee261d9aa71c40ae830c5888b7ed87988b6290966c3cc0a4d8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/legacy/cloudflare-api/projects/route.ts",
+      "bytes": 3177,
+      "sha256": "befdb53fce7cd934c2015fbf50496858a604f820cfdedb9951442c89ac514841"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/action-evidence.ts",
+      "bytes": 12996,
+      "sha256": "2f81530b8fe2b4ac7e9f918f84a325ba16342eb27ae5191c6e609e03ec1d6df5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-email-auth.ts",
+      "bytes": 4595,
+      "sha256": "084959e3c4699d87c92850e17b1afca6f24df93baa1ca947cbbb6bf5569c5490"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-mail.ts",
+      "bytes": 2141,
+      "sha256": "4e973fe04ec8f2175abc20fadd12103af07d12415bbf10de039cd8259b24c8a8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-provider.ts",
+      "bytes": 14148,
+      "sha256": "78207bb47428df38c7f870aca622ec8ee8723f14de3b457bb3aaa842d2e4c531"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-questionnaire-proposal.ts",
+      "bytes": 3698,
+      "sha256": "55af84edfb4de24d71b5df9a1eef8382e7744c0ee7548cfdeb4399c20fc853cb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-services.ts",
+      "bytes": 10044,
+      "sha256": "63e510f8c895c47685f66fc53a3bf0aefece037cf8f8eb531b9f43a8dd871f8d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/agent-session.ts",
+      "bytes": 4154,
+      "sha256": "67b33789b4a2bdbd0968a7bb547cc3792adccc2be4039b2ce1f6e5d10b18d822"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/analysis-journey.ts",
+      "bytes": 1336,
+      "sha256": "b163c3ea7ff87a5bbab9bda2cfb635d74a995c889e83fdfa3e2aae7f2383dffc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/analysis-plan.ts",
+      "bytes": 20417,
+      "sha256": "c8a3f306201284524f9e7872f9bee155e45ee3b99c36a389f927968a6b762bdd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/analysis-recipes.ts",
+      "bytes": 10692,
+      "sha256": "b69ecbc3f9012a84824e3b7aa6631e51b8e4cd0308f85021fddf2ac74042191c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/analysis-summary.ts",
+      "bytes": 1844,
+      "sha256": "394bbe7835d8823185b6606fe63bba8d93e841de677dbc05cddc44b3cd5006f3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/canvas-identity.ts",
+      "bytes": 526,
+      "sha256": "af30fcdb2970efe1c6b196015d3b2ce5c1f251e0fe0b580675177298bf962932"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/canvas-motion.ts",
+      "bytes": 2878,
+      "sha256": "34557c5be6543b1828a5f0a2e3d792796595c1937ddcf31631e7cb3ef8d486a4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-data.ts",
+      "bytes": 10402,
+      "sha256": "289670d66b44a475775ff2dad1076e3f16834d6bf2f51916abf6581561ca9691"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-engine.ts",
+      "bytes": 714,
+      "sha256": "ed73392abc4778e0da7cf15dd1f360d0874555e6ee78faeca7f95b670d0931ba"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-options.ts",
+      "bytes": 23289,
+      "sha256": "95b308f2573151575b80ae39fb7280fe1bcab6012cfaf8efba00d9cca3e02029"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-palette-reserve.ts",
+      "bytes": 3212,
+      "sha256": "66490584d896365eb6e8c3175ab3e06479f9978975e6bef866336fe68266a015"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-registry.ts",
+      "bytes": 6551,
+      "sha256": "960dfd86716b4fe6eadd318bae0177bd97b4a58e40f923f2e6cdc799701fb904"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-theme.ts",
+      "bytes": 10207,
+      "sha256": "bcc1a50a453c67a45e1c3fddb6dfebafc0ed8a613fc85e07a47d840050858ab2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/chart-types.ts",
+      "bytes": 2988,
+      "sha256": "085252333a6ad0f3076d9c4059da1f5000975f199db6d4f8738d650dea385765"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/defense-import.ts",
+      "bytes": 5758,
+      "sha256": "cca58154c3bd804838918d6341ef71c7aea3d22972e3ca337e8e7e63396d8533"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/defense-training.ts",
+      "bytes": 6051,
+      "sha256": "d372567fbae34145ffe0322cac222d375858fedc1abdde41f44a5234614330e9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/diagnosis-actions.ts",
+      "bytes": 8716,
+      "sha256": "45dcd13fcbecee3582d75f5f515147f0d7b422b6132f2f9bf2da7203b17a1ccd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/editor-export.ts",
+      "bytes": 9692,
+      "sha256": "fd5d794ca5d1a504dcba4295aca38c8d9ae851b27a86a4697bb2987f5522969a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/editor-model.ts",
+      "bytes": 8112,
+      "sha256": "497eb4e938a07b0ca0f1b33891a1df033c84613ed953125e41ffcbce6435a149"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/editor-recovery.ts",
+      "bytes": 749,
+      "sha256": "2a39be0e28da89c6fd3e65596518f4e3180662505f33f3ffd4e60c5a28d13ded"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/evidence-flight.ts",
+      "bytes": 1937,
+      "sha256": "e5efd6c080259b7cfd7d743f6e3b3be64d232afa2c699d6a29c7feee103c9ea5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/landing-chronicle.ts",
+      "bytes": 22900,
+      "sha256": "1d1896571de97d1880ff4fb68063fdd5fab822f79df6b29c0836117e18b0c82d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/landing-navigation.ts",
+      "bytes": 575,
+      "sha256": "805004ae28506427c7105af5279cad88b47073e5122be1b775455734cbf53b3c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/latex-report.ts",
+      "bytes": 11225,
+      "sha256": "13a0f991364cacbf27e528eb94d58090e634e184d9ac03dad8e9074f952d2cdb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/lifecycle-interpretation.js",
+      "bytes": 1651,
+      "sha256": "823f487c956915832c20c66895d3ad3062561250eccff356d68ac4f91cf27a57"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/office-model.ts",
+      "bytes": 2390,
+      "sha256": "9b80909d8bd3e095ea37a196f0a030b24cb0c1310f6f2e4eef04e8ed3e49e4ea"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/office-package.ts",
+      "bytes": 26477,
+      "sha256": "d9a83c5a40559f53ebdf8f0c42e74275f8f0a608112ee4ee9a8ae6dcd84ce7ea"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/onlyoffice-protocol.ts",
+      "bytes": 9609,
+      "sha256": "8213c0dd0afd88b04a68d2a3bad9e4412927ce787735d14d5bfdeaa36a2f3bc2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/pdf-preview.ts",
+      "bytes": 1489,
+      "sha256": "30ac9f6c9e7c28a031f2e84ee2557480b3b32f55dfde3429e285ebe20a80a841"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/pitch-rehearsal.ts",
+      "bytes": 10742,
+      "sha256": "297bd0a238d339bb257295c004d201f44b237256836e30d7b324d7c7182349b4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/project-defense.ts",
+      "bytes": 3042,
+      "sha256": "c5949cf877428c33c758465f193ef523c43ded2ecb57bb3e17d3cc19348319fd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/project-report.ts",
+      "bytes": 4651,
+      "sha256": "09acc2c89a5a9bf2e47a6e12f1f35fdaad719d881529f2a638b3f3349aead73a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire-library.ts",
+      "bytes": 6618,
+      "sha256": "576688d8447bea0838b57cc785b9f4be097daf31635d1c09eac7c20837b838f6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire-mapping.ts",
+      "bytes": 14558,
+      "sha256": "16374bbcd32b7335bdd8a39fadaa4cdae1fb58737d767a9d669c810491b164a5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire-review.ts",
+      "bytes": 8062,
+      "sha256": "4dff3fd6f5e3f326a1e9fe9717895eb3a903763643743e0c581664a66b534c4e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire-revision.ts",
+      "bytes": 6658,
+      "sha256": "28e6f01d30131a6fe4d8764baa54699962644ebf37c28636f806a44cd1dc899b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire-version.ts",
+      "bytes": 6039,
+      "sha256": "ad31bfe0f8c9a5a4301e36c87af782dce19af0e95d3e1c748a50b52f4099d656"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/questionnaire.ts",
+      "bytes": 22241,
+      "sha256": "4509b89a302ea49e00e5be2d6c5ecf5bf8f4f42437d4082183babdeeedd1aed4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/report-format.ts",
+      "bytes": 9387,
+      "sha256": "6c825b4a3a9e764f856e8b8c0d8441d31b70ccd231273b5e269841a3a7b5495a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/report-storyboard.ts",
+      "bytes": 7207,
+      "sha256": "e5af8dda369bac59ccbac68b72eca27b1d7cb3068777d8d06146d2e606d5d4f2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/research-blocks.ts",
+      "bytes": 6238,
+      "sha256": "8c5b49d70f0797fd25b81e2937179d50e9b77e48807927b94eacecc9d187945d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/research-flow.ts",
+      "bytes": 14662,
+      "sha256": "b08176449bf767a3ae7e5ef90e8d9a5064ab011b5d52a89b2da866ad62dc2731"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/research-link.ts",
+      "bytes": 3635,
+      "sha256": "cee3bac3a09a9fb6a188e6d3ee99c5263d88b280ed2039d9435f89d2763f19e1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/research-method-guide.ts",
+      "bytes": 16958,
+      "sha256": "fbca0885eb33a320210da9e573835970ac978f75e5c27d7e3e9b30b0a87209c9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/routing-evidence.ts",
+      "bytes": 5119,
+      "sha256": "1da5356060f923fef83334300b5cb928f178917f16d4f9abf0a92e6c3325edbc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/row-eligibility.ts",
+      "bytes": 11535,
+      "sha256": "0b68ccbb2bd7125d46e918dbe73d271954afbed291e75e1f02fbf0b9e69befd3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/assess.ts",
+      "bytes": 17782,
+      "sha256": "d7f622dc4150d6460569f522be0e3e52ffdb51eb68913f11f1737ffb23fef142"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/config.ts",
+      "bytes": 6431,
+      "sha256": "dc30b5075109264b9cc7202ff29135e971e1d810e453a682614f2187334fb311"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/example.ts",
+      "bytes": 5528,
+      "sha256": "f28be1180e81fbcafb277fd13a2a40d8967cb8ccc43f2906c8e35b9be44d163d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/export.ts",
+      "bytes": 3741,
+      "sha256": "74537d1b7364f4df971bca167d6024f1b4f3529e1590b5b6c0a1dafd1b768702"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/palette.ts",
+      "bytes": 1499,
+      "sha256": "bbe6b414e2497157d413d2ab789cdbf96b5cc93a5e44815774631b3578280af0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/persona.ts",
+      "bytes": 11112,
+      "sha256": "81a1b6869a8caf2e27b76f4e7be05065a87d63132b3189977b5488884cb26e8e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/run.ts",
+      "bytes": 11537,
+      "sha256": "08d51ca29bba2a81a063009a03185b400ea8e8cad0b20c0b3ca26eb56ad1e5c5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/silicon/stage-layout.ts",
+      "bytes": 4159,
+      "sha256": "d060e10c59130b72978a8553e514f054c4b1227b5b26282b55f16c35792383b1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/survey-analysis.ts",
+      "bytes": 14602,
+      "sha256": "6ff69a74f586655c8cdc1e920d7d3f190b637659295e277eca21d6511597e232"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/survey-collection.ts",
+      "bytes": 17178,
+      "sha256": "a4ba061d36c1a28e71f6836063bd05c76360517d553d5f5200db2e7534a0cba0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/burst.ts",
+      "bytes": 4784,
+      "sha256": "02645c5b345a977cd6dc83a04bfe3601b8b0dbb3e8423def620991b0d49355da"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/evaluate.ts",
+      "bytes": 19740,
+      "sha256": "883e9c88dd56e2760749be409801949cf9806bbc4922d8ff93e3fa88e3a1a15e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/metrics.ts",
+      "bytes": 5729,
+      "sha256": "ff45f895c28a96ba6c10a465a0cd33de5fffa313c526925d92fea1b663fd7865"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/network.ts",
+      "bytes": 10642,
+      "sha256": "c7ca3e604ad8fc0a181052d8a2e424e70df60b2da194ed7093a1b2309d27e96d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/papers.ts",
+      "bytes": 10032,
+      "sha256": "ddb2319efe5333e977a047a1ad50c3e378bfc39842792a22d031bdcc9ff4d8c1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/parse.ts",
+      "bytes": 11918,
+      "sha256": "56f203204cc4d1a8a6bd4e84d33033dee8bd3d9277844340699bba81f155a707"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/stats.ts",
+      "bytes": 2050,
+      "sha256": "3f5572847958b86bb71fea70c97bbec3615e54a41cc7425cf8502622ebebaa53"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/terms.ts",
+      "bytes": 11446,
+      "sha256": "08e20f6ef3f2be17827926236b0d9952f587517fbaeda26b90afc0686a1f8cce"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/trend.ts",
+      "bytes": 2959,
+      "sha256": "0a5c4ca9a96f546eb6e1f338ba988fe643b1199e4e3d9d778c42c930aa18dd8e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/topic-lab/wordcloud.ts",
+      "bytes": 2879,
+      "sha256": "bcb19ed61f495a769fff59260530c7c53f6deea49d0a5ea06e6edfaebfd7ef13"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/workflow-kernel.ts",
+      "bytes": 20244,
+      "sha256": "177abf2da89f34ec14cfad119d25fd17ec5002677c4dc32e93acb18353e2259d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/workflow/pipeline.ts",
+      "bytes": 13512,
+      "sha256": "b24e716e63b986e82072ddceb68e682c62373b08e41ecbf4ad95ae47228ccada"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/lib/workspace-motion.ts",
+      "bytes": 9887,
+      "sha256": "07da2d40d89cf5880066448e4a62c1a1ae846e296402f611cd6e839775428b40"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/local-bridge/README.md",
+      "bytes": 2310,
+      "sha256": "c46599aea3f43579dbee8ad224f97ae14e656ba7214fee2c81a6f9005e0da1ba"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/local-bridge/agentctl_read_bridge.py",
+      "bytes": 60721,
+      "sha256": "9f1075e3f2e78a937d1e4ecff4772c6fbe25de20d871fb14eddd02e0fd98bc51"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/local-bridge/bridge.config.example.json",
+      "bytes": 163,
+      "sha256": "90ac41a61ae03256f505ff6d48e156d40a7083aecfa3fcdb9ef34909173b92ba"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/local-bridge/tests/test_bridge.py",
+      "bytes": 23764,
+      "sha256": "47d749e3e75a6a7db2472ca97883e8aed568d4fc5a84e106b57315c0cc78b04c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/native-shell/server.mjs",
+      "bytes": 6460,
+      "sha256": "6a497c07620c003a36039ee731c49db7799c0baa474a2f0efeb631dc4f23a73c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/next.config.ts",
+      "bytes": 1358,
+      "sha256": "5379ab331f0f3d978af1ff89cbb30c847bf714d44824ca0500b6e2e5299373f7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/package-lock.json",
+      "bytes": 404790,
+      "sha256": "15040c5284712d6bf53237d60e6f5d798276880637c2650788cc5e543bff6dd5"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/package.json",
+      "bytes": 5007,
+      "sha256": "2e19537d5ab89e865151e9ed93e9e9fbb5b170cd9d97e5f9992c56f73eb8f4ce"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/postcss.config.mjs",
+      "bytes": 101,
+      "sha256": "7b299d3d3b16699ddda397c0b2373b3af4f25f8fc9ccc9b3d9e64ef083bc1c21"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/brand/evi-x-character-anchor-v2-960.webp",
+      "bytes": 39802,
+      "sha256": "d8cf0957d690d645d708d614b4d8109f113d5501ba1cedfecb00c656863eda44"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-analysis-1600.webp",
+      "bytes": 65638,
+      "sha256": "2aac88e5babddf250ba67be1add6bf3c513a249a8a01b3d03d7fdfcaa3e3ef1c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-analysis-960.webp",
+      "bytes": 29732,
+      "sha256": "53b32596d2609ffef1fd4219b0b171fe12de409c96862eaa779904ef4f9a61aa"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-cases-1600.webp",
+      "bytes": 83044,
+      "sha256": "01876b0f30d87dd508d1b472fc30bfc90d75890c089ded05b54428639c974f04"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-cases-960.webp",
+      "bytes": 38288,
+      "sha256": "80d0771de1d79be8f8ca8ea08e1654b82553d90b85aa948ced7d37287fd9ec07"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-defense-1600.webp",
+      "bytes": 79968,
+      "sha256": "4e03d2e19ba210012f3a4849b7cf9e1c034d8cc5c5046e867ed1138ca3f26073"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-defense-960.webp",
+      "bytes": 36876,
+      "sha256": "e3201cadeb5aced595e3711929d4a3835ff0d612073ae6474a9a9153924bd11c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-design-1600.webp",
+      "bytes": 79676,
+      "sha256": "1b9cdbb68ee5162e10f96db0c2587cfb7a92f938ec9f060669abae1b6a0fa880"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-design-960.webp",
+      "bytes": 36208,
+      "sha256": "889498dddfa9a634bd75941a5397ba9ba266c7a6ce3df594217f086d046d83c8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-editor-1600.webp",
+      "bytes": 80296,
+      "sha256": "893b342747e52cb24c28f22363aaaa49b7c577b710f8f6a9a59eca87b48b83a6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-editor-960.webp",
+      "bytes": 36050,
+      "sha256": "f6912770e25b878decc462bdf476c4d207455abd5037564268547e7dcf147c16"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-silicon-1600.webp",
+      "bytes": 80228,
+      "sha256": "04d177f9298182784ef5c27d04e559d408c116f28d73d0c4d6871df183a88d24"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/app-silicon-960.webp",
+      "bytes": 37896,
+      "sha256": "81f21192096a78d6f9727a8264a35a323257bf263b881c357e6c97279d6b20a0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-abstract-1240.webp",
+      "bytes": 237604,
+      "sha256": "42b5c83c0eeeaf0f1a2a1322218d08310e740efe877117b2fd376c105b1a634f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-abstract-560.webp",
+      "bytes": 73308,
+      "sha256": "951fca89676f62e3bc476a54026a7c609f79562973667e5478a0714a79681468"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-chain-1240.webp",
+      "bytes": 171544,
+      "sha256": "968f9c637d1d5d6337ae322eff66abcac444003b75c41ad7cf83931b84ab5d6b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-chain-560.webp",
+      "bytes": 52404,
+      "sha256": "2848af3f65ff4f446006c33a40229b1a0b0bb07566c296bd8df8f604ce3f4bb2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-paths-1240.webp",
+      "bytes": 190922,
+      "sha256": "c2b1e03532e78c001e61f3966280c44e4d338986b10901ff91939c4a719dd929"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-paths-560.webp",
+      "bytes": 58086,
+      "sha256": "1430c306625afd40f4bc29e3d7180c591f12b7f23dc8b04f9147cb1fa4eed05b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-personas-1240.webp",
+      "bytes": 172084,
+      "sha256": "cd1f6558158ee29c5b482e3982b9c056fc3aa5e9b7addde9692e0b93871afebc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-personas-560.webp",
+      "bytes": 53226,
+      "sha256": "0866f53c364afd0fb8b80ab66a18a54a084d8f8ccba3e254760cbeee27c0823e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-sampling-1240.webp",
+      "bytes": 197188,
+      "sha256": "64505cb1d37c170822af8d12f2c223beb7802b03f62d6d80f3cb8ce88a36ed46"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/case-sampling-560.webp",
+      "bytes": 61098,
+      "sha256": "b5d7aaa3d241a31d2a06194d6806e7842c01e7053015c31d8bb7e8f3a18292e7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/landing/crop-fidelity.webp",
+      "bytes": 35374,
+      "sha256": "e39f9d5071358d8982f95f9c27461e27d49ee8dfe9646fe6bf19a0028fe711c8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/public/og.png",
+      "bytes": 1819910,
+      "sha256": "2396547f50477c16348c6f6edff2c5400b56f17c946e27beb68b778d1aecc57f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/canvas-stress-fixture.mjs",
+      "bytes": 2464,
+      "sha256": "604a0876faef69b006e88993d3e3950f1fa1fc7425435afbdca64b05234df6fd"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/chart-browser-stress.mjs",
+      "bytes": 3209,
+      "sha256": "d4df124a4d0b67ad63d93b3cff4f1c438655ce83680e6556b9f68462ce595731"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/chart-stress.mjs",
+      "bytes": 20667,
+      "sha256": "f89046e9ec1ad25167d976006fed25a54c8321ff47af5ca37897e6e7e474bca7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/check-build-assets.mjs",
+      "bytes": 2757,
+      "sha256": "13ffa1b8f3f2bf3b641caab631ed1fcd6aaab8e7ab717d99a97c42eba0e56967"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/check-cloud-bundle-isolation.mjs",
+      "bytes": 1477,
+      "sha256": "8caca99eb86a0313b381e4fd821079e951bd07fe38098753dfa34325e09eae89"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/check-hosted-build.mjs",
+      "bytes": 1107,
+      "sha256": "397e5372d55a110dc0b12b2f8b488cd1bf0dab4850024bfe6a76ab7b87ea5a39"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/check-landing-routes.mjs",
+      "bytes": 1121,
+      "sha256": "169922f0eb284094324365a58ee4e8549e7aaedcf393e173ef507f0d5bed56b1"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/run-bridge-tests.mjs",
+      "bytes": 1304,
+      "sha256": "6be84e59ec632c5cbfc8bb9a8ea78547af881cc3b01f2bf183314dccc23a6bfb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/run-unit-tests.mjs",
+      "bytes": 995,
+      "sha256": "f8a6208cec01c89a58f0e77b7a518e274ecd04619460738845903e6a1aa83d60"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/start-editor.mjs",
+      "bytes": 1241,
+      "sha256": "0b16311e6ed65e07b20e8262342add13feabf1886de7f4d88674d945935f402c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/start-hosted.mjs",
+      "bytes": 1168,
+      "sha256": "cd26d4d8464d6e4113a2f2414af160a385c95633bd974e340d756e1d081b3151"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/sync-control-contract.mjs",
+      "bytes": 12538,
+      "sha256": "f843e2d705c2dc41ba7df85faa7428b4002302b3fc816bb3b34f64a8d3f995b7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/sync-defense-corpus.mjs",
+      "bytes": 796,
+      "sha256": "2606513e08d2c7f7531c9b38f00cb97d8da7186a2f9fb3fca376a0f8e6fdf546"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/sync-rule-corpus.mjs",
+      "bytes": 7222,
+      "sha256": "f135a32ea475d258baf70d7db2321e6ddfec1ba28b280c72286e2f44e385449b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/verify.mjs",
+      "bytes": 1103,
+      "sha256": "a2edc0ddbb3f0d9f6efd2d48b1d68a5359d8903251c12f2dc187073d36cde6a2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/scripts/workflow-executor.mjs",
+      "bytes": 1478,
+      "sha256": "de72268a669abf6c696718ee1c03ad2db1a3ce4fe2dbeda65149eebf922ae194"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/action-evidence.test.mjs",
+      "bytes": 12040,
+      "sha256": "8142f7102aee56fb0313a0cbc4cb8b91290d9e090490ec2a12e086385db5eb90"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-email-auth.test.mjs",
+      "bytes": 17996,
+      "sha256": "da4fe88abc4c59c6377c72566d76e140595053d48db20f4a75285383dbfac2e8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-mail.test.mjs",
+      "bytes": 1474,
+      "sha256": "2cb65454a4be9904034e4aa1c680670eca22435acb2d7f0e28eb7aeacbcbcfa8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-provider.test.mjs",
+      "bytes": 16051,
+      "sha256": "6e4bdb7fe6df0f5ba2f033f403c03f7c8565ff3f969f0796cf8742126f9cc279"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-questionnaire-proposal.test.mjs",
+      "bytes": 1808,
+      "sha256": "f655eb467b0cf069ec60cb1c46e207a2c12cc05eecf67b42d9c316e2665bbe80"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-services.test.mjs",
+      "bytes": 18818,
+      "sha256": "d55acee8fdd0d1ef5fe79461a0dfc1bb1338118f45ac2c7163e94e3b262d9b43"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/agent-session.test.mjs",
+      "bytes": 2564,
+      "sha256": "5c81ad23ab59c3d0084932568aa1cc2a545f700e75f169827c03fc028eb13b35"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/analysis-journey.test.mjs",
+      "bytes": 1605,
+      "sha256": "1651539c7f141ac501743cd13b7e183081b5e41a88ec6a28fd047fc9d11048de"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/analysis-plan.test.mjs",
+      "bytes": 15277,
+      "sha256": "7ba8e6a127f8eabe53b0cc674e08623897e4f8fbd75ba2dd0dace9098c77aa02"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/analysis-recipes.test.mjs",
+      "bytes": 4786,
+      "sha256": "eeccf03b5145b085b257efc316232883d1938db98a6301d49b258c56a5edd4fe"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/analysis-summary.test.mjs",
+      "bytes": 3425,
+      "sha256": "0faee7252427d4e7b9b8022236d10463e6c67969860a1b9f6e549b6cb2909335"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/bounded-command.test.mjs",
+      "bytes": 9112,
+      "sha256": "d102be2298bd9923a7cf58da99bd8e12c832a84f0c6927cb67ad9590111917d7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/built-runtime-probe.mjs",
+      "bytes": 6957,
+      "sha256": "49c62426f12b19065e6d4b8c9bc001763baeced32801c5bcf027df547a52a027"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/canvas-identity.test.mjs",
+      "bytes": 875,
+      "sha256": "34d975a8e7c0761fd5bc23db5a1b854e70591d0012de1fd28ac5c49a81d4a593"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/canvas-motion.test.mjs",
+      "bytes": 6522,
+      "sha256": "e3c510b9d299a2c57dc9b283bdc30afd0d76652d4b5fa69ca1de3449f6b9617e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/chart-boundary.test.mjs",
+      "bytes": 19203,
+      "sha256": "84511c949a3e5e76957cff18bf7b4f8798982b3235a54affd656bf8cc263dc46"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/chart-data.test.mjs",
+      "bytes": 11082,
+      "sha256": "12714f8473a21d193afd633422288182a6913312a4e51849df48855ab251fc89"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/chart-palette.test.mjs",
+      "bytes": 4818,
+      "sha256": "6796af5e7cda414fc1dc59cf0d42bca15eaf1b27d7dfb562b0e867f888143892"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/chart-stress-boundary.test.mjs",
+      "bytes": 14146,
+      "sha256": "7d5039b0b37fc73a1a82f4347678c53a59188041d27596ad65b4f99646a4729a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/chart-three-line.test.mjs",
+      "bytes": 7038,
+      "sha256": "7cdb188bed658c6f0c6672fc0ca5673616699dc76b51533e3f12aee49741cb89"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/competition-update.test.mjs",
+      "bytes": 1799,
+      "sha256": "fd1f05513179b0b8945d3ca94c205fbd264f2275190dba197d3c420ffe6952b0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/defense-import.test.mjs",
+      "bytes": 12680,
+      "sha256": "e81ae73c4563cc6da9c461ba6bb1d7295a63833a9d42a20e58d390e32dc3ff9a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/defense-training.test.mjs",
+      "bytes": 9716,
+      "sha256": "ff5953b88519ef5be03ac0891fed90925a284ab1f4b3fe3ee7030b993fbc4202"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/diagnosis-actions.test.mjs",
+      "bytes": 12686,
+      "sha256": "ac67e7e436d83445f0bacefc133784d21d41dce335b3b549c73e29038bcaf713"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/edition17-calendar.test.mjs",
+      "bytes": 2242,
+      "sha256": "dbdc6c865f2add5708f1958efd3f919ecda9ef647f346c27c51e4d7a2e5f0d5a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/editor-api.test.mjs",
+      "bytes": 11498,
+      "sha256": "4491043d2a0892aa05906ccc4f0fa398e3c4a7632611c1eb8cd3bbff08d94397"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/editor-pptx-layout.test.mjs",
+      "bytes": 2941,
+      "sha256": "4166898df2f7694169d8db9a54251306d7ded23764c3f98b9e519d8edac15108"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/editor-recovery-api.test.mjs",
+      "bytes": 10277,
+      "sha256": "ec0c62d3ac3384059bac326236dfcff442b578ad30eeb230e5973b2aeb9aaff2"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/editor.test.mjs",
+      "bytes": 5939,
+      "sha256": "077c39fa4d5058c0d7374df4be35454e75cbc4828a170a9560834a731c8b6c50"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/evidence-flight.test.mjs",
+      "bytes": 1574,
+      "sha256": "7a484f199014ce189d99af2e91f74878569ccfdc0aebce043a10309492ab8c36"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/bounded-child.mjs",
+      "bytes": 1029,
+      "sha256": "07f6c71acead6ca34b323e97c0bd089010ac4a398839a05d419c000c9e88bbe7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/chart-stress-browser.module.css",
+      "bytes": 1610,
+      "sha256": "a826e53ed846a5c3caf291fa8e1a8dcf71eb2165d9ad8a79f9278434ca3538b7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/chart-stress-browser.tsx",
+      "bytes": 13841,
+      "sha256": "c57c4d52605be3afae6e96bf38859fc23ef5fc92f6777833e6186bcc0d35e005"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/chart-stress-data.ts",
+      "bytes": 6879,
+      "sha256": "ee4c8f3a8a6c8f323a82e60dc6d501143e8a11198f89545cd6d300f0a2a000ab"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/report-format/fixture-manifest.json",
+      "bytes": 503,
+      "source_sha256": "a292dc67337150dfe637eeb864fc367b8312c198f6eca8b8ead28501e4a57fc7",
+      "sha256": "c24e064fde3c2b99849aa10c1e28394ee5af4f454c738c23f0cc9b4c19f4dfc5",
+      "public_transformation": "Only local user path metadata redacted; source project unchanged"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/report-format/synthetic-appendix.docx",
+      "bytes": 11174,
+      "sha256": "3b44707ac1d40a2a5be1e76027a69c448dfbf02274ffce0f531888a7fd5af785"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/fixtures/report-format/synthetic-main.docx",
+      "bytes": 16993,
+      "sha256": "d68177a8a31c0c6cd5abf26a7f896e464b999eb255491eb8eb099facb36ca58a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/bounded-command.mjs",
+      "bytes": 15704,
+      "sha256": "8ec629ca3d046043ab01e8bdc1827e8d51ef02b689839fcd0395c31cab5fa904"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/dev-server-contract.mjs",
+      "bytes": 594,
+      "sha256": "3bf833491d263992321f4ec877169f40fa6ae195bcfb5e4528036a09a51ac7ea"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/dev-server.mjs",
+      "bytes": 1994,
+      "sha256": "0e3bd10e67eec1baf55ecf03ec4cd38b31ede17201d8f652e804d6eb8d100dc6"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/held-open-upload.mjs",
+      "bytes": 1109,
+      "sha256": "650e642fd8d6e376afe57d93fc379c4227f002f884f3277f42081f06db3aa1a9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/isolated-test-env.mjs",
+      "bytes": 2230,
+      "sha256": "a72c3e6c6ad7727d62856bd702fe7dd6c3dbadb095b01f8df2ee348d50b54497"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/legacy-source.mjs",
+      "bytes": 714,
+      "sha256": "dd61bcbfe4fdf4a3c5775ac303fc6d489fbafe9757f7998914e82276b5b119ec"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/helpers/process-tree.mjs",
+      "bytes": 3066,
+      "sha256": "3bb1164aee59d0f815b5a95282cfb28f29fc51c8828c8c13143bfbf79e5081da"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/hosted-recovery.test.mjs",
+      "bytes": 22077,
+      "sha256": "1d6a03c24e463251c7e2afcfd0882fa9a06399a9d8e1de1662d8422286ae405f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/hosted-request.test.mjs",
+      "bytes": 2797,
+      "sha256": "27033286e48a39598b74c63844529303bf663cb4994d07db60d41784ce856e39"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/http-input.test.mjs",
+      "bytes": 8830,
+      "sha256": "a9f1f154dc970c2008cbc4f5e8e97927cb5ce3409f2434460c961b488d66f5ea"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/landing-chronicle.test.mjs",
+      "bytes": 14513,
+      "sha256": "9cc09ffc75b7cd8f07d7a66754e2993cbf49552f2e2108aee36ceaeb5cfe8a50"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/landing-navigation.test.mjs",
+      "bytes": 1013,
+      "sha256": "24900b4ceced5347f5997c8a9dd8cfa1d756ccf47420dea81bc1358fa96abe84"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/latex-report.test.mjs",
+      "bytes": 11438,
+      "sha256": "79ffd7da81b5e08eeac0d12d78becb8e3eb40418b3b00efb210af31153b809a7"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/latex-workbench.test.mjs",
+      "bytes": 5161,
+      "sha256": "27936f97000e77f5507153f7a95e81b4934397a83674913014d8250ff9f2244b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/native-editor-api.test.mjs",
+      "bytes": 17585,
+      "sha256": "be823aeeb5171fdebdd316f8ab787cbe20ef3992bafc9e3746362cb86efc99eb"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/office-api.test.mjs",
+      "bytes": 9233,
+      "sha256": "b9ed111fb6635881e43b8f79db3ee2052df0f96c70f591f17665ef46be6577e0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/office-package.test.mjs",
+      "bytes": 20317,
+      "sha256": "a89d57d60f99c25e537832d90fc07240909e804928210e7f0bb3dd1b9e361f22"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/pdf-preview.test.mjs",
+      "bytes": 10556,
+      "sha256": "d2e88552e40fb0670abd9b16514dd319a6426e33179d6e39f885b349cd34d3fc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/pitch-rehearsal.test.mjs",
+      "bytes": 11416,
+      "sha256": "b6b34b6d0fe74cd55a0498dbc2c3c7b9bd311401b9b552a61fcdc0cc4a0fabc0"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/project-defense.test.mjs",
+      "bytes": 4841,
+      "sha256": "06df80da363be5c85c4c81cd7481efd7ee72567c2b3341779b7305cbbc0249fc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/project-report.test.mjs",
+      "bytes": 4759,
+      "sha256": "6a1e6896dada9559490f4d9344572c4b6ca7e5a9205ffc5d67b0ef2f54d0a389"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-library.test.mjs",
+      "bytes": 10144,
+      "sha256": "99535c98a248c3d34b81ac810a9b48cd4e7d3721c3ceed10de5827cd015a57c3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-mapping.test.mjs",
+      "bytes": 4998,
+      "sha256": "f0aa62b4e6ae42369ae4398aae1e6e98998c321179922e49c78258187c9c0e43"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-repair-origin.test.mjs",
+      "bytes": 21165,
+      "sha256": "e58b041f4c75d1f07333e4d3e50c0ba5b26de7d925ad434aa59bffa9c7704cde"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-review-api.test.mjs",
+      "bytes": 17233,
+      "sha256": "9b7bdb3a016e38dca579a3a6f35ddcf311ccf1552aa8a08fc5b479fc7561a56b"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-review.test.mjs",
+      "bytes": 5888,
+      "sha256": "c2cca917118626dd8cbd40bfd0502fcacb90ac9591117a8399a285f9d6e5fdfc"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-revision.test.mjs",
+      "bytes": 11604,
+      "sha256": "454993b31bb87305909440abee15d39f6d0d2629b1377eaf84326085f20c786a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire-version.test.mjs",
+      "bytes": 6908,
+      "sha256": "475683bd5b73a423a204a71b3b727d80ab91b698ed786c72f0f6ad231141aa4f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/questionnaire.test.mjs",
+      "bytes": 15187,
+      "sha256": "7a7f375ebc4afa6a75cf2e8219b45f356f2e1f6e965a3959153584e796a94642"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/rendered-html.test.mjs",
+      "bytes": 27375,
+      "sha256": "8fefb647afeadfba6712b3b6c83961815430dbdb2842bb1dfbd9e120a8495578"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/report-format-fixture.mjs",
+      "bytes": 2442,
+      "sha256": "22d1a6dbb49d3c21e6c42c61eb2648128b9d58a774eb941516b97bcc12558f11"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/report-format-scope.test.mjs",
+      "bytes": 4944,
+      "sha256": "2ac0b1091efd18641906fcfc8a8a75b85f0cb2a501e825f8293cfc36557e80a9"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/report-format.test.mjs",
+      "bytes": 5266,
+      "sha256": "ba8c5c79bab67044738201b0d00febc95166ca5d317b9440d829462ff9d0d516"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/report-storyboard.test.mjs",
+      "bytes": 7475,
+      "sha256": "4d26ada015b3604eb8b0558fafe4eec3d7e59ff9fa8a5c954dde28ebe5ca3afa"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/report-structure.test.mjs",
+      "bytes": 4306,
+      "sha256": "fa11c2453bb2515b36922fde529daa45383aae6043d7b9e7dda6f09b5a02881a"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/research-blocks.test.mjs",
+      "bytes": 3422,
+      "sha256": "65580a3982a7d229a05e2b1b8e8b56e2da3de9b3feb4693f64ac0e251a6cd768"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/research-flow-api.test.mjs",
+      "bytes": 10921,
+      "sha256": "400525f1879d98e5e0074cd45384e33d0e8d4fad95c43caf5bec4d30a82db015"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/research-flow-restart.mjs",
+      "bytes": 3280,
+      "sha256": "1599d5abb449d12d5c37e55fa3c271e737125239995893929a3a36e0fec49b05"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/research-flow.test.mjs",
+      "bytes": 4426,
+      "sha256": "f6a589bc50108eb55c6464fc3bd63e5ff9a5d6cae20d375de72adb15f61fbb4c"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/routing-evidence-flow.test.mjs",
+      "bytes": 10650,
+      "sha256": "1678b19ec9ab0c8b3c87526b0e45a0e25642de9df01e8c8fe20ec782dcfbf2a4"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/row-eligibility.test.mjs",
+      "bytes": 30752,
+      "sha256": "96580be5649c715731899fab153dd3e80cfaebf5d8d725fbab18a0586ab47911"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/run-tests.mjs",
+      "bytes": 40570,
+      "sha256": "32cf531bd1de77e3090cfc3dafacb1c25bed4015af55deb3c9e8babc8ee69641"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/silicon-receipts.test.mjs",
+      "bytes": 3231,
+      "sha256": "206c03a528b095ceea89347fb16f3e0f8c085f51d5abb1ab2436fbc3e620c9ce"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/silicon.test.mjs",
+      "bytes": 18879,
+      "sha256": "276da281e420260cea7dfea363a940916a27cbfacb053dc1bb90548c5d6d003e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/survey-analysis.test.mjs",
+      "bytes": 8859,
+      "sha256": "d3b6885084d21934b9e6958801a810f38f4f12b1738cfb793acdd60034aa151e"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/survey-collection.test.mjs",
+      "bytes": 10818,
+      "sha256": "5eb5fd057ccc7f3e5f1c9955be0e17d9df47a150aedf41f979708c2f4f950e04"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/topic-lab.test.mjs",
+      "bytes": 21476,
+      "sha256": "64c298c99d2cfe836e2085c16576e233e1cb94e4fb4c232fe083b6e8a3d1bba8"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/workflow-kernel.test.mjs",
+      "bytes": 14807,
+      "sha256": "d6daf1eef8680d26759bf14c6ba5e66b864eecf09915a1adb417f059197d3e7d"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tests/workspace-motion.test.mjs",
+      "bytes": 6245,
+      "sha256": "7f18504678db0db05c528df81c98cba44650f8eda98ad0b0770f571d620b1b0f"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/tsconfig.json",
+      "bytes": 985,
+      "sha256": "1cbd9a34a6beabed99fa4d9c409a9c8ef4bcbbafaabcc362b27f0e6e4b4bd6c3"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/vite.config.ts",
+      "bytes": 3485,
+      "sha256": "2163990220e2ea4692d3b4d0597878b648f537ae2862f9274805353d005bf5ec"
+    },
+    {
+      "path": "platform/evix/apps/evi-x-platform/worker/index.ts",
+      "bytes": 2465,
+      "sha256": "f3d571a6ebf3585d4897b2d4611b4e0a06db94e2df1de5e360aa3d883b66be61"
+    },
+    {
+      "path": "platform/evix/corpus-source/case-studies/national-award-patterns-2026-08-04.json",
+      "bytes": 8328,
+      "sha256": "36fd4fce5f0033edba150438a1ec70000f6504d933de42769dd970dc2e29d0ec"
+    },
+    {
+      "path": "platform/evix/corpus-source/case-studies/official-award-case-library-2024-2025.json",
+      "bytes": 23990,
+      "sha256": "86889d3f8f4e5107c8c3d0098398a1193adca63c8623e522f7cd3ef42bdf5a09"
+    },
+    {
+      "path": "platform/evix/corpus-source/case-studies/user-case-intake-2026-08-04.json",
+      "bytes": 8834,
+      "sha256": "e0498c9c5092d6ede2636df7155f2922ce41cceede7c3a359e42c935b2db9962"
+    },
+    {
+      "path": "platform/evix/corpus-source/experience/defense-learning-20260930.json",
+      "bytes": 13586,
+      "sha256": "a1ee5b93b7b80e2aece56dcbacd8645849ce360203023a7d2b417fee30d61d8b"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/archive/edition16-undergrad-rules-20260802.json",
+      "bytes": 8525,
+      "sha256": "861229a14cc08085324187011c57fa4df5e3b2ede9b7deff5c826a8749c9dc71"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/corrections-20260930.json",
+      "bytes": 1220,
+      "sha256": "41a8181ec0daefbe0fa0e51f75a1bdc83faf16d38ba43c24ea7b5f42128e0449"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition16-undergrad-practice-source.txt",
+      "bytes": 739,
+      "sha256": "7bca601071854c06ca74a50ce7f1a20bd3208c735f662e51792aeb71fc054196"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition16-undergrad-rules.json",
+      "bytes": 8540,
+      "sha256": "53fed8ba552e0faa9c1d25f3f7a069330094a80f841a52611591130ec93c86e0"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition17-format-review-20261011.json",
+      "bytes": 3635,
+      "sha256": "a7287b89d156b1f451f810d883f988a272782316484def0d6956f8d7013aaab9"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition17-main-notice-20260921.pdf",
+      "bytes": 271470,
+      "sha256": "e334bed6a76a7a75131eed7d3d2b996b2ab63d4d9e2ce2821b1ebaae5b499b65"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition17-refresh-evidence-20261002.json",
+      "bytes": 6593,
+      "sha256": "86f4f65e2e00b294d00a3d68040f52464775c5c8fcb82ca51897b5e31cbf04a7"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition17-refresh-review-20261002.json",
+      "bytes": 2132,
+      "sha256": "d4ef8c00921004d2257d981af884ed4a1c4d7bf76e1a9cf44619db67b1044700"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/edition17-source-review-20260930.json",
+      "bytes": 2514,
+      "sha256": "c962f3814e7407f8037f03abdad378e9114079723e2a3f8397beecb4efbeb522"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/report-format-20261007-17-general-notice.pdf",
+      "bytes": 271470,
+      "sha256": "e334bed6a76a7a75131eed7d3d2b996b2ab63d4d9e2ce2821b1ebaae5b499b65"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/report-format-20261007-ahpu.doc",
+      "bytes": 25088,
+      "sha256": "190a0e093ab8fa53378f0ce74628cf60516886330050f1cfdc3bae4c2dbe762e"
+    },
+    {
+      "path": "platform/evix/corpus-source/official-rules/report-format-20261007-gxufe.pdf",
+      "bytes": 147299,
+      "sha256": "cd4a91d6117f9100f9f5d7d9bb42cc8839bd30c4352d6d3209138f780bd979d5"
+    },
+    {
+      "path": "platform/evix/corpus-source/source-manifest.json",
+      "bytes": 1850,
+      "sha256": "366c615b42b79001a7f8a116a9d8f12cf586c2bc22ae044b8c34fb7bfd2f35e9"
+    },
+    {
+      "path": "platform/evix/deploy/api.env.example",
+      "bytes": 1696,
+      "sha256": "314bd387239b1cb86d6d12bc4195b74c4f72caac3677363104e5a5919dc9facd"
+    },
+    {
+      "path": "platform/evix/deploy/compose.dev.yaml",
+      "bytes": 1102,
+      "sha256": "e93e335fcc6934134c3ef0f72be3fe0b1c4a5685bc16eddcfb033349397f5293"
+    },
+    {
+      "path": "platform/evix/deploy/postgres-init.sql",
+      "bytes": 930,
+      "sha256": "00ab0731381946267ba061444a2157b1e0fc5c55a373f3737b8d2645b935eb2e"
+    },
+    {
+      "path": "platform/evix/deploy/workflow-qa-upgrade.sql",
+      "bytes": 2665,
+      "sha256": "64928167cf575f31d47709d7332391a642eb45734efe461406aee9958778e74e"
+    },
+    {
+      "path": "platform/evix/deploy/workflow-running.md",
+      "bytes": 6222,
+      "sha256": "0a6b780b67cae7235be30ca12ee2975eb7187a7232578b5836fb968a95ee851f"
+    },
+    {
+      "path": "platform/evix/docs/analysis-journey.md",
+      "bytes": 1808,
+      "sha256": "60c65ab37224a1623e684c641d7d32954f6bceee4b6b859e02e836cfa9e07dc2"
+    },
+    {
+      "path": "platform/evix/docs/analysis-workflows.md",
+      "bytes": 9436,
+      "sha256": "ba55bd994902317edf9c3edc07e18050d7402dd82ccb59116813d48416607bd2"
+    },
+    {
+      "path": "platform/evix/docs/chart-palette-reference.md",
+      "bytes": 4836,
+      "sha256": "c953a2dec4673372eb7141f0de8b7e655e34c544259a8526276c98cf4a4c5766"
+    },
+    {
+      "path": "platform/evix/docs/chart-stress-validation.md",
+      "bytes": 7299,
+      "sha256": "19b2f0d684da72819f5b93ed5f065c91665ed0a09adce57b654dcbf351fccd84"
+    },
+    {
+      "path": "platform/evix/docs/chart-studio-implementation.md",
+      "bytes": 6531,
+      "sha256": "da167b82993b570d4827bbe9c683f72087911b1321b8d87a804677ce92e1f82f"
+    },
+    {
+      "path": "platform/evix/docs/design-system.md",
+      "bytes": 4811,
+      "sha256": "bdbd39fb0a9eebea026f173744e915111264584a9dbd67dc4f2296faae11c6bf"
+    },
+    {
+      "path": "platform/evix/docs/frontend-design.md",
+      "bytes": 2111,
+      "sha256": "fb4fcb2ee0c360ba60ff5b7c511b66e36c0bcc0a4147594ed2f0c7dd56bce941"
+    },
+    {
+      "path": "platform/evix/docs/frontend-motion.md",
+      "bytes": 5773,
+      "sha256": "b74fa788c4dc2d3fea05f964492e63cd753ce9666a61af9a5afe824f3b8cfee0"
+    },
+    {
+      "path": "platform/evix/docs/frontend-reference-mingheng.md",
+      "bytes": 2686,
+      "sha256": "df9c9f628fa2e9b19e3305d2074386079503bf82ec0531f0410080fa9db3b3b9"
+    },
+    {
+      "path": "platform/evix/docs/fullflow-edition17.md",
+      "bytes": 19350,
+      "sha256": "f0ce54951be8c90d3feb32fe6a0bb939230b04daccf8ebfed45cfd842d81471f"
+    },
+    {
+      "path": "platform/evix/docs/github-publishing.md",
+      "bytes": 2397,
+      "sha256": "ac1bfb40ba64de5aaeda042192c6dc2a8270ea1121c928aa7d23882364f33c63"
+    },
+    {
+      "path": "platform/evix/docs/landing-page.md",
+      "bytes": 11634,
+      "sha256": "5030860f7b22fa56a7f4fdf1a8b313fd6aa680523c9f3443d19263b229c94877"
+    },
+    {
+      "path": "platform/evix/docs/nature-reference-integration.md",
+      "bytes": 5213,
+      "sha256": "fad08d0fad789b43bac5ae3e071b6c0721622fc9ad36f10bb0f3280f2b543fc8"
+    },
+    {
+      "path": "platform/evix/docs/p0-acceptance.md",
+      "bytes": 4417,
+      "sha256": "8360320378be9112acbbae62c01a235a4c51c6e968ebce9637db3039e43a515e"
+    },
+    {
+      "path": "platform/evix/docs/p0-migration-matrix.md",
+      "bytes": 3005,
+      "sha256": "f0aba878111c0db6ea086c5abd38ce8423e302a91264665d5143701c573c567b"
+    },
+    {
+      "path": "platform/evix/docs/p0-running.md",
+      "bytes": 7840,
+      "sha256": "677d6368cb58ac4658d62dffaf5fe839d0b4cde12cd0c0113287aca6e9be5206"
+    },
+    {
+      "path": "platform/evix/docs/product-progress.md",
+      "bytes": 7719,
+      "sha256": "2ddd42d75b3d31d25307a221a0d5ed0a107e2de950fbaf1d0dca1f006866e18c"
+    },
+    {
+      "path": "platform/evix/docs/repository-learning.md",
+      "bytes": 9361,
+      "sha256": "6872c07105e73d3576166a3643558b67dda7b573f37130a16d71d8722513fc95"
+    },
+    {
+      "path": "platform/evix/docs/research-canvas-a1.md",
+      "bytes": 3692,
+      "sha256": "eb445b0c3dc0fa03603193d3b45242afbc5e87730f10ed9d8a14c6e7199d664a"
+    },
+    {
+      "path": "platform/evix/docs/research-canvas-batches.md",
+      "bytes": 3812,
+      "sha256": "4ec78526663864c5384f09d120982f9e63768558c870df624df74b3214bde111"
+    },
+    {
+      "path": "platform/evix/docs/research-canvas.md",
+      "bytes": 5011,
+      "sha256": "96bbcfe43a99c7066fa45aeea1b994f0120832ef3289e44d10140861ced2bb07"
+    },
+    {
+      "path": "platform/evix/docs/research-workspace.md",
+      "bytes": 7528,
+      "sha256": "757a113041ee216626bdcaf70fa3fdb97a60685011f5b9c7b028d51c338141cf"
+    },
+    {
+      "path": "platform/evix/docs/third-party/echarts-LICENSE.txt",
+      "bytes": 11990,
+      "sha256": "634293835b43a6dd2094fa39182a3d9a6b9ca43b7fdb9ac354e8037af2a3093a"
+    },
+    {
+      "path": "platform/evix/docs/third-party/echarts-NOTICE.txt",
+      "bytes": 168,
+      "sha256": "d491d358344f842685c1b1585970999db65fe30ecf7ef3867af8814f4016c016"
+    },
+    {
+      "path": "platform/evix/docs/third-party/echarts-licenses/LICENSE-d3",
+      "bytes": 1475,
+      "sha256": "e1211892da0b0e0585b7aebe8f98c1274fba15bafe47fa1f4ee8a7a502c06304"
+    },
+    {
+      "path": "platform/evix/docs/third-party/zrender-LICENSE.txt",
+      "bytes": 1509,
+      "sha256": "a681e9d183c72b4af4856935893805eb48c08f0f5a3f260203db7444c20fb98a"
+    },
+    {
+      "path": "platform/evix/docs/ui-copy-cleanup.md",
+      "bytes": 1455,
+      "sha256": "be867359e0b88993c334c928270947fc4657ac2a4c78d8b6ff07b44cbb7b33d8"
+    },
+    {
+      "path": "platform/evix/evals/adversarial-cases.md",
+      "bytes": 2387,
+      "sha256": "b15923377fb8d7ea93ecd830bd4be9e1e9c0a3c29ed9cb5651310ebc47c0d7d6"
+    },
+    {
+      "path": "platform/evix/evals/benchmark-tasks.json",
+      "bytes": 9750,
+      "sha256": "244c72d735f69d4ef8e4f1b1fe2fef6c251fbc5decada7a99ff5b40bab8f36c7"
+    },
+    {
+      "path": "platform/evix/evals/defense-learning-cases.json",
+      "bytes": 3703,
+      "sha256": "1efa9032d9cf23b67b31e17fd95804079c5e1223410d301de4a0f8ba984b57b6"
+    },
+    {
+      "path": "platform/evix/evals/evaluation-rubric.json",
+      "bytes": 1723,
+      "sha256": "62edcaa7785dd007e43d5393e03585c4aa3607ac567b01beab1d479ed3347252"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/behavior/synthetic-evidence-ai-use-ledger.csv",
+      "bytes": 269,
+      "sha256": "06d810543fb0273f3f2ecd03984854f6608d94f0a100b675e694e8f71d1b5e3a"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/behavior/synthetic-evidence-visual-ledger.csv",
+      "bytes": 746,
+      "sha256": "becad48b4f9ff00fc51109914969ed55cbfe5947248624ca42274194da03d18b"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/behavior/synthetic-evidence.svg",
+      "bytes": 278,
+      "sha256": "ceaf10f1cfbef072c01af98db1ad76bad41c313b784b4b90386d0fdcefce5eb0"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/dataset.csv",
+      "bytes": 139,
+      "sha256": "9ae7fd061b8709f7a35704a7ebbd4fc36a461b7f822ab4395563c184ffe43ee2"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/evidence-ledger.csv",
+      "bytes": 575,
+      "sha256": "1096e7bc11fc8e231b58fca62733450ea488ef946b24fa8811b9abaf651b1562"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/questionnaire.csv",
+      "bytes": 446,
+      "sha256": "b8828021bc70e76f42addea111dace47d02145971847b8559fdaf1c8ee4b25e0"
+    },
+    {
+      "path": "platform/evix/evals/fixtures/report.md",
+      "bytes": 879,
+      "sha256": "83e61c060f38d5e0aeecc886ee17ab01f6dd9719f118d82733515fa2ba834c52"
+    },
+    {
+      "path": "platform/evix/evals/public-data/README.md",
+      "bytes": 5136,
+      "sha256": "1cff512ddf1f2a61398587092220647d1f862d63b072e0943c0e031dd9f91c3b"
+    },
+    {
+      "path": "platform/evix/evals/public-data/public-data-engine.mjs",
+      "bytes": 1721,
+      "sha256": "5d8f58cf2f31a1637332c1df743442120a2cb68d710acb764514c45b531ed520"
+    },
+    {
+      "path": "platform/evix/evals/public-data/verify-bank-marketing.py",
+      "bytes": 12801,
+      "sha256": "83347fb1a1a6e8045195a4a6c030ec71e40ec8eb358bbf6eb0b112a795a84f8e"
+    },
+    {
+      "path": "platform/evix/evals/run_behavior_evals.py",
+      "bytes": 67632,
+      "sha256": "f5fb270823d4574fe58373e09f93c41e5073eb5603e13058937801c0f0563969"
+    },
+    {
+      "path": "platform/evix/evals/run_cli_utf8_test.py",
+      "bytes": 2946,
+      "sha256": "49ad7625931edeac57123e0fa0d7a2793d70e403e1bb06937cb063de0d831107"
+    },
+    {
+      "path": "platform/evix/evals/run_lock_concurrency_test.py",
+      "bytes": 4698,
+      "sha256": "f193b7ea804ebfa248c3f14994cb1aa0a27724d85e65420d3990a0decd9f676a"
+    },
+    {
+      "path": "platform/evix/evals/run_recovery_fault_tests.py",
+      "bytes": 18111,
+      "sha256": "487da06dda20fcca9ca62d1d29a66b2682f2db0868e310a489d37a3b218addcc"
+    },
+    {
+      "path": "platform/evix/evals/run_static_evals.py",
+      "bytes": 113142,
+      "sha256": "a7d21bafb66d5ffd72a618cc2808d726fbc8bdb2dc4b3f252f8b2622bde0ae51"
+    },
+    {
+      "path": "platform/evix/evals/run_submission_integration_test.py",
+      "bytes": 9199,
+      "sha256": "f04dce62715e7da8f5506d2a1ac4b8ffb5b7a1ac3a20fb2d625abee5ee8a6044"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/01_initial_safe_state.json",
+      "bytes": 1873,
+      "sha256": "267e40238df24df3c700d44ff360f0fb5fb2f090f88cc9986c318fd59e727391"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/02_status_idempotent.json",
+      "bytes": 1250,
+      "sha256": "868bd02f67b6996e1ade3cc1602ea694bde3f35a0affcfe54223c9f1a0ef28e1"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/03_rule_gate_blocks_advance.json",
+      "bytes": 1614,
+      "sha256": "096922f3c836a5b9d06b157ff6d6705a8a39c5d19ffa725a80020b4d773c2406"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/04_evidenced_gate_allows_adjacent.json",
+      "bytes": 3085,
+      "sha256": "7d8cb234b55c4d25ae12367ba1bc8084b97620b393b874d2b9ae94639da54a2a"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/05_skip_transition_rejected.json",
+      "bytes": 1175,
+      "sha256": "b3316901e1600a54356a386ca2791827fa53904719bae13841d1ca7b9591268c"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/06_checkpoint_resume.json",
+      "bytes": 4520,
+      "sha256": "329c3ee1a3084dbc6197900f3af09bf47261c713bd96f7266284b89b44edcf55"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/07_high_blocker_blocks_handoff.json",
+      "bytes": 2583,
+      "sha256": "449ba8913dd509b7470cf0fc514196aee698cd0826efe56613b344e77ea70e1c"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/08_synthetic_evidence_rejected.json",
+      "bytes": 2348,
+      "sha256": "cd595a5eedb1fd6e4990d536ab6d7ac1fad32b996dd827ca7e331dba6c882253"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/09_submission_zero_fatal_high.json",
+      "bytes": 2023,
+      "sha256": "da07e71444ff0309b0b045d981b7f3b8ca8d97ea0d69405348e2944ff5576c04"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/10_doctor_detects_mirror_conflict.json",
+      "bytes": 1485,
+      "sha256": "307a06d05313a0d3f88694cbfb0c7bf7b452535c4aeaae806a7b7e6a099fad9c"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/11_handoff_rejects_stale_rule.json",
+      "bytes": 1548,
+      "sha256": "a6315f92b9f13b4192a2ba189bdcaa8a8e8d16652840102b1c6c5140673b1c7d"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/11_verified_handoff_closes.json",
+      "bytes": 1444,
+      "sha256": "80f2a8664478827b4e802c9bd4b96a9ccd2ba73add396348b559294c3873f7d3"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/12_high_risk_blocks_submission_ready.json",
+      "bytes": 2325,
+      "sha256": "f51324c30d4b71fd1cccdbac3f35ddf2158e969284d4888fce7f58719b789814"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/13_forged_manifest_blocks_closed.json",
+      "bytes": 2225,
+      "sha256": "9da7fac660057367981eb2a83c68bb948d1fb2127a0f9402ae0b6b8f66c20d49"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/14_final_artifact_register_policy.json",
+      "bytes": 6130,
+      "sha256": "2b6388a2ab8bf091cdfd01e2edded64cce11cb100a7e6f20bfac66da677dee2e"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/15_handoff_rechecks_final_artifact_policy.json",
+      "bytes": 3414,
+      "sha256": "b076380d752096b2391b3a26e8503d3e80bdc2fb8feaa38b80ea61f6ff6ba6ab"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/16_forged_pass_gate_rejected.json",
+      "bytes": 1384,
+      "sha256": "fa48fa65128a77cf9e2228acc5a20607ea34f54cf5ac6dd1b6afa09a983c23f4"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/17_fatal_risk_cannot_be_accepted.json",
+      "bytes": 2096,
+      "sha256": "6828f3ad87d0c7a865bfefdabd41a12a5f32fecfb7617e989e961c430614c751"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/18_unstructured_high_blocker_waiver_rejected.json",
+      "bytes": 1584,
+      "sha256": "24a0681ff9faa2c64a6c256ad264d2ca8074017d13523d69be72d4252899173d"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/19_final_artifact_requires_approved_review.json",
+      "bytes": 1651,
+      "sha256": "f95b80b419e8fac816a629ee7b0f7801a273c0331c4af223ead8061d540a3ab4"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/20_required_final_deliverables_complete.json",
+      "bytes": 3794,
+      "sha256": "d362d12d82b4dae1b7fc81970840570067875fb3b6529dbe07a50a0a0399d58e"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/21_deleted_aggregate_audit_blocks_closed.json",
+      "bytes": 1676,
+      "sha256": "bc7e3e457267b608ef60b0efca085553b40fc9be21d465a813bb1891e7ef0c24"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/22_modified_aggregate_audit_blocks_closed.json",
+      "bytes": 1720,
+      "sha256": "6330a2b5e0e10fada1839297515b4377b77210de91893bceb9543bc503371971"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/23_closed_repeat_handoff_is_immutable.json",
+      "bytes": 2972,
+      "sha256": "2b5e816f66ae1e699b7e102b036aae59274b95363a659ed8829281e4255c969b"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/24_rule_snapshot_five_dimensional_scope_mismatch.json",
+      "bytes": 2835,
+      "sha256": "7f587b8726363882c5cfb6012ee548660a98218db24db83d108699f595fbea1a"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/25_atomic_rule_scope_mismatch_rejected.json",
+      "bytes": 5042,
+      "sha256": "0dbc73ca82d814766590e4be2ad0356841283c9179c9ad0cfb0bcc780190c677"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/26_closed_blocker_evidence_drift_rejected.json",
+      "bytes": 4960,
+      "sha256": "717c659b06a85d7edffc571fd416e401944f46b30aea781460c418e0b82a809c"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/27_duplicate_final_artifact_content_rejected.json",
+      "bytes": 7867,
+      "sha256": "ac8ddf20ecd29f11431735b009db52485b12d5ea5765890a4a16c2593a17dd8b"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/28_same_producer_role_review_rejected.json",
+      "bytes": 2487,
+      "sha256": "4d30132a2936af9dc39767dfa836411f41d00618d58f69cc8e9a33896a85bdc6"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/29_deleted_gate_result_blocks_handoff.json",
+      "bytes": 1227,
+      "sha256": "30371f2ad4d6469d8d81a5771ae0b4b9e59d05cfa645b6cd0567158acfb2a120"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/30_modified_gate_result_blocks_handoff.json",
+      "bytes": 1315,
+      "sha256": "705655100a8080edc891d08c23f5af0404f534bb97f77e325de9e72e947e132a"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/31_deleted_closed_checkpoint_blocks_handoff.json",
+      "bytes": 2380,
+      "sha256": "2c0745e0612c786aac21a6e63a04ebd6b36296ec37f2ef98bca7342995a3e447"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/32_modified_closed_checkpoint_blocks_handoff.json",
+      "bytes": 2534,
+      "sha256": "d58790d2a8b80e3e6f7691f74039f724437536ae414810507b55222c329b7057"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/_defense_ready.json",
+      "bytes": 25601,
+      "sha256": "b2850ffb1c89798f18ce93b98ad966ebfaebfc3960448eb339bb45be9c616acf"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/_final_artifacts_registered.json",
+      "bytes": 2885,
+      "sha256": "abf5b723c5f84aa3df046ea9e8acf38eec1f6108e8a0225b05410496b2fa8066"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/_handoff_ready.json",
+      "bytes": 6370,
+      "sha256": "d182146cc1f07cc66c557e37fe72d0eb0336d029060b9385aa007d1622f79674"
+    },
+    {
+      "path": "platform/evix/evals/scenarios/_submission_ready.json",
+      "bytes": 659,
+      "sha256": "77189024e88d7e206aa22700249108b8f86ab82eecb434dffafd43ffb28dddf6"
+    },
+    {
+      "path": "platform/evix/handoff/00_先读我_交接说明.md",
+      "bytes": 5234,
+      "sha256": "f81e9d77a641a7aed092782d72a06246c87f92c8ce1d4af9e6d2b2267b1174e5"
+    },
+    {
+      "path": "platform/evix/handoff/01_给下一位Agent的接管指令.md",
+      "bytes": 4506,
+      "sha256": "e9b73d7a8d6a577f39b5bdcdc99cbc053ea41a8f7b8064f5f13628c1f80fd315"
+    },
+    {
+      "path": "platform/evix/handoff/02_交接范围与已知边界.md",
+      "bytes": 5939,
+      "sha256": "a0088657d06d7dd4f7d1f3f5b7cb94c04c7f450bab82339e09fd049fb9cfb005"
+    },
+    {
+      "path": "platform/evix/handoff/03_验收与复现记录.md",
+      "bytes": 4755,
+      "sha256": "5075dcc6607d8034ba787bbb2903a8c3c2585d98b81079eef67438311557c791"
+    },
+    {
+      "path": "platform/evix/handoff/build_handoff_package.py",
+      "bytes": 24710,
+      "sha256": "576ca5a2d155386cce4297a7e4302274298b213a566d7b81c0fda35da3d381ac"
+    },
+    {
+      "path": "platform/evix/handoff/verify_handoff_package.py",
+      "bytes": 32656,
+      "sha256": "809e7984dd8de51781c6b24b54de84ddfb3be00ff4a003a373207e2986c8185e"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/README.md",
+      "bytes": 5153,
+      "sha256": "5553cf7335e3a2bbfa355c9d4dd8866e53f75ce4547ced09f0c4b5b480a9e970"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/captions.json",
+      "bytes": 2674,
+      "sha256": "a689712f5a90e9a9bbf665eb24ea664603220f3cc43c7a0b953694c448cd29c6"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/finish.py",
+      "bytes": 4921,
+      "sha256": "e97134a409bc1e4405ae61e1c797b3ef5e6d316e512dd6cb7fcf5bef10592a2a"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/index.html",
+      "bytes": 3189,
+      "sha256": "bf3a50478eea7fa9bd7bb9f289161509d318b9a1a0fddcff3ad81bcdee2ed080"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/player.mjs",
+      "bytes": 9926,
+      "sha256": "e11fb5b7dbaa30f5f2a43e51050d045613ea27db6b092f977ce3a1e8ed6669d2"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/provenance.json",
+      "bytes": 2416,
+      "sha256": "b11d0634ad9ac0ddfae09d229dfe987f6480d29f340681f93faf308b6f6c8998"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/qa.py",
+      "bytes": 1858,
+      "sha256": "2b8b22d83d2922b6c675756006e7686fbf02765e7bf27d8a4e2ea64a428adf0f"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/requirements.txt",
+      "bytes": 28,
+      "sha256": "e32056a5263b5972e789540468f3d3e1e8e2d1649d21ef65e814317727be4897"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/scene.mjs",
+      "bytes": 38124,
+      "sha256": "fc195e2bd705b36f9609fb13f0cae3d33965e639bb2f0d9f2e1de0e62894d54b"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/score.py",
+      "bytes": 24737,
+      "sha256": "9591e50b639b2a125f6b22a10d80dbe6db88d20a94b4bc585a39c8e04dcf4999"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/screening.html",
+      "bytes": 2536,
+      "sha256": "d2d9555c61118a440e061ba984da360a3deebaa3e83c82c82451c2f02c02fa29"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/script.md",
+      "bytes": 11973,
+      "sha256": "7319c80c0dd272bb17cebc5290496e1d73d766b3a98db615c8f820f388bb417b"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/server.mjs",
+      "bytes": 5538,
+      "sha256": "3a4ae0b7f7b26e1707952f63fa96bef21db43f4d44b6dafa7911a58cac41f424"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/shots.json",
+      "bytes": 9687,
+      "sha256": "6e3a5a43166a4f4c9fd5ba55b1c9147834269fac4dfbd3ea83a27729347ed904"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/vendor/three/LICENSE",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/vendor/three/three.core.js",
+      "bytes": 1458113,
+      "sha256": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/vendor/three/three.module.js",
+      "bytes": 662772,
+      "sha256": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea"
+    },
+    {
+      "path": "platform/evix/media/brand-film-20261011/web_delivery.py",
+      "bytes": 1907,
+      "sha256": "16b8185deda8a0738b40ee891f4f1bd2a04136e5b21d86f48198cf4f4cd4a922"
+    },
+    {
+      "path": "platform/evix/media/promo-film/.gitignore",
+      "bytes": 6,
+      "sha256": "30b43e777e58165ebd24028576ce1b202adfe47e4313af78eff3e12a8968214e"
+    },
+    {
+      "path": "platform/evix/media/promo-film/README.md",
+      "bytes": 4791,
+      "sha256": "7cf623f61db298ca4a71c3cbfb6eab224abfd27c9c08fc9a793da8d99c50d017"
+    },
+    {
+      "path": "platform/evix/media/promo-film/cues.json",
+      "bytes": 3012,
+      "sha256": "5bee0cd7abec09168997dc88f6b64465a5ccf66f26c913189bf6cc64ae747355"
+    },
+    {
+      "path": "platform/evix/media/promo-film/film.html",
+      "bytes": 51232,
+      "sha256": "bfa7684bac1dd342fa87cdf9f6f03a732a1a7f864d39e30870c47355d0af931a"
+    },
+    {
+      "path": "platform/evix/media/promo-film/render.mjs",
+      "bytes": 6673,
+      "sha256": "10c473824d82a3eea4a94ad88107116e80ef667c142e97f26c753cbd83d9e9a7"
+    },
+    {
+      "path": "platform/evix/media/promo-film/score.py",
+      "bytes": 16563,
+      "sha256": "3f8fbfa1c53f1d83dcb49768080b26c186b3fa5e051600e759a76fd7782c55fc"
+    },
+    {
+      "path": "platform/evix/package-lock.json",
+      "bytes": 430811,
+      "sha256": "16165665b188f8cfc44fd79f17375f4877d823fc3170413f76f69b99bd4ae07f"
+    },
+    {
+      "path": "platform/evix/package.json",
+      "bytes": 498,
+      "sha256": "a4516cf6b4db8750c73e75bcd9483068cc0197f7f09c5ba4ba41df3589d032e4"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/package.json",
+      "bytes": 342,
+      "sha256": "b46db77f5f5725f8958570d2f313da9c9a9db4508de91c248ceee701dc908bb1"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/src/api-types.ts",
+      "bytes": 10120,
+      "sha256": "55c1903c7aea8ff188edb7a06e16f8d244ad26675acd19be61aa49b85dca0c30"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/src/index.ts",
+      "bytes": 68,
+      "sha256": "fe3a511f9bad20929f7dfc1cf7b5331095dd26c53ad07fc3f95771a119a00098"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/src/questionnaire.ts",
+      "bytes": 22241,
+      "sha256": "4509b89a302ea49e00e5be2d6c5ecf5bf8f4f42437d4082183babdeeedd1aed4"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/src/workflow-catalog.json",
+      "bytes": 28083,
+      "sha256": "cd1136c21ec99ae631f74532e82cd680fc3f0fe1e33b0bd7d8be1dc08f753dd9"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/src/workflow.ts",
+      "bytes": 22987,
+      "sha256": "972a758dce87c66e43352747e41debfa97b45f81b90290046d72f8bc405d9fcc"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/tests/contracts.test.mjs",
+      "bytes": 4386,
+      "sha256": "6598bfe56eab34f68921533956e0a7bd2fa8699915d8f11fe6d24a1ccc94959c"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/tests/fixtures/legacy-questionnaire-goldens.json",
+      "bytes": 1433242,
+      "sha256": "04cecc0e4ea12b960994eb96cd2418af3025721393b2cdb942c874e9e74fa82d"
+    },
+    {
+      "path": "platform/evix/packages/evi-x-shared/tests/workflow.test.mjs",
+      "bytes": 10352,
+      "sha256": "e00bf98b2a33ecc4cdc652b1cf25f8c024979e5d5d9533c7b2356b34f146d2d5"
+    },
+    {
+      "path": "platform/evix/pyproject.toml",
+      "bytes": 2032,
+      "sha256": "a9bdf55bd85322c17c0523d4c5446838a29db353030b607c600b259482d6c9b7"
+    },
+    {
+      "path": "platform/evix/scripts/check-p0-preservation.py",
+      "bytes": 2062,
+      "sha256": "4a925485b3d1cd64035352620a7fdd7f1f69cafed0b336f2c4a5f817c0655af1"
+    },
+    {
+      "path": "platform/evix/scripts/migrate-p0.ps1",
+      "bytes": 197,
+      "sha256": "ebb1e47e0ce479ad457a04826463f9caae00e7a4dc5c4b10066556a43c25241e"
+    },
+    {
+      "path": "platform/evix/scripts/p0-env.ps1",
+      "bytes": 1885,
+      "sha256": "514bfc4f1fe62520ce029c80eca3e333906196481a581c8f72e25b53a963aa5c"
+    },
+    {
+      "path": "platform/evix/scripts/p0-source-manifest.py",
+      "bytes": 1423,
+      "sha256": "a314e5d23489d8be181706603dc4f9cf7a9e1e596fc86c23dba6f0be96e11d2c"
+    },
+    {
+      "path": "platform/evix/scripts/prepare-p0-review-db.py",
+      "bytes": 1822,
+      "sha256": "4c261941384bfcfee0409cbe0fbe04132980dc71586837cba32936492c2519d1"
+    },
+    {
+      "path": "platform/evix/scripts/render-p0-word.ps1",
+      "bytes": 1728,
+      "sha256": "892370dc0649496048aaf2cbf5b2825acbe93f25432f68af5e004eaa81613b81"
+    },
+    {
+      "path": "platform/evix/scripts/setup-local-postgres.py",
+      "bytes": 2355,
+      "sha256": "c95a5b7e80c2029363211a189a9532ed34f21b6996ace3eaf9ba41497b362edf"
+    },
+    {
+      "path": "platform/evix/scripts/start-p0-api.ps1",
+      "bytes": 337,
+      "sha256": "83c63883227798f2b5901c327b472c2e9d8f28bc03b17bf6367d6002ff648777"
+    },
+    {
+      "path": "platform/evix/scripts/start-p0-postgres.ps1",
+      "bytes": 3379,
+      "sha256": "e42267f4a08070a123a8b96c1ced91507784b7752fcf7a16b4a1d28287232508"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/SKILL.md",
+      "bytes": 6004,
+      "sha256": "89b512c5a510ee647d8e76d6b28c790ce900c4e4bf58648f47d74583f70f4806"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/agents/openai.yaml",
+      "bytes": 339,
+      "sha256": "87c5ef7e6cc11a40f3fe148111c88a0884298f56574b13a5eea2460c1bdebcfc"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/acceptance.md",
+      "bytes": 4257,
+      "sha256": "80e5c08b86a5979059f2767b8e6821c7b47bc9ec2f25ef315233c24e41294485"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/evidence-and-sources.md",
+      "bytes": 3481,
+      "sha256": "a1f128b6c74881157c8c84b7fd802debdfac3cc80a0186446e3c7646d2d19dc0"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/motion-interactions.md",
+      "bytes": 3783,
+      "sha256": "a27c6f3ab7b4b90b00e86969c410dc6e0d71d7dc4a9a9f4f0da76db3a0994c19"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/research-provenance.json",
+      "bytes": 15610,
+      "sha256": "e8844a30959ed920b524026f79cae893ba7a586a743b7bdc2c384a41f33532a9"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/spatial-layout.md",
+      "bytes": 2501,
+      "sha256": "6d802d2bdfc156153286449b22f15fccc4f9a1109c4f9046e39f522ab82a905f"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/upload-state.md",
+      "bytes": 2578,
+      "sha256": "54ac69704c1c767a34925460c455328b8edde3b1dcaef33c9560290dba586123"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/references/visual-system.md",
+      "bytes": 2983,
+      "sha256": "f450a1280cbbccf2d7e801bb7a6d666ee91c3cdaedc5f70918c930fe632b9ce6"
+    },
+    {
+      "path": "platform/evix/skill/frontend-design-production/scripts/audit_delivery.py",
+      "bytes": 9991,
+      "sha256": "185dc655d2b2218e4fa7538aa3c77420dded84aec674c6de2abe1f93a442526d"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/SKILL.md",
+      "bytes": 16915,
+      "sha256": "50a73cae9260efffc6dac0b0a042153f880504ba4303ffc08818b4a37ebc229c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/agents/openai.yaml",
+      "bytes": 443,
+      "sha256": "ad49c47479fef28f9fdd06abad2979008ab4117d9dd7789ad67d2e0e1b9b7282"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/brand-manifest.json",
+      "bytes": 16538,
+      "sha256": "3ba223cd7f93d6f3000c5b3d953ac2179df7e13cac7744fddcd451b651dd248f"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/derivatives/evidence-path-pattern.svg",
+      "bytes": 772,
+      "sha256": "066c9085742dfaae86a5a76448f62049bcb1918e639eb11a288c540ad18a1f9e"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/derivatives/lockup-preview.png",
+      "bytes": 42051,
+      "sha256": "b4d09e8d4d3117e44ff5489ae3a2ccd2b97cb6ed98f34dacdf285fdb7641a862"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/logo/lockup-horizontal.svg",
+      "bytes": 2179,
+      "sha256": "aea581f85ffed60710b2ca2baeffe520728d4a60daea1d81300eb4755a373d00"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/logo/mark-monochrome.svg",
+      "bytes": 806,
+      "sha256": "e992c494c2e497fe9fc99e5380c43a4ab34b1dc9042c18aeba2684b644b3caa2"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/logo/mark.svg",
+      "bytes": 1111,
+      "sha256": "03f95209a62728fc56cac5b5b518ebbaa830bd2ed12162e27de0f9556638e759"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/prompts/avatar.md",
+      "bytes": 4182,
+      "sha256": "b4a0d01c0ac5e493dbe1ffa5fe8417871470f3eb895b045f130d66e47dc38b8c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/prompts/character-master.md",
+      "bytes": 6745,
+      "sha256": "d481e6d5b6efaf4cb992854aa6e5701d0b28384992bc9ff19ffda3b789b6e74b"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/prompts/hero-evidence-chain.md",
+      "bytes": 6111,
+      "sha256": "7aa117f03522639d705607d7fcfaf2dd22533d799ee18cb3441dd1762c0a2e7a"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/prompts/merchandise-concept.md",
+      "bytes": 5457,
+      "sha256": "a7a5c58be38cb027b9a711a10b687776da4cb5e3739df4efeccdd9687abb21fe"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/prompts/sticker-pack.md",
+      "bytes": 5817,
+      "sha256": "aff8b66c40c72f6750befce909ca90cc7acc5096b7e6234b9e9609fd124cdec4"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-avatar-rejected-three-node-v0.png",
+      "bytes": 1596801,
+      "sha256": "52d42e9f7f0e23fc0b89a38affb41fd6ad447a798625bc6f53bc2273ccfec603"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-avatar-v1.png",
+      "bytes": 1901399,
+      "sha256": "e06ca72231595122423681f70bf19ec00ad526caba8ac9382e0957d7dc27bf03"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-character-anchor-v2.png",
+      "bytes": 1653462,
+      "sha256": "4eacb2653020e8475837962bc67767a7bf4fd32a8a99e29699bc718486805b6d"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-character-master-v1.png",
+      "bytes": 2379715,
+      "sha256": "905cc0cc4befe2522e8faff0f4058de6f990cd956a77c2057cc5d40446c64fc5"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-hero-evidence-chain-v1.png",
+      "bytes": 2073028,
+      "sha256": "a58b00f1faea3828e78aaf4d5ecff425f634aa447b25e41537e86dacd357843c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-hero-evidence-chain-v2.png",
+      "bytes": 1995314,
+      "sha256": "beef43579a77b912471857f29cbfaae492a9dc17f9850f3dc903f6f2a66443cb"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-merchandise-concept-v1.png",
+      "bytes": 2525146,
+      "sha256": "3b79c38788486de09f174bd437fc74adad2902766e51b5e0f1d4db902c59739c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-sticker-pack-v1.png",
+      "bytes": 1768651,
+      "sha256": "8ae68f6920a66016710f12d311d773f381c992e0fe81be0a81eb923975c42a96"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/raster/evi-x-sticker-pack-v2.png",
+      "bytes": 1909487,
+      "sha256": "a82f69e52114159c5f54cb36f5351c2fcfccadfd7b0d841225c6150455317a84"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/tokens.json",
+      "bytes": 9429,
+      "sha256": "d52a6603a61683706144754eb3ce4879dcb061cb82211ac5737886ff12f541f7"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/derivatives.json",
+      "bytes": 1504,
+      "sha256": "1d288bf2f1d1e43e1d218b3f6ea9f37c82cb30e82bc46de380c360d2b9ab32f1"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-128.png",
+      "bytes": 27139,
+      "sha256": "1e41ff3a6bf4f1d3f824c20c4125aa4176fefb2710d6774eb405058fc9eb7d77"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-16.png",
+      "bytes": 887,
+      "sha256": "3fb006c8ddf2042e5f392ee7fae918a6230c2174849f7af726694a67639f2fb0"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-256.png",
+      "bytes": 93106,
+      "sha256": "4755cf1c5bf796d07b3d2c5dba49e5c5d6d0fdc0a149d7fba60ef8e1d1b0958e"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-32.png",
+      "bytes": 2726,
+      "sha256": "71c8f31b066458fd2c8cc1535196c3046a0aafc71083506cb64d42ef2e43de78"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-512.png",
+      "bytes": 358740,
+      "sha256": "e92d4e16eb4244a4bab0ec60b96ea1868e3fda9659187960c9edd5f841e054b3"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-64.png",
+      "bytes": 8449,
+      "sha256": "73080ff7d763fd8c23bf5b43882e409c9439015e28fd204723b6f14ca2f291fa"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-large-1024.png",
+      "bytes": 1416217,
+      "sha256": "991c227cc5c4edfc17758206d0b485066f8853f11bb725421ca5310e0979d039"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/brand/ui/icon-small-400.png",
+      "bytes": 220526,
+      "sha256": "b892065aa504fa76d4ba147728ff6e7c7f4351e6ed02990a217279c087bb337a"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/gates.json",
+      "bytes": 10523,
+      "sha256": "1b4a9e00afd2857c9126a8fa5f730c100deca24a5b126c9df2718fa756c00bd8"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/schemas/agent-state.schema.json",
+      "bytes": 17132,
+      "sha256": "70cee350ff648d4dc38c526e001dca45d914bb5d3a23a03fe2bab17cd8e03b68"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/schemas/final-handoff.schema.json",
+      "bytes": 6522,
+      "sha256": "789a27340b74a5c7a99fcf40b9b23922ac3576e257eda47ccb0dc7412aa42ec4"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/schemas/project.schema.json",
+      "bytes": 14101,
+      "sha256": "d8dd3dfe82bb9c36127137d5b70635d448fd73e1b9a4e1aee0283fd1db97e307"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/schemas/rules.schema.json",
+      "bytes": 5368,
+      "sha256": "c2732b164aeb22dccf657ca6fec0a0362405509978a4af52d575ab2c000642d5"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/runtime/workflow.json",
+      "bytes": 8804,
+      "sha256": "77098792eae338fd1bd57879dd76d2792abc641b474d38888f67bebf0e061da7"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/ai-use-ledger.csv",
+      "bytes": 111,
+      "sha256": "1d91a84bc89f3ca023daf4d88fa785bf5a31c6584696daca26a679e94986815c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/artifact-registry.csv",
+      "bytes": 378,
+      "sha256": "1e1b916f320ca5cd8b68aa2d925043ac88859ab04a58a3f388365500a37a3103"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/blockers.csv",
+      "bytes": 261,
+      "sha256": "48d76b670a460c6afbdc846c1471bdbc364973e456adcacac2f1b651534d8c5d"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/decision-log.md",
+      "bytes": 132,
+      "sha256": "b775f7904c277b7afcd835d2cfa61fe50a0a183cbd0cf6718dfc865527b1d3c4"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/evidence-ledger.csv",
+      "bytes": 323,
+      "sha256": "91303a62941e4e96f9e9983a09697f8c812b88352f20c63c4fde216e1a0c77c8"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/handoff-manifest.json",
+      "bytes": 2578,
+      "sha256": "36452ab24bbe4050dbfbc51e2586bbc7b2264827cf049f10846e6bb2f9dd5c1c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/preflight-checklist.csv",
+      "bytes": 1280,
+      "sha256": "b1f0053f5bdebf14d50ae26cf577d8aa5dbf5e12d37f517da9a0ad676375bf9f"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/project-brief.md",
+      "bytes": 621,
+      "sha256": "0bbb8f96f8b06ab77905253d1711eea77da82ad594ca1ad23e063b2b9a48de6c"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/project.yaml",
+      "bytes": 1810,
+      "sha256": "fcb38b45ea49dcfd248de287ea67253d9e6af2eb4d83c5a4694a3dac04944d5b"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/report-outline.md",
+      "bytes": 821,
+      "sha256": "1d1c496808e8f6cf8471a10c00190da6de69b5705687cd3d76b65935416ebf18"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/research-design.md",
+      "bytes": 744,
+      "sha256": "169529194e991bd8e598a6cfe6248dd23db81069a82b4b28693eaf2cde3feb1a"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/review-queue.csv",
+      "bytes": 360,
+      "sha256": "43403ea4e6be64963637b8f6207f4f992a7fdad06a29518ee871b04541b964ce"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/rules.json",
+      "bytes": 246,
+      "sha256": "b3a605cd9440769156f52751b933e3683ae10231cfa5b82df099b37269fd1b44"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/team-tasks.csv",
+      "bytes": 283,
+      "sha256": "f0e53ecade7b237d91683a8becf7cdc57b67d9da5fea1c3553883028b647a91d"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/visual-asset-ledger.csv",
+      "bytes": 306,
+      "sha256": "aa63b850f54358591ba1f844933adb1f663c2185afdc7249c81c21d666f97fe6"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/visual-brief.md",
+      "bytes": 6157,
+      "sha256": "75a66591f855b74e18ca8edcb656956269c458f8ff7a1a1511d8658d60797d8b"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/visual-preflight-checklist.csv",
+      "bytes": 4752,
+      "sha256": "635d1812b9fa3b7b504281f709870ed0fa01120cd74899e256550fef66be2e8e"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/assets/templates/visual-tokens.json",
+      "bytes": 4219,
+      "sha256": "931a5b4e2fe436c890d63d80d4be7b479aceb9dc98d3097f00e118835d348a10"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/brand-system.md",
+      "bytes": 10823,
+      "sha256": "8289d6ce0eaea5e78332b0507ae0e0af7734063e7818beb15fcdbacb81660ce7"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/case-corpus.md",
+      "bytes": 22136,
+      "sha256": "d6920aa2d6c9e43e6dd13044192980f7544a8f1f9e5b862fb07434626894f305"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/compliance.md",
+      "bytes": 6748,
+      "sha256": "60874d277e4de3e5f9b3cb3861e3a750a391432798db319fb20abe17380c632b"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/control-plane.md",
+      "bytes": 13763,
+      "sha256": "b25cd4f20dff6c23b8d0c349a643779d0f5fabdbcdcd52717e7c955f52e39808"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/defense-learning.md",
+      "bytes": 9744,
+      "sha256": "029668c9454be598bc523fbbf70832881871c011879db0e8fc1605a27675e0cf"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/expert-roles.md",
+      "bytes": 13099,
+      "sha256": "74f4aae45362f475c76b5c2fa5a5dbe073751724b9dbaaa9d7866a82419acfcf"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/interaction-contract.md",
+      "bytes": 10189,
+      "sha256": "6479c98794bbe81d619c0f3e5707c6ea94f1b66527e099f9481013fdc2673501"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/judge-playbook.md",
+      "bytes": 5275,
+      "sha256": "251f162b52e0fbc8afb9510052a09e218d9d68efe7ad464fdee56bb46774eb60"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/methods-router.md",
+      "bytes": 8914,
+      "sha256": "71c579024ad64ee5c15376f20f8194fdc6bb7cbd0fcf8310135fd17edecfc33d"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/rule-schema.md",
+      "bytes": 5153,
+      "sha256": "fe645e80436bb4085decaa40206caedbb97d68d30521e22af9d9f1ebda158d61"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/scoring-rubric.md",
+      "bytes": 5426,
+      "sha256": "87ef6679963fcc9b8bfe45b73207762da604e78d89e527d8b33abadc8d8fafd1"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/visual-production.md",
+      "bytes": 14892,
+      "sha256": "5c308a4979fad8d2a85fe07939c8c2db98171006d844f45e733e7798901bd696"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/winning-case-patterns.md",
+      "bytes": 6372,
+      "sha256": "85280b41d1a940d2fd998f3bd9f44782a076c8d23aa13f5d5059fb7773488b56"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/references/workflow.md",
+      "bytes": 8940,
+      "sha256": "723f0d9ae1c904e090bc09df020006142f6b2aef68985ff78ce672aecf030eb4"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/__init__.py",
+      "bytes": 299,
+      "sha256": "919104d37ea4142e9b81f0da839402d83773e5aca4e39a31f99582f592e5e50f"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/__main__.py",
+      "bytes": 80,
+      "sha256": "3d2438ae92f4746e9ffaa1f837b1fe803f6281091d1f31f8c95643716f257d9a"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/audits.py",
+      "bytes": 32155,
+      "sha256": "fe4fce0f3f5833a5752d1ebaa5bb9c9123df4fdf1f3cbfc9bc8d89cf8bb29d96"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/cli.py",
+      "bytes": 15879,
+      "sha256": "eb8d9313ddb0bbd128288bbbe850e648eb0660a2e6252438428fc20de7c98478"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/contracts.py",
+      "bytes": 11600,
+      "sha256": "cec352d925bef366a82dc003c9e51e05952a9b0c32e936b87e55b92cb04a3274"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/core.py",
+      "bytes": 144773,
+      "sha256": "239590c4c69435c3318aaa24c93d79560222075ffc29c84ab0639a1c0efef1de"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/errors.py",
+      "bytes": 1168,
+      "sha256": "2dd5c338644154c18d6f2b408329137a93fe04a0b23a11f348d6940acfb5cf5e"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agent_runtime/io_utils.py",
+      "bytes": 21431,
+      "sha256": "c943e7305ba27b70a4356e8d326ec2ac02c2e5771a4c357f0d5775d2e83d270f"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/agentctl.py",
+      "bytes": 189,
+      "sha256": "18efc01c9bff1f71174675417c6a99e12dcbb1a1545b4989b3b01dc9844e7813"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/audit_dataset.py",
+      "bytes": 7750,
+      "sha256": "367db2c1ee8a29ef72c26ddaa66c8dcace3a38751b87b041399e1bcb8cd2a529"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/audit_questionnaire.py",
+      "bytes": 6680,
+      "sha256": "466ab62f4f5c41bbfe5830f1aa572a6340f85d017c5d26c8fc21bdf7154a5146"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/audit_report.py",
+      "bytes": 25191,
+      "sha256": "5847fe5fe6aedaa28cf44c4683d0d1045641f5a25915e46cfee8ec8b3171d319"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/audit_submission_files.py",
+      "bytes": 87139,
+      "sha256": "c77acd91592f71933c668b3c57ba6cca82ebcfecc3994b5babf1607edee0ae05"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/audit_visual_package.py",
+      "bytes": 8850,
+      "sha256": "797cc830d4990e311598879ff037616a64e2082c488c0f0cb6387eb1e22a4c3b"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/build_brand_derivatives.py",
+      "bytes": 3622,
+      "sha256": "e5628960dbb410d5a35d3bd8017cbe1d23168588b49044daf86f2a811368ee93"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/check_traceability.py",
+      "bytes": 24250,
+      "sha256": "ea4f7c9b7817777cc044a1772ba18b8d98df14a3083f2f3892cf268471aa6c25"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/compare_rules.py",
+      "bytes": 6311,
+      "sha256": "5938be69d35f7ac5f9e573f68a10d8e1b73832dcecf9834936ef4a165746dff4"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/init_project.py",
+      "bytes": 6416,
+      "sha256": "f784113f26313c00350b2da4a4f2d2182d4c2b2e150b356632a2f53e54046de0"
+    },
+    {
+      "path": "platform/evix/skill/zhengda-cup-champion/scripts/validate_brand_assets.py",
+      "bytes": 8010,
+      "sha256": "da67ce55e37c522752b0d06177e7da42100a91344f8dde71d51b6e756e6f0ec1"
+    },
+    {
+      "path": "platform/evix/三件作品案例审计与Agent优化报告-2026-08-04.md",
+      "bytes": 16459,
+      "sha256": "2e5f94c4a728b163339032e2bb6a2837ac0cef259629360ebfc4793545f0ab88"
+    },
+    {
+      "path": "platform/evix/三件国奖作品共性提炼与Agent升级-2026-08-04.md",
+      "bytes": 16418,
+      "sha256": "f28085efb152db8e3195fe59c013348d830020bfa3d74f3a29c6c7fe5dadef15"
+    },
+    {
+      "path": "platform/evix/资料交接清单.md",
+      "bytes": 7695,
+      "sha256": "56451dcc43e7e445c6912a56af12db971c7fa2b16a9bb9020ea1aefb38e75f7a"
+    }
+  ],
+  "public_metadata_redactions": [
+    "platform/evix/RELEASE_AUDIT.md",
+    "platform/evix/apps/evi-x-api/acceptance/pytest-epoch2.log",
+    "platform/evix/apps/evi-x-platform/tests/fixtures/report-format/fixture-manifest.json"
+  ],
+  "source_copied_bytes": 35636861
+}

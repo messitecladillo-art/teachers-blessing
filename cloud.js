@@ -288,8 +288,8 @@ function renderDynamicAgents() {
     btn.innerHTML = `
       <span class="tab-icon">✨</span>
       <div class="tab-text">
-        <p class="tab-title">${agent.name} <span style="font-size:0.6rem; background:#71b9a9; color:white; padding:2px 4px; border-radius:4px; margin-left:4px">自建</span></p>
-        <p class="tab-sub">${agent.desc}</p>
+        <p class="tab-title">${window.TeachingAI.escapeHtml(agent.name)} <span style="font-size:0.6rem; background:#71b9a9; color:white; padding:2px 4px; border-radius:4px; margin-left:4px">自建</span></p>
+        <p class="tab-sub">${window.TeachingAI.escapeHtml(agent.desc)}</p>
       </div>
     `;
     

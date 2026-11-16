@@ -1,0 +1,43 @@
+name: evix-p0
+services:
+  rabbitmq:
+    profiles: ["optional-celery"]
+    image: rabbitmq:4.3.6-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: evix_local
+      RABBITMQ_DEFAULT_PASS: local-workflow-only
+    ports:
+      - "127.0.0.1:5672:5672"
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 512m
+    cpus: 1
+    restart: unless-stopped
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: evix_owner
+      POSTGRES_PASSWORD: local-p0-owner-only
+      POSTGRES_DB: evix_p0
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/001-app-role.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evix_owner -d evix_p0"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 1g
+    cpus: 1.5
+    restart: unless-stopped
+volumes:
+  pg_data:
+  rabbit_data:

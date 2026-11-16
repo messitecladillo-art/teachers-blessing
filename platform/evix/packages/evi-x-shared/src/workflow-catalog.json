@@ -1,0 +1,1283 @@
+{
+  "schemaVersion": "research-node-catalog/v1",
+  "nodes": [
+    {
+      "kind": "question",
+      "title": "研究问题",
+      "category": "研究设计",
+      "description": "明确研究问题与决策目标。",
+      "executor": "pure",
+      "editorSection": "questionnaire",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "text",
+          "type": "text"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "text",
+          "label": "研究问题",
+          "type": "text",
+          "required": true,
+          "maxLength": 3000
+        }
+      ]
+    },
+    {
+      "kind": "material",
+      "title": "研究材料",
+      "category": "研究设计",
+      "description": "记录研究材料及其来源，运行绑定本次内容。",
+      "executor": "artifact",
+      "editorSection": "cases",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "material",
+          "type": "material"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "text",
+          "label": "材料内容",
+          "type": "text",
+          "required": true,
+          "maxLength": 12000
+        },
+        {
+          "key": "source",
+          "label": "材料来源",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "method",
+      "title": "方法卡",
+      "category": "研究设计",
+      "description": "记录方法来源与适用条件。",
+      "executor": "pure",
+      "editorSection": "cases",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "material",
+          "type": "material"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "text",
+          "label": "方法说明",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "source",
+          "label": "来源",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "note",
+      "title": "注释",
+      "category": "研究设计",
+      "description": "整理说明与研究关联。",
+      "executor": "pure",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "text",
+          "type": "text"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "text",
+          "label": "注释",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "questionnaire",
+      "title": "问卷版本",
+      "category": "问卷",
+      "description": "引用已保存的问卷版本。",
+      "executor": "artifact",
+      "editorSection": "questionnaire",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "questionnaire",
+          "type": "questionnaire"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "artifactVersionId",
+          "label": "成果版本",
+          "type": "text"
+        },
+        {
+          "key": "artifactId",
+          "label": "成果对象",
+          "type": "text"
+        },
+        {
+          "key": "binding",
+          "label": "版本绑定",
+          "type": "select",
+          "options": [
+            "pinned",
+            "head"
+          ],
+          "default": "pinned"
+        }
+      ]
+    },
+    {
+      "kind": "questionnaire_generate",
+      "title": "问卷生成提案",
+      "category": "问卷",
+      "description": "由个人模型服务提出问卷修订。",
+      "executor": "model",
+      "editorSection": "questionnaire",
+      "inputs": [
+        {
+          "id": "text",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "material",
+          "type": "material",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "id": "questionnaire",
+          "type": "questionnaire"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "prompt",
+          "label": "提示词",
+          "type": "text",
+          "required": true,
+          "default": "根据研究问题与材料提出可编辑问卷，保留研究目的和变量定义。"
+        },
+        {
+          "key": "artifactVersionId",
+          "label": "成果版本",
+          "type": "text"
+        },
+        {
+          "key": "artifactId",
+          "label": "成果对象",
+          "type": "text"
+        },
+        {
+          "key": "binding",
+          "label": "版本绑定",
+          "type": "select",
+          "options": [
+            "pinned",
+            "head"
+          ],
+          "default": "pinned"
+        }
+      ]
+    },
+    {
+      "kind": "review",
+      "title": "人工复核",
+      "category": "流程",
+      "description": "批准绑定本次输入版本。",
+      "executor": "manual",
+      "inputs": [
+        {
+          "id": "value",
+          "type": "result",
+          "required": true,
+          "accepts": [
+            "result",
+            "chart",
+            "text",
+            "report",
+            "questionnaire",
+            "material"
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "id": "value",
+          "type": "result"
+        },
+        {
+          "id": "questionnaire",
+          "type": "questionnaire"
+        },
+        {
+          "id": "report",
+          "type": "report"
+        },
+        {
+          "id": "chart",
+          "type": "chart"
+        },
+        {
+          "id": "text",
+          "type": "text"
+        },
+        {
+          "id": "material",
+          "type": "material"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "instructions",
+          "label": "复核要点",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "persona",
+      "title": "样本人设",
+      "category": "样本",
+      "description": "配置合成样本的人设与数量。",
+      "executor": "pure",
+      "editorSection": "silicon",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "persona",
+          "type": "persona"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "personas",
+          "label": "人设设置",
+          "type": "json",
+          "required": true
+        }
+      ]
+    },
+    {
+      "kind": "silicon",
+      "title": "硅基样本",
+      "category": "样本",
+      "description": "运行配置的人设，生成明确分类的合成反馈。",
+      "executor": "provider",
+      "editorSection": "silicon",
+      "inputs": [
+        {
+          "id": "questionnaire",
+          "type": "questionnaire",
+          "required": true
+        },
+        {
+          "id": "persona",
+          "type": "persona",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "dataset",
+          "type": "dataset"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "prompt",
+          "label": "补充指令",
+          "type": "text"
+        },
+        {
+          "key": "count",
+          "label": "样本数量",
+          "type": "number",
+          "min": 1,
+          "max": 200,
+          "default": 10
+        }
+      ]
+    },
+    {
+      "kind": "survey_publish",
+      "title": "发布调查",
+      "category": "调查",
+      "description": "人工确认后发布精确问卷版本。",
+      "executor": "manual",
+      "editorSection": "questionnaire",
+      "inputs": [
+        {
+          "id": "questionnaire",
+          "type": "questionnaire",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "release",
+          "type": "release"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "title",
+          "label": "调查标题",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "survey_wait",
+      "title": "等待回收",
+      "category": "调查",
+      "description": "绑定发布版本，达到条件或人工决定后锁定快照。",
+      "executor": "manual",
+      "editorSection": "questionnaire",
+      "inputs": [
+        {
+          "id": "release",
+          "type": "release",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "dataset",
+          "type": "dataset"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "targetCount",
+          "label": "目标回收量",
+          "type": "number",
+          "min": 1,
+          "max": 5000
+        },
+        {
+          "key": "deadline",
+          "label": "截止时间",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "dataset",
+      "title": "数据版本",
+      "category": "数据",
+      "description": "使用明确上传的私有数据版本。",
+      "executor": "artifact",
+      "editorSection": "analysis",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "dataset",
+          "type": "dataset"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "datasetVersionId",
+          "label": "数据版本",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "kind": "transform",
+      "title": "映射与筛选",
+      "category": "数据",
+      "description": "保存映射、跳题策略、筛选与缺失口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        },
+        {
+          "id": "questionnaire",
+          "type": "questionnaire",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "id": "dataset",
+          "type": "dataset"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "mapping",
+          "label": "问卷列对应",
+          "type": "json"
+        },
+        {
+          "key": "routing",
+          "label": "跳题处理",
+          "type": "json"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "frequency",
+      "title": "频数与比例",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "numeric",
+      "title": "数值分布",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "grouped",
+      "title": "分组描述",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "crosstab",
+      "title": "交叉表与关联强度",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "pearson",
+      "title": "Pearson 相关",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "spearman",
+      "title": "Spearman 秩相关",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "alpha",
+      "title": "内部一致性",
+      "category": "统计",
+      "description": "沿用现有固定统计程序与完整样本口径。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "dataset",
+          "type": "dataset",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "x",
+          "label": "变量 X 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "y",
+          "label": "变量 Y 列号",
+          "type": "number",
+          "min": 0,
+          "max": 79
+        },
+        {
+          "key": "question",
+          "label": "研究问题",
+          "type": "text"
+        },
+        {
+          "key": "branch",
+          "label": "分支名称",
+          "type": "text"
+        },
+        {
+          "key": "filter",
+          "label": "样本筛选",
+          "type": "json"
+        },
+        {
+          "key": "missingCodes",
+          "label": "缺失代码",
+          "type": "json"
+        },
+        {
+          "key": "scale",
+          "label": "量表定义",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "chart",
+      "title": "图表格式",
+      "category": "图表",
+      "description": "从当前计算结果选择图型与项目色系。",
+      "executor": "pure",
+      "editorSection": "analysis",
+      "inputs": [
+        {
+          "id": "result",
+          "type": "result",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "chart",
+          "type": "chart"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "resultName",
+          "label": "结果组成员名称",
+          "type": "text",
+          "maxLength": 240
+        },
+        {
+          "key": "chartKind",
+          "label": "图型",
+          "type": "text",
+          "default": "auto"
+        },
+        {
+          "key": "theme",
+          "label": "项目色系",
+          "type": "text",
+          "default": "blue"
+        },
+        {
+          "key": "style",
+          "label": "图表格式",
+          "type": "json"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "title": "模型提示词",
+      "category": "模型",
+      "description": "解释汇总证据，形成待确认草稿。",
+      "executor": "model",
+      "editorSection": "services",
+      "inputs": [
+        {
+          "id": "text",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "material",
+          "type": "material",
+          "required": false
+        },
+        {
+          "id": "result",
+          "type": "result",
+          "required": false
+        },
+        {
+          "id": "report",
+          "type": "report",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "id": "text",
+          "type": "text"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "prompt",
+          "label": "提示词",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "purpose",
+          "label": "用途",
+          "type": "select",
+          "options": [
+            "explanation",
+            "plan",
+            "draft"
+          ],
+          "default": "explanation"
+        }
+      ]
+    },
+    {
+      "kind": "condition",
+      "title": "条件分支",
+      "category": "流程",
+      "description": "按已计算指标选择分支，不改变原数据。",
+      "executor": "pure",
+      "inputs": [
+        {
+          "id": "result",
+          "type": "result",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "true",
+          "type": "result"
+        },
+        {
+          "id": "false",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "resultName",
+          "label": "结果组成员名称",
+          "type": "text",
+          "maxLength": 240
+        },
+        {
+          "key": "metric",
+          "label": "指标名称",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "op",
+          "label": "比较",
+          "type": "select",
+          "options": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "defined"
+          ],
+          "default": "gte"
+        },
+        {
+          "key": "value",
+          "label": "比较值",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "kind": "collect",
+      "title": "命名结果汇集",
+      "category": "流程",
+      "description": "保留各分支的输入版本和样本数，不合并人数。",
+      "executor": "pure",
+      "inputs": [
+        {
+          "id": "results",
+          "type": "result",
+          "required": true,
+          "multiple": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "type": "result"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "title",
+          "label": "结果组名称",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "title": "结论提案",
+      "category": "成果",
+      "description": "根据精确计算结果拟定结论，确认后应用。",
+      "executor": "manual",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "result",
+          "type": "result",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "text",
+          "type": "text"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "text",
+          "label": "结论文字",
+          "type": "text"
+        },
+        {
+          "key": "scope",
+          "label": "适用范围",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "kind": "report",
+      "title": "报告版本",
+      "category": "成果",
+      "description": "引用报告版本或人工确认汇总成果。",
+      "executor": "artifact",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "text",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "chart",
+          "type": "chart",
+          "required": false
+        },
+        {
+          "id": "result",
+          "type": "result",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "id": "report",
+          "type": "report"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "artifactVersionId",
+          "label": "成果版本",
+          "type": "text"
+        },
+        {
+          "key": "artifactId",
+          "label": "成果对象",
+          "type": "text"
+        },
+        {
+          "key": "binding",
+          "label": "报告输入",
+          "type": "select",
+          "options": [
+            "proposal",
+            "pinned",
+            "head"
+          ],
+          "default": "proposal"
+        }
+      ]
+    },
+    {
+      "kind": "word",
+      "title": "Word 导出",
+      "category": "成果",
+      "description": "从保存后的报告版本生成文档。",
+      "executor": "pure",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "report",
+          "type": "report",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "file",
+          "type": "file"
+        }
+      ],
+      "configFields": []
+    },
+    {
+      "kind": "ppt",
+      "title": "PPT 导出",
+      "category": "成果",
+      "description": "从保存后的幻灯片版本生成文件。",
+      "executor": "pure",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "report",
+          "type": "report",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "file",
+          "type": "file"
+        }
+      ],
+      "configFields": []
+    },
+    {
+      "kind": "latex",
+      "title": "LaTeX 源码",
+      "category": "成果",
+      "description": "从报告生成可编辑的 LaTeX 源码。",
+      "executor": "pure",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "report",
+          "type": "report",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "file",
+          "type": "file"
+        }
+      ],
+      "configFields": []
+    },
+    {
+      "kind": "pdf",
+      "title": "PDF 编译",
+      "category": "成果",
+      "description": "编译绑定源码版本，记录真实编译回执。",
+      "executor": "latex",
+      "editorSection": "editor",
+      "inputs": [
+        {
+          "id": "file",
+          "type": "file",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "file",
+          "type": "file"
+        }
+      ],
+      "configFields": []
+    },
+    {
+      "kind": "defense",
+      "title": "答辩准备",
+      "category": "成果",
+      "description": "围绕已保存证据形成答辩提案。",
+      "executor": "model",
+      "editorSection": "pitch",
+      "inputs": [
+        {
+          "id": "report",
+          "type": "report",
+          "required": true
+        },
+        {
+          "id": "result",
+          "type": "result",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "id": "text",
+          "type": "text"
+        }
+      ],
+      "configFields": [
+        {
+          "key": "prompt",
+          "label": "答辩提示词",
+          "type": "text",
+          "required": true,
+          "default": "根据报告和证据提出答辩问题、可核查依据及回答提纲。"
+        }
+      ]
+    }
+  ]
+}
