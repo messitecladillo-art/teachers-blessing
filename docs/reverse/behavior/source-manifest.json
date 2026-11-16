@@ -1,0 +1,59 @@
+{
+  "schema": "public-static-behavior-handoff/v1",
+  "sourceSha256": "a46069288fd0841733d470ca5510fdb463e1dcd70458e44b1e2edcb62eecf541",
+  "sourceBytes": 2979827,
+  "sourceExecuted": false,
+  "questionCount": 94,
+  "questionStatusChanged": false,
+  "originalSources": [
+    {
+      "label": "R01 static report",
+      "sha256": "c6c0ab1f9f1c564398779f0d6112d7713aa522cdc7fbfc262df43a9016d6bbf3"
+    },
+    {
+      "label": "R02 static findings",
+      "sha256": "a497df165fa88d7e36484a2a52ffd8cfb33fb20a7f94d0ca915e2d893b9b0567"
+    },
+    {
+      "label": "R03 frozen questions",
+      "sha256": "8783c3dc8354140c4b66b703abe0a117581b78ac0e9b6c1a519111497efd043f"
+    }
+  ],
+  "transformations": [
+    "Added public shipped-code/static/baseline scope notice",
+    "Removed unpublished audit paths and local artifact pointers",
+    "Retained original UTF8 spans; expanded R02 public symbol index",
+    "Exported exact original 94 IDs/priorities/questions/static/runtime statuses without pass upgrades"
+  ],
+  "checks": {
+    "questionRoundtrip": true,
+    "absolutePathsAccountLabelsAndUuidPatternHits": 0,
+    "totalContentBytes": 56728
+  },
+  "files": [
+    {
+      "file": "上传与章节处理深追.md",
+      "bytes": 22252,
+      "sha256": "a70635cbdd751d8d94f3eba5d502d95b3763f69b54e1078535d894b92fbbca76",
+      "privacyPatternHits": []
+    },
+    {
+      "file": "功能覆盖94问.csv",
+      "bytes": 17914,
+      "sha256": "9fc87059a1ed23414bb43f3e0187ceb47850b16a193b173213bf698ca1baaecc",
+      "privacyPatternHits": []
+    },
+    {
+      "file": "学习阅读与研究工具深追.md",
+      "bytes": 15311,
+      "sha256": "2b8d7c2d1618db3e867707dc8e51c3a5860e45d8673dd9cc661842339012c0e2",
+      "privacyPatternHits": []
+    },
+    {
+      "file": "方法与证据边界.md",
+      "bytes": 1251,
+      "sha256": "6d9e9d6658ba7228ad5989d358278d8e7de9282ac10b9470a4aa9f290b5fe2eb",
+      "privacyPatternHits": []
+    }
+  ]
+}
