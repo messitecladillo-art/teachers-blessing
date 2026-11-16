@@ -57,6 +57,20 @@
         "product-management/skills/write-spec"
       ],
       "installation": "complete selected skill directories plus scope licenses/CONNECTORS"
+    },
+    {
+      "upstream": "mattpocock/skills",
+      "paths": [
+        "skills/productivity/teach"
+      ],
+      "installation": "complete selected reference directory, pinned raw source; no activation or installer execution"
+    },
+    {
+      "upstream": "anthropics/knowledge-work-plugins",
+      "paths": [
+        "product-management/skills/synthesize-research"
+      ],
+      "installation": "complete selected reference directory; existing scope LICENSE and CONNECTORS retained, no connector activation"
     }
   ],
   "not_integrated": [
@@ -175,6 +189,18 @@
       "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
       "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
       "bytes": 11358,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/product-management/skills/synthesize-research/SKILL.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "product-management/skills/synthesize-research/SKILL.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/product-management/skills/synthesize-research/SKILL.md",
+      "license": "Apache-2.0",
+      "sha256": "ae98c11102545c911a1ea5d8527be0e08a3db8e53327f2865f0db19bbb2d7e9c",
+      "source_sha256": "ae98c11102545c911a1ea5d8527be0e08a3db8e53327f2865f0db19bbb2d7e9c",
+      "bytes": 16135,
       "modified": false
     },
     {
@@ -524,6 +550,78 @@
       "source_sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
       "bytes": 2214,
       "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/agents/openai.yaml",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/agents/openai.yaml",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/agents/openai.yaml",
+      "license": "MIT",
+      "sha256": "5856f3ae8aec742f1499c640aecdd5f1d6af5fa210a7c6ec794de8263a6f733f",
+      "source_sha256": "5856f3ae8aec742f1499c640aecdd5f1d6af5fa210a7c6ec794de8263a6f733f",
+      "bytes": 139,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/GLOSSARY-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/GLOSSARY-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/GLOSSARY-FORMAT.md",
+      "license": "MIT",
+      "sha256": "9b99859ec28437668130d8f2ce5a342938970f8a1ed4fd38c3eab4f4b5fff210",
+      "source_sha256": "9b99859ec28437668130d8f2ce5a342938970f8a1ed4fd38c3eab4f4b5fff210",
+      "bytes": 2122,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/LEARNING-RECORD-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/LEARNING-RECORD-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/LEARNING-RECORD-FORMAT.md",
+      "license": "MIT",
+      "sha256": "701fa34b6748aa89e6c960ffb815257f481a7d77fb2900f9028f7edf3fdd6052",
+      "source_sha256": "701fa34b6748aa89e6c960ffb815257f481a7d77fb2900f9028f7edf3fdd6052",
+      "bytes": 2747,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/MISSION-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/MISSION-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/MISSION-FORMAT.md",
+      "license": "MIT",
+      "sha256": "8cacbb3c0644d3ae0ea4965564797099401a6930a23f7cf462918576587f2418",
+      "source_sha256": "8cacbb3c0644d3ae0ea4965564797099401a6930a23f7cf462918576587f2418",
+      "bytes": 1540,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/RESOURCES-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/RESOURCES-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/RESOURCES-FORMAT.md",
+      "license": "MIT",
+      "sha256": "e9cacf34026e11a8d1c8f9de88abe5bcbf654f4ebdb25cae8c0de0d5f48f44ec",
+      "source_sha256": "e9cacf34026e11a8d1c8f9de88abe5bcbf654f4ebdb25cae8c0de0d5f48f44ec",
+      "bytes": 1924,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/teach/SKILL.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/productivity/teach/SKILL.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/productivity/teach/SKILL.md",
+      "license": "MIT",
+      "sha256": "550482c2d674b085c9043b87bfdc14a8f2ec453c736119e7fcbb1e9332bffeba",
+      "source_sha256": "550482c2d674b085c9043b87bfdc14a8f2ec453c736119e7fcbb1e9332bffeba",
+      "bytes": 9733,
+      "modified": false
     }
   ],
   "manual_additions": [
@@ -539,17 +637,27 @@
     },
     {
       "local_path": "skills/vendor/PROJECT-PROFILE.md",
-      "sha256": "601a61a7bc140ac301c8cdc5026376fffb74911c481bcac0c4eba081a9a1ef3a",
+      "sha256": "9af02ba6757ea7eed03054975aef999852bdcb696dd682f6070022e7523d40a6",
       "change": "project-authored adaptation; upstream files untouched"
     },
     {
       "local_path": "docs/engineering-skills.md",
-      "sha256": "79519eae3d7c766c1295c27ef4c929b6b87eda891baa66cd6ea0057eea4c4872",
+      "sha256": "48dd3893d188e5cb8cea7d2c3d3463d7b7dff94e6b2c5bb3c8d4aa5c5f84462c",
       "change": "project-authored short adoption guide"
+    },
+    {
+      "local_path": "docs/skills-to-product.md",
+      "sha256": "7bfa4ae0b8077970fc5234e7f9653fda770d7fc87df84d680f1ceabcd0697eb2",
+      "change": "project-authored differentiation proposal; implemented and planned capabilities separated"
+    },
+    {
+      "local_path": "AGENTS.md",
+      "sha256": "7ca975baef75cc863dc5ba6976664abe2ea62c8d98b60f1a7e54525cfd83c4ba",
+      "change": "project-authored development routing; scoped reference use without activating upstream commands"
     }
   ],
   "verification": {
-    "upstream_file_count": 38,
+    "upstream_file_count": 45,
     "upstream_bytes_unchanged": true,
     "original_modified_count": 0,
     "notice_files": "No NOTICE files at repository root or imported Anthropic scope roots",
