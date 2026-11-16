@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "modules": [
+    {
+      "id": "text-to-cad",
+      "displayName": "教学模型与三维结构",
+      "status": "reserved-for-later",
+      "priority": "after-textbook-learning",
+      "upstream": "https://github.com/earthtojake/text-to-cad",
+      "upstreamCommit": "2738524be8b30ec3d025d73b499fd2a6028af336",
+      "license": "MIT",
+      "plannedCapabilities": ["text-to-model", "parameter-editing", "3d-preview", "STEP-STL-GLB-export"],
+      "documentation": "docs/backlog/text-to-cad.md",
+      "installed": false,
+      "enabled": false
+    }
+  ]
+}

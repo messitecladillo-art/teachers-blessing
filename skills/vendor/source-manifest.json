@@ -1,0 +1,558 @@
+{
+  "schema": "project-vendored-skills/v1",
+  "created_at": "2026-11-16T14:47:27.070288+08:00",
+  "scope": "Project-local reference skills; no global Codex/plugin/MCP registration",
+  "upstreams": [
+    {
+      "repo": "mattpocock/skills",
+      "sha": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "license": "MIT",
+      "url": "https://github.com/mattpocock/skills"
+    },
+    {
+      "repo": "cathrynlavery/diagram-design",
+      "sha": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "license": "MIT",
+      "url": "https://github.com/cathrynlavery/diagram-design"
+    },
+    {
+      "repo": "anthropics/knowledge-work-plugins",
+      "sha": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "license": "Apache-2.0",
+      "url": "https://github.com/anthropics/knowledge-work-plugins"
+    }
+  ],
+  "selected_skills": [
+    {
+      "upstream": "mattpocock/skills",
+      "paths": [
+        "skills/engineering/tdd",
+        "skills/engineering/codebase-design",
+        "skills/engineering/code-review",
+        "skills/engineering/domain-modeling"
+      ],
+      "installation": "complete selected skill directories via pinned official installer"
+    },
+    {
+      "upstream": "cathrynlavery/diagram-design",
+      "paths": [
+        "skills/diagram-design/SKILL.md",
+        "selected skills/diagram-design/references/*"
+      ],
+      "installation": "partial reference pack, not complete installation",
+      "excluded": [
+        "gallery",
+        "assets/templates",
+        "scripts",
+        "plugin manifests",
+        "unselected diagram references"
+      ]
+    },
+    {
+      "upstream": "anthropics/knowledge-work-plugins",
+      "paths": [
+        "enterprise-search/skills/knowledge-synthesis",
+        "enterprise-search/skills/search-strategy",
+        "data/skills/validate-data",
+        "product-management/skills/write-spec"
+      ],
+      "installation": "complete selected skill directories plus scope licenses/CONNECTORS"
+    }
+  ],
+  "not_integrated": [
+    "global Codex skills",
+    "upstream plugins or MCP configuration",
+    "enterprise accounts or connectors",
+    "issue/PR publishing/interview workflows",
+    "upstream script execution",
+    "diagram production/render/export tools",
+    "automatic semantic search or vector database"
+  ],
+  "files": [
+    {
+      "local_path": "skills/vendor/anthropics/data/CONNECTORS.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "data/CONNECTORS.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/data/CONNECTORS.md",
+      "license": "Apache-2.0",
+      "sha256": "79de0e9613ef7870e773b6dcdcb7d50f4bff2c0574c14ab5e0aeb29014dcec7b",
+      "source_sha256": "79de0e9613ef7870e773b6dcdcb7d50f4bff2c0574c14ab5e0aeb29014dcec7b",
+      "bytes": 1061,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/data/LICENSE",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "data/LICENSE",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/data/LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/data/skills/validate-data/SKILL.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "data/skills/validate-data/SKILL.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/data/skills/validate-data/SKILL.md",
+      "license": "Apache-2.0",
+      "sha256": "1e424822043480375b80aef9416227b1c8083af749ca536568716265f79ca54b",
+      "source_sha256": "1e424822043480375b80aef9416227b1c8083af749ca536568716265f79ca54b",
+      "bytes": 14916,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/enterprise-search/CONNECTORS.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "enterprise-search/CONNECTORS.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/enterprise-search/CONNECTORS.md",
+      "license": "Apache-2.0",
+      "sha256": "5e67b3c91b30fc3c9dad8623287c8efc876a16b551a14841a53447e92af178d5",
+      "source_sha256": "5e67b3c91b30fc3c9dad8623287c8efc876a16b551a14841a53447e92af178d5",
+      "bytes": 1345,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/enterprise-search/LICENSE",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "enterprise-search/LICENSE",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/enterprise-search/LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/enterprise-search/skills/knowledge-synthesis/SKILL.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "enterprise-search/skills/knowledge-synthesis/SKILL.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/enterprise-search/skills/knowledge-synthesis/SKILL.md",
+      "license": "Apache-2.0",
+      "sha256": "8dc66c66ef0004010bbf2d569251163e90a6675b982e0cb99ef26b4dd1c5a0f6",
+      "source_sha256": "8dc66c66ef0004010bbf2d569251163e90a6675b982e0cb99ef26b4dd1c5a0f6",
+      "bytes": 8526,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/enterprise-search/skills/search-strategy/SKILL.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "enterprise-search/skills/search-strategy/SKILL.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/enterprise-search/skills/search-strategy/SKILL.md",
+      "license": "Apache-2.0",
+      "sha256": "71d5ba2d219a72d696e079885cba2fb5455ba5da6b1404491f8b945bdd8694c6",
+      "source_sha256": "71d5ba2d219a72d696e079885cba2fb5455ba5da6b1404491f8b945bdd8694c6",
+      "bytes": 7198,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/product-management/CONNECTORS.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "product-management/CONNECTORS.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/product-management/CONNECTORS.md",
+      "license": "Apache-2.0",
+      "sha256": "f52733eb0cd1b46f96cbf15bd9d8dd5215c9341d9323f42da076bcddccda2f5e",
+      "source_sha256": "f52733eb0cd1b46f96cbf15bd9d8dd5215c9341d9323f42da076bcddccda2f5e",
+      "bytes": 1429,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/product-management/LICENSE",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "product-management/LICENSE",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/product-management/LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/anthropics/product-management/skills/write-spec/SKILL.md",
+      "upstream": "anthropics/knowledge-work-plugins",
+      "commit": "e91a134584eb798bac7fb0379358006a2b63b965",
+      "source_path": "product-management/skills/write-spec/SKILL.md",
+      "source_url": "https://github.com/anthropics/knowledge-work-plugins/blob/e91a134584eb798bac7fb0379358006a2b63b965/product-management/skills/write-spec/SKILL.md",
+      "license": "Apache-2.0",
+      "sha256": "ca6670913878b4ac4582727562bfced5271492a5a800d934f68c9e7bc1cd4dcc",
+      "source_sha256": "ca6670913878b4ac4582727562bfced5271492a5a800d934f68c9e7bc1cd4dcc",
+      "bytes": 12326,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/LICENSE",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "LICENSE",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/LICENSE",
+      "license": "MIT",
+      "sha256": "bb7e12e91fecef43024111123ff784cec6c485585561d8b552557c0173b3ed29",
+      "source_sha256": "bb7e12e91fecef43024111123ff784cec6c485585561d8b552557c0173b3ed29",
+      "bytes": 1071,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/layout-budget.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/layout-budget.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/layout-budget.md",
+      "license": "MIT",
+      "sha256": "12043c659df9ce146f8ecc45e247ddc14b04f1c5724cc4cb6286b60cc1e758f2",
+      "source_sha256": "12043c659df9ce146f8ecc45e247ddc14b04f1c5724cc4cb6286b60cc1e758f2",
+      "bytes": 5443,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/output-spec.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/output-spec.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/output-spec.md",
+      "license": "MIT",
+      "sha256": "12dc0eed3514e387328651652604ef4fba1a76bce1823a79f4da2993336d1e69",
+      "source_sha256": "12dc0eed3514e387328651652604ef4fba1a76bce1823a79f4da2993336d1e69",
+      "bytes": 19200,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/primitives-core.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/primitives-core.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/primitives-core.md",
+      "license": "MIT",
+      "sha256": "601305baed49217870dda15a0ebc879a6a560608cb63fe2108aaebee1abefbc9",
+      "source_sha256": "601305baed49217870dda15a0ebc879a6a560608cb63fe2108aaebee1abefbc9",
+      "bytes": 13125,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/profiles.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/profiles.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/profiles.md",
+      "license": "MIT",
+      "sha256": "8afea09015a456b218287f08a2e9ac44bb50f6a9ebd2a7c1487bd774e89f9016",
+      "source_sha256": "8afea09015a456b218287f08a2e9ac44bb50f6a9ebd2a7c1487bd774e89f9016",
+      "bytes": 14434,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/semantic-patterns.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/semantic-patterns.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/semantic-patterns.md",
+      "license": "MIT",
+      "sha256": "68bba2360c866b3a5525184457794e53f0c0250d7d51a1ff6591b8a4df13d867",
+      "source_sha256": "68bba2360c866b3a5525184457794e53f0c0250d7d51a1ff6591b8a4df13d867",
+      "bytes": 16679,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/style-guide.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/style-guide.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/style-guide.md",
+      "license": "MIT",
+      "sha256": "320881ec802004384c09ce4f4f087b9242d926b08071d6b908160e14c707d155",
+      "source_sha256": "320881ec802004384c09ce4f4f087b9242d926b08071d6b908160e14c707d155",
+      "bytes": 20856,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/type-architecture.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/type-architecture.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/type-architecture.md",
+      "license": "MIT",
+      "sha256": "28260c9c0a72fe17ddf6eed7b1fff01c04f58f62bbb7147c45372574c9e38eea",
+      "source_sha256": "28260c9c0a72fe17ddf6eed7b1fff01c04f58f62bbb7147c45372574c9e38eea",
+      "bytes": 10485,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/type-data-flow.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/type-data-flow.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/type-data-flow.md",
+      "license": "MIT",
+      "sha256": "ad1cd8358c9360663200f5100a199e57e43a4e6702982752220ad423127941e8",
+      "source_sha256": "ad1cd8358c9360663200f5100a199e57e43a4e6702982752220ad423127941e8",
+      "bytes": 20858,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/type-requirement-traceability.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/type-requirement-traceability.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/type-requirement-traceability.md",
+      "license": "MIT",
+      "sha256": "7e4861050a1a3edb93bdc1f05c2fd8578186bfe29e24158b93de580cc90720eb",
+      "source_sha256": "7e4861050a1a3edb93bdc1f05c2fd8578186bfe29e24158b93de580cc90720eb",
+      "bytes": 4006,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/type-state.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/type-state.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/type-state.md",
+      "license": "MIT",
+      "sha256": "9c8ed85762d5bbb3672907bc1664ebf94bcc72850efbacf33d5ee12731053122",
+      "source_sha256": "9c8ed85762d5bbb3672907bc1664ebf94bcc72850efbacf33d5ee12731053122",
+      "bytes": 1958,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/references/type-tree.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/references/type-tree.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/references/type-tree.md",
+      "license": "MIT",
+      "sha256": "60194950ef4e46725d7670d93e405a7d4b9af44bf775c549b8f3ce63ca6ce15c",
+      "source_sha256": "60194950ef4e46725d7670d93e405a7d4b9af44bf775c549b8f3ce63ca6ce15c",
+      "bytes": 1517,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/SKILL.md",
+      "upstream": "cathrynlavery/diagram-design",
+      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae",
+      "source_path": "skills/diagram-design/SKILL.md",
+      "source_url": "https://github.com/cathrynlavery/diagram-design/blob/f6db0decea96de66b901331a0f79a8d4b147ebae/skills/diagram-design/SKILL.md",
+      "license": "MIT",
+      "sha256": "fba2015046dd6bfdd99b91c4b17c30bff5ebb3bd088de0e6863b41259c5026b8",
+      "source_sha256": "fba2015046dd6bfdd99b91c4b17c30bff5ebb3bd088de0e6863b41259c5026b8",
+      "bytes": 31967,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/code-review/agents/openai.yaml",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/code-review/agents/openai.yaml",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/code-review/agents/openai.yaml",
+      "license": "MIT",
+      "sha256": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352",
+      "source_sha256": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352",
+      "bytes": 100,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/code-review/SKILL.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/code-review/SKILL.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/code-review/SKILL.md",
+      "license": "MIT",
+      "sha256": "9c921a8d88138a41401d8897ca1bb852088ab1b7b605cdd04edc13e3e8aab6dd",
+      "source_sha256": "9c921a8d88138a41401d8897ca1bb852088ab1b7b605cdd04edc13e3e8aab6dd",
+      "bytes": 6721,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/codebase-design/agents/openai.yaml",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/codebase-design/agents/openai.yaml",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/codebase-design/agents/openai.yaml",
+      "license": "MIT",
+      "sha256": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f",
+      "source_sha256": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f",
+      "bytes": 102,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/codebase-design/DEEPENING.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/codebase-design/DEEPENING.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/codebase-design/DEEPENING.md",
+      "license": "MIT",
+      "sha256": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+      "source_sha256": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+      "bytes": 2553,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/codebase-design/DESIGN-IT-TWICE.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+      "license": "MIT",
+      "sha256": "c222ab5a82e0405672eb9062d62496139a08828e45d07fc5f18e4952c10fac1a",
+      "source_sha256": "c222ab5a82e0405672eb9062d62496139a08828e45d07fc5f18e4952c10fac1a",
+      "bytes": 2699,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/codebase-design/SKILL.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/codebase-design/SKILL.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/codebase-design/SKILL.md",
+      "license": "MIT",
+      "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+      "source_sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+      "bytes": 6446,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/domain-modeling/ADR-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/domain-modeling/ADR-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/domain-modeling/ADR-FORMAT.md",
+      "license": "MIT",
+      "sha256": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+      "source_sha256": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+      "bytes": 2733,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/domain-modeling/agents/openai.yaml",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/domain-modeling/agents/openai.yaml",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/domain-modeling/agents/openai.yaml",
+      "license": "MIT",
+      "sha256": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b",
+      "source_sha256": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b",
+      "bytes": 101,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/domain-modeling/GLOSSARY-FORMAT.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/domain-modeling/GLOSSARY-FORMAT.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md",
+      "license": "MIT",
+      "sha256": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801",
+      "source_sha256": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801",
+      "bytes": 2300,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/domain-modeling/SKILL.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/domain-modeling/SKILL.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/domain-modeling/SKILL.md",
+      "license": "MIT",
+      "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+      "source_sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+      "bytes": 3346,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/LICENSE",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "LICENSE",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/LICENSE",
+      "license": "MIT",
+      "sha256": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5",
+      "source_sha256": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5",
+      "bytes": 1068,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/tdd/agents/openai.yaml",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/tdd/agents/openai.yaml",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/tdd/agents/openai.yaml",
+      "license": "MIT",
+      "sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+      "source_sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+      "bytes": 87,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/tdd/mocking.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/tdd/mocking.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/tdd/mocking.md",
+      "license": "MIT",
+      "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+      "source_sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+      "bytes": 1481,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/tdd/SKILL.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/tdd/SKILL.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/tdd/SKILL.md",
+      "license": "MIT",
+      "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+      "source_sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+      "bytes": 3629,
+      "modified": false
+    },
+    {
+      "local_path": "skills/vendor/mattpocock/tdd/tests.md",
+      "upstream": "mattpocock/skills",
+      "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+      "source_path": "skills/engineering/tdd/tests.md",
+      "source_url": "https://github.com/mattpocock/skills/blob/5863806dd4e15c63174bee4e7515a4256792ecfa/skills/engineering/tdd/tests.md",
+      "license": "MIT",
+      "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+      "source_sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+      "bytes": 2214,
+      "modified": false
+    }
+  ],
+  "manual_additions": [
+    {
+      "local_path": "skills/vendor/diagram-design/PROJECT-DIAGRAM-PROPOSAL.md",
+      "sha256": "bacda791e46c2c28cc1af02d32ac39ed40aa901fde546e7932fbd59ad77ff6c2",
+      "change": "project-authored adaptation; upstream files untouched"
+    },
+    {
+      "local_path": "skills/vendor/diagram-design/SELECTION.md",
+      "sha256": "ca38a8591fba3df39c2437e5c5420b2213ca890804b40007605ef7c90bf061c7",
+      "change": "project-authored adaptation; upstream files untouched"
+    },
+    {
+      "local_path": "skills/vendor/PROJECT-PROFILE.md",
+      "sha256": "601a61a7bc140ac301c8cdc5026376fffb74911c481bcac0c4eba081a9a1ef3a",
+      "change": "project-authored adaptation; upstream files untouched"
+    },
+    {
+      "local_path": "docs/engineering-skills.md",
+      "sha256": "79519eae3d7c766c1295c27ef4c929b6b87eda891baa66cd6ea0057eea4c4872",
+      "change": "project-authored short adoption guide"
+    }
+  ],
+  "verification": {
+    "upstream_file_count": 38,
+    "upstream_bytes_unchanged": true,
+    "original_modified_count": 0,
+    "notice_files": "No NOTICE files at repository root or imported Anthropic scope roots",
+    "manifest_self_hash": "Manifest excluded from own file list to avoid self-reference"
+  }
+}

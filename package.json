@@ -1,12 +1,24 @@
 {
   "name": "teachers-blessing-education-aigc",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "循证一课：师范生成长门户与教育AIGC教学原型",
-  "engines": { "node": ">=22.16" },
+  "engines": {
+    "node": ">=22.16"
+  },
   "scripts": {
     "start": "node --env-file-if-exists=.env server.mjs",
-    "test": "node --test tests/ai-client.test.mjs tests/ai-server.test.mjs tests/evidence-classroom.test.cjs",
-    "check": "node --check app.js && node --check cloud.js && node --check ppt-editor.js && node --check evidence-classroom.js && node --check ai-client.js && node --check server.mjs"
+    "setup:ocr": "node scripts/setup-ocr.mjs",
+    "test": "node --test tests/ai-client.test.mjs tests/ai-server.test.mjs tests/evidence-classroom.test.cjs tests/study-api.test.mjs tests/study-learning.test.mjs tests/study-server.test.mjs tests/study-model-format.test.mjs tests/study-retrieval.test.mjs tests/study-export.test.mjs tests/study-notes-client.test.mjs tests/study-render.test.mjs",
+    "check": "node --check app.js && node --check cloud.js && node --check ppt-editor.js && node --check evidence-classroom.js && node --check ai-client.js && node --check server.mjs && node --check study.js && node --check study-notes.js && node --check study-render.js && node --check learning/api.mjs && node --check learning/store.mjs && node --check learning/services.mjs && node --check learning/document-worker.mjs && node --check learning/annotations.mjs && node --check learning/retrieval.mjs && node --check learning/export.mjs"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "0.1.80",
+    "katex": "0.19.1",
+    "pdfjs-dist": "5.4.149",
+    "tesseract.js": "6.0.1"
+  },
+  "devDependencies": {
+    "playwright-core": "1.65.1"
   }
 }

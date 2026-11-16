@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>教材学习 · 私人 AI 课程</title>
+  <meta name="description" content="从教材出发，逐个知识点理解、追问、练习和记录。独立实现的教材学习系统。">
+  <link rel="stylesheet" href="/study.css"><link rel="stylesheet" href="/assets/vendor/katex/katex.min.css">
+  <script defer src="/assets/vendor/marked.min.js"></script><script defer src="/assets/vendor/purify.min.js"></script><script defer src="/ai-client.js"></script>
+  <script defer src="/assets/vendor/katex/katex.min.js"></script><script defer src="/assets/vendor/katex/auto-render.min.js"></script><script defer src="/study-render.js"></script><script defer src="/study-notes.js"></script><script defer src="/study.js"></script>
+</head>
+<body>
+  <div id="study-root"><div class="boot" role="status">正在打开你的学习空间…</div></div>
+  <div id="study-toast" class="toast-stack" aria-live="polite"></div>
+  <dialog id="study-dialog" aria-label="学习操作"><div id="dialog-content"></div><button class="dialog-close quiet" aria-label="关闭对话框" onclick="this.closest('dialog').close()">×</button></dialog>
+</body>
+</html>

@@ -12,7 +12,7 @@
 node --env-file=.env server.mjs
 ```
 
-服务不会自动加载.env；环境配置变更后重启。不要把Key填进HTML、JavaScript、截图或提交记录。此仓库此前暴露过浏览器端凭据；删除源码不能撤销历史泄露，原持有人须在供应商端撤销并另建新Key，不能沿用旧值。
+`npm start`会加载本机存在的`.env`；直接运行`node server.mjs`不会自动加载。环境配置变更后重启。不要把Key填进HTML、JavaScript、截图或提交记录。此仓库此前暴露过浏览器端凭据；删除源码不能撤销历史泄露，原持有人须在供应商端撤销并另建新Key，不能沿用旧值。
 
 `EDU_AIGC_API_URL`为运营者指定的完整OpenAI兼容 `.../chat/completions` URL，默认指向OpenRouter；HTTPS必需，自建本机服务仅允许loopback HTTP。拒绝URL中用户名、密码、查询参数、fragment和重定向。浏览器不能指定上游URL、Key或任意HTTP头。
 
@@ -28,7 +28,9 @@ node --env-file=.env server.mjs
 - 成功响应只保留必要的chat字段。模型内容仍是不可信文本；`renderMarkdown`仅在marked与DOMPurify都存在时解析并净化，否则HTML转义为文本。`sanitizeHtml`缺少净化器时也只转义，绝不退化为原样HTML。
 - 静态资源严格白名单：当前根目录前端文件及assets/asset/data/vendor内允许扩展的资源。拒绝.env、.git、服务端源码、platform源码、隐藏路径、穿越与符号链接；不提供目录索引。
 
-本服务是本机开发与演示入口，不是公网多用户计费平台：尚无用户登录、每人配额、持久化审计、账单对账或防滥用网关。公开托管前由部署者增加HTTPS反向代理、鉴权与配额，并明确配置允许Origin；不能仅把监听地址改成公网就视为生产部署。模型供应商仍会收到用户提交的对话，请仅提交有权使用的材料，避免发送未脱敏学生信息。
+`/api/ai/chat`保留原门户的本机模型入口，采用进程并发/来源/大小限制。教材学习使用另外的`/api/v1/*`账号与任务服务，已有本地密码登录、用户资料隔离、持久任务和个人任务额度，见[学习接口](mentrix-api.md)与[任务服务](mentrix-learning.md)。学习服务内部允许单消息60,000字符以容纳来源与JSON格式，合计仍限64,000字符；公共`/api/ai/chat`的24,000字符限制不变。
+
+当前不是公网多用户计费平台，尚无供应商账单对账或完整防滥用网关。公开托管前由部署者配置HTTPS反向代理及允许Origin，评估账户、存储和模型入口的部署策略；不能仅把监听地址改成公网就视为生产部署。模型供应商仍会收到生成所需的材料和对话。
 
 ## 验证
 
@@ -36,4 +38,4 @@ node --env-file=.env server.mjs
 node --test tests/ai-server.test.mjs tests/ai-client.test.mjs
 ```
 
-测试注入mock fetch，不调用真实付费模型，覆盖无Key、模型allowlist、Origin、请求大小、响应边界、上游错误脱敏、超时、静态路径与前端安全降级。`createServer({config,fetch,root})`用于隔离测试；导入server.mjs不会开启监听。实际供应商连通性和输出质量需要运营者配置新Key后另行验证；本轮测试不代表真实模型调用成功。
+上述自动测试注入mock fetch，不调用真实付费模型，覆盖无Key、模型allowlist、Origin、请求大小、响应边界、上游错误脱敏、超时、静态路径与前端安全降级。`createServer({config,fetch,root})`用于隔离测试；导入server.mjs不会开启监听。已另行使用新服务端配置完成真实模型基础路径验证，范围与限制见[本轮验证记录](mentrix-validation.md)。

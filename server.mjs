@@ -2,9 +2,10 @@ import http from 'node:http';
 import path from 'node:path';
 import { readFile, lstat, realpath } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createStudyHandler } from './learning/api.mjs';
 
 const DEFAULT_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'favicon.ico', 'favicon.png', 'robots.txt']);
+const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'study.html', 'study.js', 'study-notes.js', 'study-render.js', 'study.css', 'favicon.ico', 'favicon.png', 'robots.txt']);
 const RESOURCE_DIRS = new Set(['assets', 'asset', 'data', 'vendor']);
 const RESOURCE_EXTENSIONS = new Set(['.js', '.css', '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.mp4', '.pdf', '.txt']);
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.mp4': 'video/mp4', '.pdf': 'application/pdf' };
@@ -131,12 +132,12 @@ function readJson(req, limit) {
   });
 }
 
-function chatInput(input, config) {
+function chatInput(input, config, { maxMessageChars = 24000 } = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !['messages', 'model', 'temperature'].includes(key))) throw new RequestError(400, 'invalid_request', '模型请求字段无效。');
   if (!Array.isArray(input.messages) || input.messages.length < 1 || input.messages.length > 40) throw new RequestError(400, 'invalid_messages', '对话应包含1至40条消息。');
   let total = 0;
   const messages = input.messages.map(message => {
-    if (!message || typeof message !== 'object' || Array.isArray(message) || Object.keys(message).some(key => !['role', 'content'].includes(key)) || !['system', 'user', 'assistant'].includes(message.role) || typeof message.content !== 'string' || !message.content.trim() || message.content.length > 24000) throw new RequestError(400, 'invalid_messages', '消息角色或文本长度无效。');
+    if (!message || typeof message !== 'object' || Array.isArray(message) || Object.keys(message).some(key => !['role', 'content'].includes(key)) || !['system', 'user', 'assistant'].includes(message.role) || typeof message.content !== 'string' || !message.content.trim() || message.content.length > maxMessageChars) throw new RequestError(400, 'invalid_messages', '消息角色或文本长度无效。');
     total += message.content.length;
     return { role: message.role, content: message.content };
   });
@@ -190,9 +191,41 @@ async function staticFile(req, res, pathname, root) {
 }
 
 /** Injection is for isolated tests. Importing this module never starts a listener. */
-export function createServer({ config: inputConfig, fetch: fetchImpl = globalThis.fetch, root = DEFAULT_ROOT } = {}) {
+export function createServer({ config: inputConfig, fetch: fetchImpl = globalThis.fetch, root = DEFAULT_ROOT, studyDataDir } = {}) {
   const config = inputConfig ? normalizeConfig(inputConfig) : loadConfig();
   let active = 0;
+  const studyModel = config.apiKey && config.model ? async ({ messages, temperature, signal } = {}) => {
+    const payload = chatInput({ messages, ...(temperature === undefined ? {} : { temperature }) }, config, { maxMessageChars: 60000 });
+    if (active >= config.maxConcurrent) throw new RequestError(429, 'server_busy', '当前模型任务较多，请稍后再试。');
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, config.timeoutMs);
+    const onAbort = () => controller.abort();
+    let onControllerAbort;
+    const aborted = new Promise((_resolve, reject) => {
+      onControllerAbort = () => reject(new RequestError(timedOut ? 504 : 409, timedOut ? 'upstream_timeout' : 'cancelled', timedOut ? '模型处理超时，结果未保存为完成。' : '任务已取消。'));
+      controller.signal.addEventListener('abort', onControllerAbort, { once: true });
+    });
+    if (signal?.aborted) controller.abort();
+    signal?.addEventListener('abort', onAbort, { once: true });
+    active++;
+    try {
+      const result = await Promise.race([(async () => {
+      const response = await fetchImpl(config.apiUrl, { method: 'POST', redirect: 'error', signal: controller.signal, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` }, body: JSON.stringify(payload) });
+      if (!response.ok) { await response.body?.cancel().catch(() => {}); throw new RequestError(response.status === 429 ? 429 : 502, 'upstream_error', '模型服务没有完成任务，请稍后重试。'); }
+      return await responseJson(response, config, controller);
+      })(), aborted]);
+      const text = result.choices[0].message.content;
+      if (!text.trim()) throw new RequestError(502, 'empty_response', '模型没有返回有效内容。');
+      return text;
+    } catch (error) {
+      if (timedOut) throw new RequestError(504, 'upstream_timeout', '模型处理超时，结果未保存为完成。');
+      if (signal?.aborted) throw new RequestError(409, 'cancelled', '任务已取消。');
+      if (error instanceof RequestError) throw error;
+      throw new RequestError(502, 'upstream_unavailable', '模型连接失败，请核对服务端配置。');
+    } finally { clearTimeout(timer);signal?.removeEventListener('abort', onAbort);controller.signal.removeEventListener('abort', onControllerAbort);active--; }
+  } : undefined;
+  const studyHandler = createStudyHandler({ dataDir: studyDataDir || path.join(path.resolve(root), '.local', 'learning'), model: studyModel });
   const server = http.createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
@@ -200,6 +233,10 @@ export function createServer({ config: inputConfig, fetch: fetchImpl = globalThi
     try {
       const authority = requestAuthority(req, config);
       const pathname = requestPath(req.url);
+      if (pathname.startsWith('/api/v1/')) {
+        checkOrigin(req, authority, config, !['GET', 'HEAD'].includes(req.method));
+        if (await studyHandler(req, res, pathname)) return;
+      }
       if (pathname === '/api/ai/config') {
         if (req.method !== 'GET') throw new RequestError(405, 'method_not_allowed', '配置端点只支持GET。');
         checkOrigin(req, authority, config);
@@ -241,7 +278,7 @@ export function createServer({ config: inputConfig, fetch: fetchImpl = globalThi
         } finally { clearTimeout(timer); controller.signal.removeEventListener('abort', onAbort); res.off('close', onClose); active -= 1; }
       }
       if (pathname.startsWith('/api/')) throw new RequestError(404, 'not_found', '接口不存在。');
-      return await staticFile(req, res, pathname, path.resolve(root));
+      return await staticFile(req, res, pathname === '/study' || pathname.startsWith('/study/') ? '/study.html' : pathname, path.resolve(root));
     } catch (error) {
       if (error instanceof RequestError) fail(res, error.status, error.code, error.message);
       else fail(res, 500, 'internal_error', '本地服务处理失败。');

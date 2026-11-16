@@ -10,7 +10,7 @@
     try {
       return String(global.DOMPurify.sanitize(String(html ?? ''), {
         USE_PROFILES: { html: true },
-        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'textarea', 'select', 'svg', 'math'],
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'textarea', 'select', 'svg', 'math', 'img', 'picture', 'audio', 'video', 'source', 'track', 'link'],
         FORBID_ATTR: ['style', 'srcset'],
         ALLOW_DATA_ATTR: false,
         ALLOW_UNKNOWN_PROTOCOLS: false,
