@@ -1,0 +1,52 @@
+{
+  "schema": "xunzheng-generated-world/v1",
+  "visualMode": "agent_ui",
+  "classification": "AI-generated fictional environment",
+  "source": "assets/world/book-garden/source.png",
+  "generator": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. Asset type: initial source view for a real navigable 3D educational homepage world. Create ONE wide 16:9 environment image, no UI, no text, no logos, no labels or border. Theme: an inviting 'Book Garden Academy' where an open giant book becomes an architectural reading courtyard. A coherent, bounded, roofed university conservatory with deep spatial perspective: low rounded steps and floor terraces made of thick cream book pages, solid forest-green bookcase arcades along both sides, an open-book shaped central reading desk island, a teaching studio doorway at the back, a quiet research alcove on the left, a tiny round study table on the right. Restrained potted botanical plants with broad sage leaves sit at floor level and on solid shelves. Match the approved antique botanical book illustration style: warm cream parchment #F4EDDC, muted sage #94A58A, deep forest ink #183E32, fine engraved crosshatching and etched linework, small pale-gold details, beautiful old university-press printmaking. Depict spatially solid objects and believable consistent geometry with a continuous visible floor. Preserve clear uncluttered paths wide enough for a slow flying camera to move through. Camera: a slightly elevated human-eye view at the courtyard entrance looking gently downward toward the central open-book desk, wide 28mm equivalent lens, showing left and right side walls, floor, back studio and a warm vaulted book-shaped roof. All objects are rendered in the same cream/sage fine engraving medium, cohesive textured 3D volume rather than photo-real materials. Calm soft diffuse light, no harsh bloom. The foreground path is empty and the center subject is fully visible. No open sky, no floating fragments, no people, no glass greenhouse walls, no thin hanging vines, no tiny illegible mathematical lettering, no modern screens, no saturated colors, no cartoon mascots. Build a memorable coherent world for learning from textbooks, examining ideas, and preparing a lesson.",
+  "humanReview": "主题沿用用户认可的奶油纸色、鼠尾草绿、书籍植物版画风格；本张场景新稿尚待用户审阅。",
+  "rightsNote": "Original generated fictional reading courtyard; no real campus, publisher identity, user textbook or people.",
+  "reconstruction": "World Labs Atlas; newly visible surfaces are generative completions, not measurements or recovered original architecture.",
+  "sourceSha256": "4ef60d9e89f0889870966692d6477acd5b4dbeb03f2aad917f8ca0deb3f2b5c5",
+  "scene": {
+    "path": "assets/world/book-garden/world.spz",
+    "sha256": "0dc4f0f6b10ce47a1aa169d79b4e3190aacf954d2b906072644d6128e8d92131",
+    "bytes": 31427137,
+    "operationId": "e8a4883592054646bc20a7cdf7f75e18",
+    "retainedViews": 12,
+    "excludedSeed": "Initial view conflicts with the generated entrance wall; kept as source concept only.",
+    "coordinateSystem": "RUB, Y up, -Z camera forward",
+    "header": {
+      "format": "spz",
+      "compression": "gzip",
+      "version": 2,
+      "numPoints": 2000000,
+      "shDegree": 0,
+      "fractionalBits": 12,
+      "flags": 64,
+      "antialiased": false,
+      "headerBytes": 16,
+      "inspection": "header-only",
+      "integrityVerified": false,
+      "maxPoints": 2000000,
+      "ignoredFlags": 64,
+      "compatProfile": "spark-2.4.0-v2-sh0-frac12-marker40"
+    },
+    "originalGeneratedBytesUnmodified": true,
+    "cpuDecode": "Fixed Spark 2.4.0 decoded all 2,000,000 points; not a browser/GPU result.",
+    "browserReview": {
+      "observed": "Actual browser WebGL scene; completed 54-second path, keyboard orbit/zoom, resume, home, static release and reopen.",
+      "classification": "local functional preview, not physical GPU or frame-rate benchmark",
+      "knownConsoleWarning": "Shader signed/unsigned mismatch warning; observed rendering continued.",
+      "touchAndLowEndDevices": "not yet tested",
+      "independentChrome": "Original SPZ rendered; pause, home, static release and reopen observed. Actual CSS viewport 1442x902; image unscaled.",
+      "screenshots": [
+        "docs/design/welcome-static-v1.jpg",
+        "docs/design/welcome-scene-v1.jpg",
+        "docs/design/welcome-scene-desktop-v1.jpg"
+      ]
+    },
+    "publishedLocallyAt": "2026-11-16T19:37:51.079Z"
+  }
+}

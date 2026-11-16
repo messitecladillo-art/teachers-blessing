@@ -1,0 +1,233 @@
+/* Native UI20 visual delta. Loaded last; no data or behavior changes.
+   Reference geometry is evaluated at 1586x992 with real synthetic content. */
+
+:root:not([data-theme=dark]){--paper:#f9f7f3;--surface:#fcfaf6;--soft:#e8ecde;--outline:#f7f5ef;--ink:#123c2f;--muted:#687164;--green:#174335;--action:#174335;--rail:#153e31;--line:#c6c9bd}
+.auth-story{background:#113f32}.auth-art{object-fit:contain}
+@media(min-width:1200px){
+  .app-shell{grid-template-columns:110px minmax(0,1fr)}
+  .app-shell[data-route=textbooks]{grid-template-columns:121px minmax(0,1fr)}
+  .app-shell.is-chapter,.app-shell:has(.teaching-view-student){grid-template-columns:118px minmax(0,1fr)}
+  .app-shell:has(.teaching-view-editor),.app-shell:has(.teaching-view-reflection){grid-template-columns:109px minmax(0,1fr)}
+  .app-shell:has(.library-page){grid-template-columns:121px minmax(0,1fr)}
+  .app-shell:has(.import-page){grid-template-columns:108px minmax(0,1fr)}
+  .topbar,.is-course .topbar{height:68px;padding:0 30px}
+  .is-course .topbar{flex-shrink:0}
+  .is-course .course-layout{height:calc(100dvh - 68px);min-height:0}
+  .is-course .outline-panel{height:100%;top:0}
+  :root{--topbar-height:68px}
+  .topbar-brand{font:900 30px/1.1 "Xunzheng Display",serif;letter-spacing:.03em}
+  .topbar-brand span{font:600 16px/1.3 Georgia,serif;letter-spacing:.09em;margin-left:10px}
+  .breadcrumb{font:16px/1.5 var(--display-font);padding-left:22px}
+  #app-navigation{width:100%;padding:5px 6px 14px;background:#153e31;border-right:1px solid #214a3c}
+  #app-navigation .nav,#app-navigation .nav a{width:100%}
+  #app-navigation .brand{height:90px;padding:4px 0 22px;justify-content:center}
+  #app-navigation .brand-symbol{width:57px;height:57px}
+  #app-navigation .brand-symbol .ui-icon{width:57px;height:57px;stroke-width:1}
+  #app-navigation .nav{gap:8px}
+  #app-navigation .nav a{min-height:56px;padding:10px 12px;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:9px;border-radius:10px;font:18px/1.4 var(--display-font)}
+  #app-navigation .nav .ui-icon{width:27px;height:27px}
+  #app-navigation .nav-label{font-size:18px;line-height:1.4}
+  #app-navigation .nav a.active{background:#f9f7ed;color:#123f32}
+  .app-shell:is(.is-course,[data-route=workshops]):not(:has(.library-page)) #app-navigation .nav a,.app-shell:has(.import-page) #app-navigation .nav a,.app-shell:has(.research-page) #app-navigation .nav a{flex-direction:column;gap:5px;min-height:83px;padding:8px 5px}
+  .app-shell:has(.teaching-view-reflection) #app-navigation .nav a{flex-direction:column;gap:5px;min-height:83px;padding:8px 5px}
+
+  /* 01: portrait jackets, three genuine books per row; extra records stay visible. */
+  .app-shell[data-route=textbooks] .topbar-brand{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+  .app-shell[data-route=textbooks] .topbar-brand span{margin:0;font-size:13px}
+  .content.library-page{max-width:none;margin:0;padding:46px 26px 26px 34px;position:relative}
+  .library-heading{min-height:70px;border:0;padding-bottom:0;margin:0;align-items:center}
+  .library-heading>div{display:flex;align-items:baseline;gap:24px;min-width:0}
+  .library-heading h1{font:900 46px/1.25 "Xunzheng Display",serif;margin:0}
+  .library-heading p{font-size:13px;line-height:1.6;margin-top:4px}
+  .library-heading>.primary{font:20px/1.4 var(--display-font);padding:11px 18px;min-height:47px}
+  .library-heading .library-header-search{flex:0 0 333px;width:333px;max-width:333px;min-width:170px;margin-left:auto;background:transparent;border:1px solid #858f80;border-radius:6px;font:17px/1.5 var(--display-font);padding:8px 13px}
+  .library-toolbar{position:absolute;right:530px;top:60px;min-height:30px;padding:0;align-items:center}
+  .library-counts{position:absolute;right:330px;top:48px;width:max-content}
+  .library-counts{font-size:11px}
+  .library-filter-menu>summary{font-size:14px;border:1px solid #bec2b4;border-radius:6px;padding:6px 12px;color:#344a3e}
+  .library-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1190px;gap:30px 35px;margin:10px auto 28px}
+  .library-grid .book-card>.book-card-link:first-child{width:250px;max-width:100%;margin-inline:auto}
+  .library-grid .book-jacket{width:250px;max-width:100%;height:302px;aspect-ratio:auto;border-left-width:5px;border-radius:4px 5px 5px 4px;box-shadow:2px 4px 5px #263b2a24}
+  .book-detail{max-width:250px;padding-top:12px}
+  .book-detail h3{font:900 25px/1.35 "Xunzheng Display",serif;margin:0 0 7px}
+  .book-detail .book-meta{font:18px/1.4 var(--display-font);margin-bottom:5px}
+  .book-status{font-size:12px}
+  .book-reading-progress{margin-top:9px;grid-template-columns:150px auto;gap:13px}
+  .book-reading-progress progress{height:9px;accent-color:#245b40}
+  .book-reading-progress span{font:14px/1.4 var(--display-font);text-align:left;white-space:normal}
+  .library-import-panel{padding:12px 22px 10px;margin:26px 0 12px;background:transparent;border-color:#b9bdb1;box-shadow:none;border-radius:9px}
+  .library-import-panel h2{font:900 26px/1.4 "Xunzheng Display",serif}
+  .library-import-panel>header{border-bottom:1px solid #c6c9bd;padding-bottom:8px;margin-bottom:0}
+  .library-import-steps{font:20px/1.7 var(--display-font);padding:14px 0}
+  .library-import-chapters>div{font:17px/1.5 var(--display-font)}
+
+  /* 02 keeps the separately approved botanical/book illustration. */
+  .auth-story{padding-left:80px;padding-right:80px}
+  .auth-story h1{font-size:82px;line-height:1.25;margin-top:116px;margin-left:43px;letter-spacing:.04em}
+  .auth-form-wrap{align-items:flex-start;padding-top:134px}
+  .auth-form h2{font-size:68px}
+  .auth-form>p:first-of-type{font-size:24px;line-height:1.5;margin-bottom:38px}
+  .auth-form form{gap:26px}
+  .auth-form .field-label{font:600 22px/1.5 var(--display-font);gap:10px}
+  .auth-input{padding:12px 30px;gap:25px;min-height:64px;border-color:#8f9487;border-radius:10px}
+  .auth-input input{font-size:24px}
+  .auth-input>.ui-icon{width:28px;height:28px}
+  .auth-form form>.primary{font-size:34px;line-height:1.3;min-height:76px;padding:15px;margin-top:20px;border-radius:11px;background:#174335;border-color:#174335}
+  .auth-toggle{font-size:22px}
+  .auth-toggle button{font-size:28px;padding:11px}
+  .auth-form>.footer-note{font-size:16px;line-height:1.8}
+
+  /* 04: wide cover column, original chapter geometry and restrained cards. */
+  .is-chapter .course-layout{grid-template-columns:310px minmax(0,1fr)}
+  .is-chapter .outline-panel{background:var(--paper);border-color:#c6c9bd}
+  .is-chapter .outline-header{padding:58px 22px 16px}
+  .is-chapter .compact-jacket{width:230px;height:300px}
+  .is-chapter .outline-panel h2{font:900 25px/1.5 "Xunzheng Display",serif}
+  .is-chapter .outline-scroll{padding:12px 19px}
+  .is-chapter .chapter-heading{font:19px/1.65 var(--display-font);padding:14px 12px}
+  .is-chapter .reader-commandbar{height:82px;min-height:82px;max-width:none;width:100%;padding-inline:24px;font-size:16px}
+  .is-chapter .chapter-overview-heading h1{font-size:48px}
+  .is-chapter .chapter-overview-index{font-size:38px;padding:6px 16px}
+  .chapter-learning-row{gap:28px;margin:27px 0}
+  .chapter-learning-row h2,.chapter-overview-content .section-title h2{font-size:26px}
+  .chapter-learning-row ul{font:18px/1.6 var(--display-font);padding:14px 20px 14px 36px}
+  .chapter-learning-row p,.chapter-learning-row a{font-size:17px;line-height:1.8}
+  .is-chapter .chapter-home-points{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .chapter-point-card{border-radius:10px;padding:15px 18px;border:1px solid #d5d8c9;background:#fbf9f4}
+  .chapter-point-card strong{font:900 21px/1.45 "Xunzheng Display",serif}
+  .chapter-point-excerpt{font-size:17px;line-height:1.8}
+  .is-chapter .chapter-primary-actions>.primary{font-size:22px;padding:12px 26px}
+  .is-chapter .chapter-primary-actions>button{font-size:19px;padding:12px 23px}
+
+  /* 16: preserve real task/version/review controls while moving them into the header. */
+  .teaching-view-editor{position:relative;grid-template-columns:220px minmax(0,1fr)}
+  .teaching-view-editor .teaching-heading{height:118px;min-height:118px;padding:45px 9px 0}
+  .teaching-view-editor .teaching-heading h1{font-size:38px;line-height:1.3}
+  .teaching-view-editor .teaching-heading p:last-child{font-size:16px}
+  .teaching-view-editor .teaching-heading .teaching-views{position:absolute;top:8px;right:16px;z-index:3}
+  .teaching-view-editor #teaching-body{padding:8px 9px 32px}
+  .teaching-view-editor #teaching-body>.teaching-task-heading{max-width:700px;min-height:50px;margin:15px 0 18px;padding:6px 12px;background:#e5ecd8;border-radius:7px;align-items:center}
+  .teaching-view-editor .teaching-task-heading h3{font-size:18px!important;margin:0 0 4px!important}
+  .teaching-view-editor .teaching-task-heading p{font-size:13px!important;margin:0}
+  .teaching-view-editor .teaching-task-heading>button{font-size:12px;padding:7px 9px}
+  .teaching-view-editor #teaching-body>.teaching-toolbar{position:absolute;top:48px;right:16px;max-width:500px;width:40%;margin:0;padding:0;border:0;gap:10px;align-items:center;z-index:2}
+  .teaching-view-editor .teaching-toolbar>label{max-width:270px}
+  .teaching-view-editor #teaching-body>.teaching-status{position:absolute;top:140px;right:16px;max-width:500px;width:40%;font-size:12px;padding:8px 11px;margin:0;z-index:2}
+  .teaching-view-editor #teaching-body>.teaching-tabs{margin-bottom:8px}
+  .teaching-view-editor .teaching-tabs button{font-size:18px;min-width:110px;padding:10px 15px}
+  .teaching-view-editor #teaching-body>#teaching-panel{max-width:none;margin-inline:0;padding:11px 10px;background:#fcfaf626}
+  .teaching-view-editor .teaching-plan-grid{grid-template-columns:minmax(0,1.35fr) minmax(350px,1fr);gap:12px}
+  .teaching-view-editor .teaching-plan-preview{padding-left:12px}
+  .teaching-view-editor .teaching-plan-grid>.row:first-child{background:#e4ebd7;padding:7px 11px;border-radius:7px}
+  .teaching-view-editor .teaching-steps article{padding:12px 10px;grid-template-columns:62px minmax(0,1fr);gap:10px;border-color:#cbd0bf;border-radius:10px}
+  .teaching-view-editor .teaching-step-number{width:62px;min-height:36px;background:#e4ebd7;font-size:16px}
+  .teaching-view-editor .teaching-steps h4{font:900 21px/1.4 "Xunzheng Display",serif!important}
+  .teaching-view-editor .teaching-steps dl{font-size:15px;grid-template-columns:70px minmax(0,1fr);line-height:1.75}
+  .teaching-view-editor .teaching-sidebar{margin:47px 10px 20px;padding:20px 13px;border:1px solid #d4d5c9;border-radius:11px;background:#fbf9f3;align-self:start;min-height:800px}
+  .teaching-view-editor .teaching-book-cover{width:156px;height:212px;aspect-ratio:auto}
+  .teaching-view-editor .teaching-book-label>strong{font-size:23px}
+  .teaching-book-outline>details{border-bottom:1px solid var(--line)}
+  .teaching-book-outline>details>summary{display:flex;justify-content:space-between;gap:8px;cursor:pointer;list-style:none;padding:13px 0;font:19px/1.6 var(--display-font)}
+  .teaching-book-outline>details>summary::-webkit-details-marker{display:none}
+  .teaching-book-outline .teaching-outline-home{display:block;font-size:11px;color:var(--muted);padding:4px 5px}
+  .teaching-book-outline .teaching-outline-point{display:block;padding:7px 8px 9px 15px;font:17px/1.6 var(--display-font);overflow-wrap:anywhere}
+  .teaching-book-outline .teaching-outline-point:hover{background:#e8eddc}
+
+  /* 17: separate chapter index, task index and printable student paper. */
+  .app-shell:has(.teaching-view-student) .topbar{height:78px}
+  .teaching-view-student{position:relative;grid-template-columns:297px minmax(0,1fr)}
+  .teaching-view-student .teaching-heading{height:112px;min-height:112px;padding:28px 26px 0}
+  .teaching-view-student .teaching-heading h1{font-size:39px}
+  .teaching-view-student .teaching-heading .teaching-views{position:absolute;top:4px;right:26px;z-index:3}
+  .teaching-view-student #teaching-body{padding:5px 26px 32px}
+  .teaching-view-student #teaching-body>.teaching-student-toolbar{position:absolute;top:55px;right:26px;max-width:620px;width:43%;padding:0;border:0;min-height:0;gap:15px}
+  .teaching-view-student .teaching-student-toolbar h3{font-size:15px!important}
+  .teaching-view-student .teaching-student-toolbar p{font-size:10px}
+  .teaching-view-student #teaching-body>.teaching-student-version{position:absolute;right:280px;top:8px;max-width:280px;width:27%;display:flex;align-items:center;gap:10px;margin:0;font-size:12px!important}
+  .teaching-view-student .teaching-student-toolbar>div{min-width:0}
+  .teaching-view-student .teaching-student-toolbar .row{flex-wrap:wrap;gap:6px;max-width:240px}
+  .teaching-view-student .teaching-student-layout{grid-template-columns:210px minmax(0,1fr);gap:40px}
+  .teaching-view-student .teaching-student-index h4{font:900 21px/1.5 "Xunzheng Display",serif!important;padding:13px 15px!important}
+  .teaching-view-student .teaching-student-index a{font-size:18px;padding:18px 16px}
+  .teaching-view-student .teaching-student-paper{padding:20px 28px;box-shadow:0 5px 13px #1f30221c;border-color:#e2e1da}
+  .teaching-view-student .teaching-student-paper>h2{font:900 30px/1.5 "Xunzheng Display",serif;margin:18px 0 16px}
+  .teaching-view-student .teaching-student-paper p,.teaching-view-student .teaching-student-paper .prose{font-size:17px;line-height:1.75}
+  .teaching-view-student .teaching-student-paper .teaching-answer-space{height:76px}
+  .teaching-view-student .teaching-book-cover{width:208px;height:252px;aspect-ratio:auto}
+
+  /* 18: top-left book/navigation, full-width rehearsal and explicit record forms. */
+  .teaching-view-reflection{position:relative}
+  .teaching-view-reflection .teaching-heading{height:135px;min-height:135px;padding:20px 28px 18px 440px}
+  .teaching-view-reflection .teaching-heading h1{font-size:46px}
+  .teaching-view-reflection .teaching-rehearsal-tabs{font-size:20px;border-bottom:1px solid #babfb1}
+  .teaching-view-reflection .teaching-rehearsal-tabs button{font-size:22px;padding:10px 28px}
+  .teaching-view-reflection #teaching-body{padding:12px 13px 45px 23px}
+  .teaching-view-reflection #teaching-body>#teaching-panel{max-width:none;margin-inline:0}
+  .teaching-view-reflection .teaching-rehearsal-version{position:absolute;top:95px;right:28px;margin:0;min-height:35px;font-size:11px;max-width:470px;gap:20px}
+  .teaching-view-reflection .teaching-rehearsal-tabs{margin-left:410px;margin-bottom:39px}
+  .teaching-view-reflection .teaching-book-cover{height:194px;aspect-ratio:auto}
+  .teaching-view-reflection .teaching-book-outline>details>summary{font-size:13px;padding:8px 0}
+  .teaching-view-reflection .teaching-outline-point{font-size:12px;padding-block:5px}
+  .teaching-view-reflection .teaching-rehearsal-grid{grid-template-columns:minmax(0,1.95fr) minmax(340px,1fr);gap:18px}
+  .teaching-view-reflection .teaching-rehearsal-flow>header{padding:10px 16px}
+  .teaching-view-reflection .teaching-rehearsal-flow h3{font-size:25px!important}
+  .teaching-view-reflection .teaching-rehearsal-flow li{grid-template-columns:76px 140px minmax(0,1fr);padding:16px 0}
+  .teaching-view-reflection .teaching-rehearsal-flow p{font-size:17px;line-height:1.7}
+  .teaching-view-reflection .teaching-rehearsal-prompts h3{font-size:24px!important;background:#eef0e4}
+  .teaching-view-reflection .teaching-rehearsal-prompts ul{font-size:16px;line-height:1.75}
+
+  /* 03/05/06/07/15 shared surfaces; keep the modules' own interaction geometry. */
+  .import-page .import-heading{padding-top:58px}
+  .import-page .import-heading h1{font-family:"Xunzheng Display",serif;font-weight:900}
+  .import-page .import-body{padding-right:13px}
+  .import-page-layout{grid-template-columns:302px minmax(360px,1fr) 326px;gap:24px}
+  .import-page .import-stage strong{font:900 21px/1.5 "Xunzheng Display",serif}
+  .import-route-shell,.compare-frame,.research-page,.workshop-research-columns{--line:#c4c9b9;--soft:#e6ebdc}
+  .reader:not(.is-practice) .reader-header h1{font-family:"Xunzheng Display",serif;font-weight:900}
+  .app-shell:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)){grid-template-columns:120px minmax(0,1fr)}
+  .course-layout:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)){grid-template-columns:374px minmax(0,1fr)}
+  .course-layout:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)) .outline-header{padding:32px 28px 20px}
+  .course-layout:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)) .compact-jacket{width:130px;min-width:130px;height:180px;flex:0 0 130px}
+  .course-layout:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)) .outline-book-identity{gap:20px;align-items:center}
+  .course-layout:has(.reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)) .outline-panel h2{font:900 25px/1.5 "Xunzheng Display",serif}
+  .reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research){--reader-gutter:28px}
+  .reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research)>:is(.reader-commandbar,.reader-header,.reader-tabs,#reader-body,#active-job){max-width:none;width:100%;margin-inline:0}
+  .reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research) .reader-header h1{font-size:48px;line-height:1.3}
+  .reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research) .reader-tabs button{font:900 24px/1.5 "Xunzheng Display",serif;padding:10px 24px}
+  .reader:not(.chapter-overview):not(.is-comparison):not(.is-practice):not(.is-feedback):not(.is-research) .prose{font-size:calc(20px * var(--reader-scale));line-height:1.9}
+  .compare-source-pane,.compare-lesson-pane{border-color:#c5c9bb}
+  .app-shell:has(.reader.is-comparison){grid-template-columns:82px minmax(0,1fr)}
+  .app-shell:has(.reader.is-comparison) .topbar{height:54px}
+  .course-layout:has(.reader.is-comparison){grid-template-columns:280px minmax(0,1fr);height:calc(100dvh - 54px)}
+  .course-layout:has(.reader.is-comparison) .outline-header{padding:20px 26px}
+  .course-layout:has(.reader.is-comparison) .outline-book-identity{align-items:flex-start;gap:16px}
+  .course-layout:has(.reader.is-comparison) .compact-jacket{width:94px;min-width:94px;height:128px;flex:0 0 94px}
+  .course-layout:has(.reader.is-comparison) .outline-panel h2{font:900 24px/1.45 "Xunzheng Display",serif}
+  .workshop-source-panel,.workshop-evidence-panel,.workshop-research-columns .workshop-chat{border-color:#bec5b5;border-radius:9px}
+  .app-shell[data-route=workshops] .content{padding:24px 10px}
+  .app-shell[data-route=workshops] .page-heading{margin-bottom:15px}
+  .app-shell[data-route=workshops] .page-heading h1{font-size:42px}
+  .app-shell[data-route=workshops] .page-heading p:last-child{font-size:17px}
+  .workshop-research-columns{grid-template-columns:minmax(0,1fr) minmax(0,1.45fr) minmax(0,1.06fr);gap:10px}
+  .workshop-research-columns :is(.workshop-source-panel,.workshop-evidence-panel)>h2,.workshop-research-columns .chat-title .row>span{font-size:24px}
+  .workshop-research-columns .workshop-source-panel .small,.workshop-research-columns .workshop-evidence-card,.workshop-research-columns .chat-message{font-size:16px;line-height:1.8}
+  .app-shell:has(.reader .research-page){grid-template-columns:105px minmax(0,1fr)}
+  .course-layout:has(.research-page){grid-template-columns:293px minmax(0,1fr)}
+  .course-layout:has(.research-page) .outline-header{padding:17px 22px 20px}
+  .course-layout:has(.research-page) .outline-book-identity{flex-direction:column;align-items:flex-start;gap:16px}
+  .course-layout:has(.research-page) .compact-jacket{width:160px;min-width:160px;height:212px;flex:0 0 auto}
+  .reader.is-research{--reader-gutter:31px;padding:0}
+  .reader.is-research .research-page{max-width:none;margin:0;padding:24px 31px}
+  .reader .research-page .research-heading h2{font:900 48px/1.3 "Xunzheng Display",serif}
+  .reader .research-page .research-context p,.reader .research-page .research-context h3{font-size:19px}
+  .reader .research-page .research-tabs{gap:12px;padding:0}
+  .reader .research-page .research-tabs button{font:900 23px/1.5 "Xunzheng Display",serif;padding:8px 26px;border:1px solid var(--line);border-bottom:0;border-radius:7px 7px 0 0;min-width:170px}
+  .reader .research-source-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .reader .research-source-card{display:grid;grid-template-columns:minmax(0,1fr) 17px;gap:7px;padding:14px 16px;align-content:start;min-height:132px}
+  .reader .research-source-card>.research-platform{grid-column:1/-1;justify-self:start;min-height:0;padding:3px 9px;font-size:14px}
+  .reader .research-source-card strong{font:900 18px/1.5 "Xunzheng Display",serif}
+  .reader .research-comparison{gap:20px}
+  .reader .research-comparison-card h4{font:900 23px/1.5 "Xunzheng Display",serif}
+}
+@media(max-width:1199px){.auth-story h1{margin-left:0}.teaching-page .teaching-toolbar,.teaching-page .teaching-status,.teaching-student-toolbar,.teaching-student-version{position:static;max-width:none;width:auto}.teaching-page #teaching-panel{max-width:none}}
+@media(prefers-reduced-motion:reduce){.book-card-link:hover .book-jacket{transform:none}}

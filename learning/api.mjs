@@ -4,6 +4,10 @@ import { randomBytes, randomUUID, scrypt as callbackScrypt, timingSafeEqual, cre
 import { promisify } from 'node:util';
 import { createStudyStore, COLLECTIONS } from './store.mjs';
 import { LEARNING_LIMITS } from './limits.mjs';
+import { createCoverService } from './cover-service.mjs';
+import {createBookmarkService} from './bookmarks.mjs';
+import {createPagePreviewService} from './page-preview-service.mjs';
+import {createLearningStudio} from './studio-service.mjs';
 
 const scrypt = promisify(callbackScrypt);
 const COOKIE = 'edu_study_session';
@@ -42,6 +46,11 @@ function text(value, max, fallback) { if (value === undefined && fallback !== un
 function description(value = '') { if (typeof value !== 'string' || value.length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value)) throw error(400, 'invalid_text', '课题说明须为不超过200字符的文本。'); return value.trim(); }
 function owned(state, collection, id, user) { const item = state[collection]?.find(row => row.id === id && row.userId === user.id); if (!item) throw error(404, 'not_found', '记录不存在或无访问权限。'); return item; }
 function boundedList(items) { return { items: items.slice(-200).reverse() }; }
+function textbookView(state,book,user){
+  const points=state.knowledgePoints.filter(point=>point.userId===user.id&&point.textbookId===book.id&&!point.archived);
+  const file=state.fileRecords.find(file=>file.userId===user.id&&file.id===book.activeFileId&&file.status!=='deleted');
+  return {...book,chapterCount:state.chapters.filter(chapter=>chapter.userId===user.id&&chapter.textbookId===book.id&&!chapter.archived).length,knowledgePointCount:points.length,masteredPointCount:points.filter(point=>point.progress==='mastered').length,coverAvailable:file?.mime==='application/pdf'};
+}
 function preferences(input, existing = DEFAULT_PREFERENCES) {
   fields(input, ['theme', 'language', 'teachingStyle', 'fontScale']);
   const next = { ...existing, ...input };
@@ -78,8 +87,12 @@ function cascadeOwned(state, rootCollection, rootId, user, timestamp) {
 }
 
 /** Owns authentication/core CRUD; learning services are lazily imported and share this store. */
-export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppliedStore, service: suppliedService, clock = () => Date.now(), sessionTtlMs = 7 * 86400000, secureCookies = process.env.EDU_STUDY_SECURE_COOKIES === '1' } = {}) {
+export function createStudyHandler({ dataDir = DEFAULT_DIR, model, researchProvider, store: suppliedStore, service: suppliedService, clock = () => Date.now(), sessionTtlMs = 7 * 86400000, secureCookies = process.env.EDU_STUDY_SECURE_COOKIES === '1', coverRenderer,pagePreviewRenderer,pagePreviewService:suppliedPagePreviewService } = {}) {
   const store = suppliedStore ?? createStudyStore({ dataDir });
+  const covers=createCoverService({store,dataDir,...(coverRenderer?{render:coverRenderer}:{})});
+  const bookmarks=createBookmarkService({store});
+  const pagePreview=suppliedPagePreviewService||createPagePreviewService({store,dataDir,...(pagePreviewRenderer?{render:pagePreviewRenderer}:{})});
+  const studio=createLearningStudio({store,clock});
   let learning, activeAuth = 0;
   const authAttempts = new Map();
   const now = () => new Date(clock()).toISOString();
@@ -104,7 +117,7 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
   }
   async function recordActivity(userId, type, metadata = {}) { return store.mutate(state => { state.activity.push({ id: id(), userId, type, metadata, createdAt: now() }); if (state.activity.length > 18000) state.activity.splice(0, state.activity.length - 18000); }); }
   const helpers = { readJson, send, fail, error, id, now, owned, recordActivity };
-  async function services() { if (!learning) learning = suppliedService ? Promise.resolve(suppliedService) : import('./services.mjs').then(module => module.createLearningService({ store, model, dataDir, ...helpers })); return learning; }
+  async function services() { if (!learning) learning = suppliedService ? Promise.resolve(suppliedService) : import('./services.mjs').then(module => module.createLearningService({ store, model, researchProvider, dataDir, ...helpers })); return learning; }
   function rateLimit(req) { const key = req.socket.remoteAddress ?? 'local'; const time = clock(); const entry = authAttempts.get(key); const current = entry && entry.until > time ? entry : { count: 0, until: time + 15 * 60000 }; current.count++; authAttempts.set(key, current); if (authAttempts.size > 1000) for (const [k, item] of authAttempts) if (item.until <= time) authAttempts.delete(k); if (current.count > 40 || activeAuth >= 4) throw error(429, 'auth_rate_limited', '登录操作过于频繁，请稍后重试。'); }
 
   return async function handleStudy(req, res, pathname) {
@@ -112,7 +125,7 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
     try {
       const route = pathname.slice('/api/v1'.length), method = req.method;
       const url = new URL(req.url, 'http://local.invalid');
-      if (method === 'GET' && route === '/config/public') { const {textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages}=LEARNING_LIMITS;send(res, 200, { registration: 'local_password', emailVerificationConfigured: false, smsConfigured: false, paymentConfigured: false, modelConfigured: typeof model === 'function',learningLimits:{textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages} }); return true; }
+      if (method === 'GET' && route === '/config/public') { const {textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages}=LEARNING_LIMITS;send(res, 200, { registration: 'local_password', emailVerificationConfigured: false, smsConfigured: false, paymentConfigured: false, modelConfigured: typeof model === 'function',webResearchConfigured: typeof researchProvider==='function'&&researchProvider.configured!==false,learningLimits:{textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages} }); return true; }
       if (['/auth/send-otp', '/auth/reset-password'].includes(route)) throw error(503, 'verification_service_unavailable', '短信与外部账号验证服务未配置；请使用本地邮箱账号和密码登录。');
       if (method === 'POST' && ['/auth/register', '/auth/login', '/auth/login-password'].includes(route)) {
         const body = fields(await readJson(req, 4096), route === '/auth/register' ? ['email', 'password', 'nickname'] : ['email', 'password']);
@@ -142,6 +155,11 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
       if (route === '/announcements' && method === 'GET') { send(res, 200, { items: [{ id: 'local-availability', title: '本地学习系统服务状态', content: '教材学习功能使用你配置的模型。短信、邮件验证、真实会员支付尚未接入；不会模拟付费或短信发送成功。', createdAt: '2026-11-16T00:00:00+08:00' }] }); return true; }
       if (route === '/auth/logout' && method === 'POST') { const token = sessionToken(req); if (token) await store.mutate(state => { state.sessions = state.sessions.filter(row => row.tokenHash !== hashToken(token)); }); cookie(res, '', 0); send(res, 200, { signedOut: true }); return true; }
       const auth = await authenticate(req), user = safeUser(auth.user);
+      if(await pagePreview.handle(req,res,pathname,user))return true;
+      if(await bookmarks.handle(req,res,pathname,user,{json:request=>readJson(request),send}))return true;
+      if(await studio.handle(req,res,pathname,user,{json:request=>readJson(request),send}))return true;
+      const coverRoute=/^\/textbooks\/([^/]+)\/cover$/.exec(route);
+      if(coverRoute){if(method!=='GET')throw error(405,'method_not_allowed','封面只支持GET');const cover=await covers.get(coverRoute[1],user);if(!res.destroyed&&!res.writableEnded){res.writeHead(200,{'Content-Type':'image/png','Content-Length':cover.bytes.length,'Content-Disposition':'inline; filename="textbook-first-page.png"','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Cover-Source':'pdf-first-page','X-Cover-Source-SHA256':cover.sourceSha256});res.end(cover.bytes);}return true;}
       if (method === 'GET' && ['/users/me', '/auth/me'].includes(route)) { send(res, 200, { user, preferences: auth.user.preferences }); return true; }
       if (method === 'POST' && route === '/auth/refresh') { const token = await store.mutate(state => { const session = state.sessions.find(row => row.tokenHash === auth.session.tokenHash && row.expiresAt > clock()); if (!session) throw error(401, 'authentication_required', '会话已失效。'); return newSession(state, user.id, session.tokenHash); }); cookie(res, token, sessionTtlMs); send(res, 200, { user, preferences: auth.user.preferences }); return true; }
       if (method === 'POST' && route === '/users/me/change-password') { const body = fields(await readJson(req, 4096), ['currentPassword', 'newPassword']); const current = password(body.currentPassword), replacement = password(body.newPassword); if (!await passwordMatches(current, auth.user.passwordHash)) throw error(401, 'invalid_credentials', '当前密码不正确。'); const digest = await passwordHash(replacement); await store.mutate(state => { const record = state.users.find(row => row.id === user.id); if (record.passwordHash !== auth.user.passwordHash) throw error(409, 'account_changed', '账号已变化，请重新登录。'); record.passwordHash = digest; record.updatedAt = now(); state.sessions = state.sessions.filter(row => row.userId !== user.id); }); cookie(res, '', 0); send(res, 200, { signedOut: true }); return true; }
@@ -158,12 +176,12 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
         else throw error(405, 'method_not_allowed', '此文件夹操作不受支持。');
         return true;
       }
-      if (route === '/textbooks' && method === 'GET') { const state = await store.snapshot(), folderId = url.searchParams.get('folderId'); send(res, 200, boundedList(state.textbooks.filter(row => row.userId === user.id && (!folderId || row.folderId === folderId)))); return true; }
+      if (route === '/textbooks' && method === 'GET') { const state = await store.snapshot(), folderId = url.searchParams.get('folderId'); send(res, 200, boundedList(state.textbooks.filter(row => row.userId === user.id && (!folderId || row.folderId === folderId)).map(row=>textbookView(state,row,user)))); return true; }
       if (route === '/textbooks' && method === 'POST') { const body = fields(await readJson(req, 4096), ['title', 'folderId']); const title = text(body.title, 200); const value = await store.mutate(state => { if (body.folderId != null) owned(state, 'folders', body.folderId, user); if (state.textbooks.filter(row => row.userId === user.id).length >= 100) throw error(409, 'textbook_limit', '教材数量已达上限。'); const row = { ...stamp(user), title, folderId: body.folderId ?? null, status: 'empty' }; state.textbooks.push(row); return row; }); send(res, 201, value); return true; }
       const textbookRoute = /^\/textbooks\/([^/]+)$/.exec(route);
       if (textbookRoute) {
         const bookId = textbookRoute[1];
-        if (method === 'GET') send(res, 200, owned(await store.snapshot(), 'textbooks', bookId, user));
+        if (method === 'GET') {const state=await store.snapshot();send(res,200,textbookView(state,owned(state,'textbooks',bookId,user),user));}
         else if (method === 'PATCH') { const body = fields(await readJson(req, 4096), ['title', 'folderId', 'expectedRevision']); const value = await store.mutate(state => { const row = owned(state, 'textbooks', bookId, user); checkRevision(body, row); if (body.title !== undefined) row.title = text(body.title, 200); if (body.folderId !== undefined) { if (body.folderId !== null) owned(state, 'folders', body.folderId, user); row.folderId = body.folderId; } row.revision++; row.updatedAt = now(); return row; }); send(res, 200, value); }
         else if (method === 'DELETE') { await store.mutate(state => cascadeOwned(state, 'textbooks', bookId, user, now())); send(res, 200, { deleted: true, binaryCleanup: 'tombstoned_and_counted_until_private_maintenance' }); }
         else throw error(405, 'method_not_allowed', '此教材操作不受支持。');

@@ -1,0 +1,50 @@
+/* Three honest destinations within the existing forest / ivory application shell. */
+.hubs-page{max-width:1140px;margin:0 auto;padding:45px 48px 70px;color:var(--ink)}
+.hubs-heading{display:flex;align-items:flex-start;gap:18px;margin-bottom:31px}
+.hubs-heading-mark{display:grid;place-items:center;width:42px;height:44px;flex-shrink:0;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--green);margin-top:24px}
+.hubs-heading-mark .ui-icon{width:22px;height:22px}
+.hubs-eyebrow{font-size:11px;line-height:1.7;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.hubs-heading h1{font:500 33px/1.5 Georgia,'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;color:var(--green);letter-spacing:.025em;margin:0 0 11px}
+.hubs-intro{font-size:12px;line-height:1.9;color:var(--muted);margin:0;max-width:650px}
+.hubs-scope{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:27px 29px}
+.hubs-scope>h2{font:500 18px/1.7 Georgia,'Songti SC','SimSun',serif;margin:0 0 22px}
+.hubs-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.hubs-field{display:grid;gap:8px;min-width:0;font-size:12px;line-height:1.7;color:var(--muted)}
+.hubs-field select{width:100%;min-height:43px;padding:9px 12px;font-size:12px;color:var(--ink);background:var(--paper);border-color:var(--line)}
+.hubs-field select:disabled{color:var(--muted);opacity:.7}
+.hubs-scope-note{font-size:11px;line-height:1.9;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:24px;margin:15px 0 0}
+.hubs-scope-note button{font-size:11px;padding:4px 6px;color:var(--green)}
+.hubs-point-choice{border:0;border-top:1px solid var(--line);padding:18px 0 0;margin:22px 0 0;min-width:0;max-height:340px;overflow-y:auto;overscroll-behavior:contain}
+.hubs-point-choice[hidden]{display:none}
+.hubs-point-choice legend{font-size:12px;color:var(--muted);padding-right:12px}
+.hubs-point{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border:1px solid transparent;border-radius:6px;cursor:pointer}
+.hubs-point input{margin:5px 0 0;accent-color:var(--green);width:14px;height:14px;flex-shrink:0}
+.hubs-point-copy{display:grid;gap:5px;min-width:0}.hubs-point strong{font-size:13px;line-height:1.8;font-weight:400;overflow-wrap:anywhere}.hubs-point small{font-size:11px;line-height:1.7;color:var(--muted)}
+.hubs-point:has(input:checked){border-color:#bdcbaa;background:var(--soft)}
+.hubs-scope-footer{border-top:1px solid var(--line);margin-top:23px;padding-top:20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hubs-scope-footer>p{font-size:11px;line-height:1.9;color:var(--muted);margin:0;overflow-wrap:anywhere;min-width:0}
+.hubs-scope-footer button{font-size:12px;min-height:41px;padding:10px 15px;flex-shrink:0;display:inline-flex;align-items:center;gap:12px}
+.hubs-scope-footer .ui-icon{width:15px;height:15px}
+.hubs-next-step{display:flex;gap:16px;margin:27px 4px 0;color:var(--muted)}
+.hubs-next-step>.ui-icon{width:20px;height:20px;margin-top:4px;flex-shrink:0;color:var(--green)}
+.hubs-next-step h2{font:500 16px/1.8 Georgia,'Songti SC','SimSun',serif;color:var(--ink);margin:0 0 6px}
+.hubs-next-step p{font-size:11px;line-height:1.9;margin:0;max-width:690px}
+.hubs-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:310px;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:43px 25px;text-align:center}
+.hubs-empty-mark{display:grid;place-items:center;width:48px;height:52px;border:1px solid var(--line);border-radius:9px;background:var(--soft);color:var(--green);margin:0 0 20px}.hubs-empty-mark .ui-icon{width:25px;height:25px}
+.hubs-empty h2{font:500 23px/1.7 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;margin:0 0 11px}.hubs-empty p{font-size:12px;line-height:1.9;color:var(--muted);max-width:470px;margin:0 0 22px}.hubs-empty button{font-size:12px;padding:10px 16px}
+.hubs-list-toolbar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);margin-bottom:16px;padding-bottom:13px;gap:15px}.hubs-list-toolbar>p{font-size:12px;color:var(--muted);margin:0}.hubs-list-toolbar button{font-size:11px;color:var(--muted)}
+.hubs-bookmark-list:not(.hubs-empty){display:grid;gap:12px}
+.hubs-bookmark{display:flex;align-items:center;gap:21px;padding:23px 25px;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-width:0}
+.hubs-bookmark-mark{display:grid;place-items:center;width:42px;height:49px;border:1px solid var(--line);border-radius:6px;flex-shrink:0;color:var(--green);background:var(--soft)}.hubs-bookmark-mark .ui-icon{width:20px;height:20px}
+.hubs-bookmark-copy{flex:1;min-width:0}.hubs-bookmark-scope{font-size:11px;line-height:1.8;color:var(--muted);margin:0 0 7px;overflow-wrap:anywhere}
+.hubs-bookmark-title{display:block;font:500 19px/1.7 Georgia,'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;overflow-wrap:anywhere;color:var(--ink);margin:0 0 9px}
+.hubs-bookmark-title[href]{color:var(--green);width:fit-content;text-decoration:none}
+.hubs-bookmark-meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:11px;line-height:1.8;color:var(--muted)}
+.hubs-stale{border-left:1px solid var(--line);padding-left:12px}
+.hubs-remove{display:grid;place-items:center;width:36px;height:36px;border:1px solid transparent;padding:9px;border-radius:7px;color:var(--muted);background:transparent;flex-shrink:0}.hubs-remove .ui-icon{width:16px;height:16px}
+.hubs-error{font-size:12px;line-height:1.9;color:var(--error);padding:12px 15px;border:1px solid var(--line);border-left:3px solid var(--error);border-radius:6px;background:var(--surface);margin:0 0 20px;overflow-wrap:anywhere}.hubs-error[hidden]{display:none}
+.hubs-page :is(button,a,select,input):focus-visible{outline:2px solid #86a87d;outline-offset:3px}
+@media(hover:hover) and (pointer:fine){.hubs-point:hover{background:var(--soft)}.hubs-remove:hover{background:var(--soft);border-color:var(--line)}.hubs-bookmark-title[href]:hover{text-decoration:underline;text-underline-offset:4px}}
+@media(max-width:850px){.hubs-page{padding:34px 30px 60px}.hubs-heading h1{font-size:30px}.hubs-scope{padding:24px}.hubs-fields{gap:15px}}
+@media(max-width:580px){.hubs-page{padding:29px 22px 55px}.hubs-heading{gap:12px;margin-bottom:24px}.hubs-heading-mark{width:34px;height:39px;margin-top:23px}.hubs-heading-mark .ui-icon{width:19px;height:19px}.hubs-heading h1{font-size:27px;line-height:1.5}.hubs-eyebrow{font-size:10px;letter-spacing:.03em}.hubs-intro{font-size:11px}.hubs-scope{padding:21px 18px}.hubs-fields{grid-template-columns:1fr;gap:17px}.hubs-scope>h2{font-size:17px}.hubs-point{padding:12px 8px}.hubs-scope-footer{flex-direction:column;align-items:stretch;gap:13px}.hubs-scope-footer button{justify-content:space-between}.hubs-next-step{margin-top:23px;gap:11px}.hubs-next-step h2{font-size:15px}.hubs-bookmark{padding:19px 16px;gap:13px;align-items:flex-start}.hubs-bookmark-mark{width:33px;height:42px}.hubs-bookmark-title{font-size:17px}.hubs-bookmark-meta{gap:5px}.hubs-stale{width:100%;padding-left:0;border:0}.hubs-remove{width:30px;height:33px;padding:7px}.hubs-empty{padding:34px 20px;min-height:290px}.hubs-empty h2{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.hubs-page,.hubs-page *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

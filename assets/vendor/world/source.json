@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "package": "three",
+      "version": "0.180.0",
+      "license": "MIT",
+      "metadataUrl": "https://registry.npmjs.org/three/0.180.0",
+      "tarball": "https://registry.npmjs.org/three/-/three-0.180.0.tgz",
+      "integrity": "sha512-o+qycAMZrh+TsE01GqWUxUIKR1AL0S8pq7zDkYOQw8GqfX8b8VoCKYUoHbhiX5j+7hr8XsuHDVU6+gkQJQKg9w==",
+      "files": [
+        {
+          "archivePath": "package/build/three.module.js",
+          "file": "three.module.js",
+          "sourceSha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+          "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+          "bytes": 603113,
+          "transformation": "none"
+        },
+        {
+          "archivePath": "package/build/three.core.js",
+          "file": "three.core.js",
+          "sourceSha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+          "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+          "bytes": 1403455,
+          "transformation": "none"
+        },
+        {
+          "archivePath": "package/examples/jsm/controls/OrbitControls.js",
+          "file": "OrbitControls.js",
+          "sourceSha256": "b97879c748170baadeb3fb84cea1ffdf4674e283dc06042f34e2acb95a76042c",
+          "sha256": "06864a0fcb647730bfbc690b6c25a121199d716a3e299a40158509cbd247c3bf",
+          "bytes": 38715,
+          "transformation": "Only bare three and Pass imports rewritten to local relative module paths"
+        },
+        {
+          "archivePath": "package/examples/jsm/postprocessing/Pass.js",
+          "file": "Pass.js",
+          "sourceSha256": "444b409c235ead986893c472e720da1b779a56985c7d10b279c7944b52bd61c5",
+          "sha256": "9d4db16199e0a742f289535cd755904e6063cdda114e0a1972ddff082875cb00",
+          "bytes": 4230,
+          "transformation": "Only bare three and Pass imports rewritten to local relative module paths"
+        },
+        {
+          "archivePath": "package/LICENSE",
+          "file": "Three-LICENSE",
+          "sourceSha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+          "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+          "bytes": 1081,
+          "transformation": "none"
+        }
+      ]
+    },
+    {
+      "package": "@sparkjsdev/spark",
+      "version": "2.4.0",
+      "license": "MIT",
+      "metadataUrl": "https://registry.npmjs.org/@sparkjsdev%2fspark/2.4.0",
+      "tarball": "https://registry.npmjs.org/@sparkjsdev/spark/-/spark-2.4.0.tgz",
+      "integrity": "sha512-aUjgBfhwDRcF3nUwiAD6Nh7IwvxEmW9liz2qrAXIm2BlPYBmn81QbXIpGFLBSr/o0TKGvEXbNIsKujgPGV/7QQ==",
+      "files": [
+        {
+          "archivePath": "package/dist/spark.module.js",
+          "file": "spark.module.js",
+          "sourceSha256": "5ae86ab35d4ceb655db486dcc336299775bb314c280d7e5b39f64e4539f8e0e9",
+          "sha256": "7f7934d10f89cb04a2f6492c642a86c9909098963b9656e53934e3879eedc8f0",
+          "bytes": 2997942,
+          "transformation": "Only bare three and Pass imports rewritten to local relative module paths"
+        },
+        {
+          "archivePath": "package/LICENSE",
+          "file": "Spark-LICENSE",
+          "sourceSha256": "51829693e5dccd9ca1daa093991faac3aaa93238eb8fd5f5cb4130af85791d64",
+          "sha256": "51829693e5dccd9ca1daa093991faac3aaa93238eb8fd5f5cb4130af85791d64",
+          "bytes": 1088,
+          "transformation": "none"
+        }
+      ]
+    }
+  ],
+  "scriptsExecuted": false,
+  "documentation": [
+    "https://sparkjs.dev/docs/",
+    "https://sparkjs.dev/docs/splat-mesh/",
+    "https://sparkjs.dev/docs/spark-renderer/",
+    "https://threejs.org/docs/pages/OrbitControls.html"
+  ]
+}

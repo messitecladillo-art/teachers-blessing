@@ -1,0 +1,85 @@
+/* External research reader. Intentionally isolated from the main learning workspace. */
+.research-dialog{width:min(900px,calc(100vw - 40px));max-width:none;max-height:90dvh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);box-shadow:var(--shadow-panel);overflow:hidden}
+.research-dialog::backdrop{background:#17382c4a;backdrop-filter:blur(3px)}
+.research-dialog[open]{display:flex;flex-direction:column}
+.research-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:27px 32px 20px;flex-shrink:0}
+.research-eyebrow{font:10px/1.6 system-ui,sans-serif;letter-spacing:.15em;color:var(--muted);margin:0 0 8px}
+.research-heading h2{font:500 27px/1.5 Georgia,'Songti SC','SimSun',serif;letter-spacing:.025em;margin:0}
+.research-close{width:36px;height:36px;display:grid;place-items:center;flex-shrink:0;border:0;background:transparent;padding:8px;color:var(--muted);border-radius:7px}
+.research-close .ui-icon{width:18px;height:18px}
+.research-context{padding:0 32px 22px;border-bottom:1px solid var(--line);flex-shrink:0}
+.research-context p{font-size:11px;line-height:1.8;color:var(--muted);margin:0 0 7px;overflow-wrap:anywhere}
+.research-context h3{font-size:16px;font-weight:500;line-height:1.7;margin:0;overflow-wrap:anywhere}
+.research-context small{font-size:11px;line-height:1.8;color:var(--muted)}
+.research-tabs{display:flex;align-items:stretch;gap:30px;padding:0 32px;border-bottom:1px solid var(--line);flex-shrink:0}
+.research-tabs>button{position:relative;border:0;border-radius:0;background:transparent;color:var(--muted);padding:13px 5px;font-size:13px;line-height:1.6;white-space:nowrap}
+.research-tabs>button.active{color:var(--green);font-weight:500}
+.research-tabs>button.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--green);border-radius:2px 2px 0 0}
+.research-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:23px 32px 34px;scrollbar-gutter:stable}
+.research-status{padding:15px 18px;border:1px solid var(--line);border-left:3px solid #8ba074;background:var(--soft);border-radius:6px;margin-bottom:22px}
+.research-status h3{font-size:13px;font-weight:500;line-height:1.7;margin:0 0 5px}
+.research-status p{font-size:11px;line-height:1.8;color:var(--muted);margin:0}
+.research-status[data-state=attention]{border-left-color:#b3965e}
+.research-status[data-state=working]{border-left-color:var(--green)}
+.research-status[hidden],.research-references[hidden]{display:none}
+.research-error{font-size:12px;line-height:1.8;color:var(--error);border:1px solid var(--line);border-radius:6px;padding:11px 14px;margin:0 0 20px;overflow-wrap:anywhere}
+.research-error[hidden]{display:none}
+.research-history{display:flex;align-items:center;gap:12px;font-size:11px;color:var(--muted);margin-bottom:24px}
+.research-history[hidden]{display:none}
+.research-history select{min-width:0;max-width:100%;font-size:11px;padding:8px 10px;background:var(--surface)}
+.research-result-header{margin:0 0 24px}
+.research-result-label{font-size:11px;line-height:1.8;color:var(--muted);margin-bottom:8px}
+.research-result-header h3{font:500 23px/1.6 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;margin:0;overflow-wrap:anywhere}
+.research-stale{font-size:12px;line-height:1.9;color:var(--muted);padding:10px 13px;border-left:2px solid #b3965e;background:var(--soft);margin:14px 0 0}
+.research-prose{font-family:Georgia,'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;font-size:16px;line-height:2;max-width:100%;margin-bottom:28px}
+.research-prose h1{font-size:24px;font-weight:500}.research-prose h2{font-size:21px;font-weight:500}.research-prose h3{font-size:18px;font-weight:500}.research-prose a{color:var(--green);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.research-plain{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.9 system-ui,sans-serif}
+.research-empty{min-height:190px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:12px 5px 26px}
+.research-empty>.ui-icon{width:27px;height:27px;color:var(--muted);margin-bottom:17px}
+.research-empty h3{font:500 22px/1.7 Georgia,'Songti SC','SimSun',serif;margin:0 0 10px}
+.research-empty p{max-width:530px;font-size:12px;line-height:1.9;color:var(--muted);margin:0}
+.research-references{border-top:1px solid var(--line);padding-top:20px;margin-top:8px}
+.research-references>summary{font-size:12px;font-weight:500;line-height:1.8;cursor:pointer;width:fit-content;padding:4px 0}
+.research-source-note,.research-help{font-size:11px;line-height:1.9;color:var(--muted);margin:12px 0 15px}
+.research-source-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.research-source-card{display:grid;grid-template-columns:64px minmax(0,1fr) 17px;align-items:center;min-width:0;gap:18px;padding:13px 15px;border:1px solid var(--line);border-radius:8px;background:var(--surface);transition:border-color 160ms ease,background-color 160ms ease}
+.research-source-top{display:flex;align-items:center;gap:9px;font-size:11px;line-height:1.5;color:var(--muted);min-width:0}
+.research-source-number{font:11px/1.5 Georgia,serif;flex-shrink:0}.research-platform{overflow-wrap:anywhere;min-width:0;flex:1}.research-source-top>.ui-icon{width:14px;height:14px;flex-shrink:0}
+.research-source-card>.research-platform{display:grid;place-items:center;min-height:54px;padding:8px 6px;border-radius:6px;background:#e7ecd9;color:var(--ink);font:500 13px/1.6 Georgia,'Songti SC','SimSun',serif;text-align:center;overflow-wrap:anywhere}
+.research-source-copy{display:grid;gap:5px;min-width:0}
+.research-source-card strong{font:500 15px/1.7 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;overflow-wrap:anywhere}
+.research-source-card small{font-size:11px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.research-source-card>.ui-icon{width:16px;height:16px;color:var(--green)}
+.research-content:has(.research-result-header){background:#edf0e4;border:1px solid #e5e9dc;border-radius:8px;padding:20px 23px 9px;margin-bottom:15px}
+.research-content .research-result-header{margin-bottom:12px}
+.research-content .research-result-header h3{font-size:19px}
+.research-content .research-result-label{font-size:11px;margin:0 0 5px}
+.research-content .research-prose{font-size:15px;line-height:1.95;margin-bottom:12px}
+.research-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:24px}
+.research-comparison-card{min-width:0;padding:16px 17px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.research-comparison-card h4{margin:0 0 12px;font:500 14px/1.7 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;color:var(--green)}
+.research-comparison-card>p,.research-comparison-card .prose{font:12px/1.95 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;color:var(--muted);margin:0}
+.research-comparison-card .prose ul{margin:0;padding-left:18px}.research-comparison-card .prose p{margin:0 0 8px}.research-comparison-card .prose p:last-child{margin-bottom:0}
+.research-footer{flex-shrink:0;border-top:1px solid var(--line);padding:18px 32px 21px;background:var(--paper)}
+.research-footer>p{font-size:11px;line-height:1.8;color:var(--muted);margin:0 0 12px}
+.research-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.research-actions button{font-size:12px;padding:9px 13px;min-height:38px}
+.research-dialog :is(button,a,select,summary):focus-visible{outline:2px solid #86a87d;outline-offset:3px}
+.research-page{width:100%;max-width:1000px;margin:0 auto;padding:40px 44px 32px;color:var(--ink)}
+.research-page .research-heading{padding:0 0 12px}.research-page .research-heading h2{font-size:32px;color:var(--green)}
+.research-page .research-eyebrow{font-size:11px;letter-spacing:.08em;margin-bottom:8px}
+.research-page .research-context{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;padding:0 0 13px;border:0}
+.research-page .research-context p,.research-page .research-context h3{margin:0;font:13px/1.8 Georgia,'Noto Serif SC','Songti SC','SimSun',serif;color:var(--ink)}
+.research-page .research-context h3::before{content:"·";margin-right:8px;color:var(--muted)}
+.research-page .research-context small{margin-left:auto}
+.research-page .research-tabs{padding:0 8px;gap:38px}
+.research-page .research-body{padding:20px 0 26px;overflow:visible;scrollbar-gutter:auto}
+.research-page .research-references{padding-top:0;border-top:0;margin-top:0}
+.research-page .research-references>summary{font-size:11px;color:var(--muted)}
+.research-page .research-footer{padding:18px 0 0;background:transparent}
+.research-page :is(button,a,select,summary):focus-visible{outline:2px solid #86a87d;outline-offset:3px}
+[data-theme=dark] .research-content:has(.research-result-header){background:var(--soft);border-color:var(--line)}
+[data-theme=dark] .research-source-card>.research-platform{background:#31432e;color:var(--ink)}
+@media(hover:hover) and (pointer:fine){.research-source-card:hover{border-color:#98aa89;background:var(--soft)}.research-close:hover{background:var(--soft)}}
+@media(max-width:680px){.research-page{padding:29px 23px}.research-page .research-heading h2{font-size:27px}.research-page .research-context small{margin-left:0;width:100%}.research-page .research-tabs{gap:24px;padding:0}.research-tabs{gap:18px}.research-tabs>button{font-size:12px}.research-source-card{grid-template-columns:54px minmax(0,1fr) 14px;gap:12px;padding:12px}.research-source-card>.research-platform{font-size:12px;min-height:50px}.research-source-card strong{font-size:14px}.research-comparison{grid-template-columns:1fr}.research-content:has(.research-result-header){padding:17px 18px 6px}}
+@media(max-width:580px){.research-dialog{width:calc(100vw - 16px);max-height:94dvh;border-radius:9px}.research-heading{padding:23px 21px 17px;gap:13px}.research-heading h2{font-size:23px}.research-eyebrow{font-size:10px;letter-spacing:.09em}.research-context{padding:0 21px 18px}.research-context h3{font-size:15px}.research-tabs{padding:0 21px}.research-body{padding:19px 21px 25px}.research-source-grid{grid-template-columns:1fr}.research-prose{font-size:15px}.research-prose h1{font-size:22px}.research-prose h2{font-size:20px}.research-result-header h3{font-size:21px}.research-footer{padding:15px 21px 19px}.research-actions{gap:7px}.research-actions button{font-size:11px;padding:9px 11px}.research-history{align-items:flex-start;flex-direction:column;gap:7px}.research-history select{width:100%}}
+@media(prefers-reduced-motion:reduce){.research-dialog,.research-dialog *,.research-page,.research-page *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

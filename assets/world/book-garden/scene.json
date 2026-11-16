@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "title": "书庭学苑",
+  "poster": "/assets/world/book-garden/source.png",
+  "splat": {
+    "url": "/assets/world/book-garden/world.spz",
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "quaternion": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "scale": 1
+  },
+  "camera": {
+    "position": [
+      0,
+      1.45,
+      -3.1
+    ],
+    "target": [
+      0,
+      0.95,
+      -5.1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 55.97868756301856,
+    "near": 0.05,
+    "far": 60,
+    "minDistance": 1.6,
+    "maxDistance": 4.4,
+    "bounds": {
+      "min": [
+        -3.3,
+        1.1,
+        -8.3
+      ],
+      "max": [
+        3.3,
+        3.3,
+        -2.65
+      ]
+    },
+    "exclusion": {
+      "min": [
+        -1.9,
+        -0.1,
+        -6.8
+      ],
+      "max": [
+        1.9,
+        2.2,
+        -4
+      ]
+    }
+  },
+  "tour": {
+    "durationSeconds": 54,
+    "waypoints": [
+      {
+        "position": [
+          0,
+          1.45,
+          -3.1
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          3,
+          1.65,
+          -4.35
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          3,
+          1.65,
+          -6.9
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          0,
+          1.8,
+          -8
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          -3,
+          1.65,
+          -7.3
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          -3,
+          1.6,
+          -4.35
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          0,
+          1.45,
+          -3.1
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          0,
+          3,
+          -3.4
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      },
+      {
+        "position": [
+          0,
+          1.45,
+          -3.1
+        ],
+        "target": [
+          0,
+          0.95,
+          -5.1
+        ]
+      }
+    ]
+  },
+  "hotspots": []
+}

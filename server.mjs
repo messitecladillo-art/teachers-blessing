@@ -3,11 +3,12 @@ import path from 'node:path';
 import { readFile, lstat, realpath } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createStudyHandler } from './learning/api.mjs';
+import {createWebResearchProvider} from './learning/web-research-provider.mjs';
 
 const DEFAULT_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'study.html', 'study.js', 'study-notes.js', 'study-render.js', 'study-course.js', 'study-teaching.js', 'study.css', 'study-teaching.css', 'favicon.ico', 'favicon.png', 'robots.txt']);
+const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'study.html', 'study.js', 'study-notes.js', 'study-render.js', 'study-course.js', 'study-teaching.js', 'study-import.js', 'study.css', 'study-teaching.css', 'study-import.css', 'study-navigation.css', 'study-design.css', 'study-research.js', 'study-research.css', 'study-hubs.js', 'study-hubs.css', 'study-compare.js', 'study-compare.css', 'study-student.js', 'study-student.css', 'study-studio.js', 'study-studio.css', 'study-records.js', 'study-records.css', 'study-atlas.js', 'study-atlas.css', 'study-ui20.css', 'study-ui20-polish.css', 'welcome.html', 'welcome.js', 'welcome-spz.js', 'welcome.css', 'ui-gallery.html', 'favicon.ico', 'favicon.png', 'robots.txt']);
 const RESOURCE_DIRS = new Set(['assets', 'asset', 'data', 'vendor']);
-const RESOURCE_EXTENSIONS = new Set(['.js', '.css', '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.mp4', '.pdf', '.txt']);
+const RESOURCE_EXTENSIONS = new Set(['.js', '.css', '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.mp4', '.pdf', '.txt', '.spz']);
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.mp4': 'video/mp4', '.pdf': 'application/pdf' };
 
 class RequestError extends Error {
@@ -42,6 +43,8 @@ export function loadConfig(env = process.env) {
     apiKey: env.EDU_AIGC_API_KEY ?? '',
     apiUrl: env.EDU_AIGC_API_URL || 'https://openrouter.ai/api/v1/chat/completions',
     model, allowedModels,
+    researchEnabled: env.EDU_AIGC_RESEARCH_ENABLED==='1',
+    researchModel:(env.EDU_AIGC_RESEARCH_MODEL||model).trim(),
     timeoutMs: integer(env.EDU_AIGC_TIMEOUT_MS, 30000, 1000, 120000, 'timeout'),
     maxOutputTokens: integer(env.EDU_AIGC_MAX_OUTPUT_TOKENS, 4096, 1, 16384, 'output token limit'),
     maxConcurrent: integer(env.EDU_AIGC_MAX_CONCURRENT, 2, 1, 8, 'concurrency'),
@@ -54,7 +57,7 @@ function normalizeConfig(input) {
     apiKey: '', apiUrl: 'https://openrouter.ai/api/v1/chat/completions', model: '',
     allowedModels: [], timeoutMs: 30000, maxOutputTokens: 4096,
     maxConcurrent: 2, maxBodyBytes: 131072, maxResponseBytes: 1048576,
-    allowedOrigins: [], ...input,
+    allowedOrigins: [], researchEnabled:false,researchModel:'', ...input,
   };
   config.apiKey = String(config.apiKey).trim();
   config.model = String(config.model).trim();
@@ -64,6 +67,7 @@ function normalizeConfig(input) {
   const localHttp = upstream.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(upstream.hostname);
   if ((upstream.protocol !== 'https:' && !localHttp) || upstream.username || upstream.password || upstream.hash || upstream.search || !upstream.pathname.endsWith('/chat/completions')) throw new Error('Invalid upstream chat/completions URL');
   config.apiUrl = upstream.href;
+  if(typeof config.researchEnabled!=='boolean'||config.researchModel&&!modelId(config.researchModel))throw new Error('Invalid research configuration');
   config.allowedOrigins = originList(config.allowedOrigins);
   for (const [key, max] of [['timeoutMs', 120000], ['maxBodyBytes', 1048576], ['maxResponseBytes', 4194304], ['maxOutputTokens', 16384], ['maxConcurrent', 8]]) {
     if (!Number.isInteger(config[key]) || config[key] < 1 || config[key] > max) throw new Error(`Invalid ${key}`);
@@ -182,7 +186,7 @@ async function staticFile(req, res, pathname, root) {
     const within = path.relative(realRoot, realFile);
     if (within.startsWith('..') || path.isAbsolute(within) || !(await lstat(realFile)).isFile()) throw new RequestError(404, 'not_found', '资源不存在。');
     const bytes = await readFile(realFile);
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(relative).toLowerCase()] ?? 'application/octet-stream', 'Content-Length': bytes.length, 'Cache-Control': 'no-cache' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(relative).toLowerCase()] ?? 'application/octet-stream', 'Content-Length': bytes.length, 'Cache-Control': 'no-cache', ...(relative==='welcome.html'?{'Content-Security-Policy':"default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'"}:{}) });
     res.end(req.method === 'HEAD' ? undefined : bytes);
   } catch (error) {
     if (error instanceof RequestError) throw error;
@@ -225,7 +229,8 @@ export function createServer({ config: inputConfig, fetch: fetchImpl = globalThi
       throw new RequestError(502, 'upstream_unavailable', '模型连接失败，请核对服务端配置。');
     } finally { clearTimeout(timer);signal?.removeEventListener('abort', onAbort);controller.signal.removeEventListener('abort', onControllerAbort);active--; }
   } : undefined;
-  const studyHandler = createStudyHandler({ dataDir: studyDataDir || path.join(path.resolve(root), '.local', 'learning'), model: studyModel });
+  const researchProvider=config.researchEnabled&&config.apiKey&&config.model?createWebResearchProvider({apiUrl:config.apiUrl,apiKey:config.apiKey,model:config.researchModel||config.model,fetch:fetchImpl}):undefined;
+  const studyHandler = createStudyHandler({ dataDir: studyDataDir || path.join(path.resolve(root), '.local', 'learning'), model: studyModel,researchProvider });
   const server = http.createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
@@ -278,7 +283,7 @@ export function createServer({ config: inputConfig, fetch: fetchImpl = globalThi
         } finally { clearTimeout(timer); controller.signal.removeEventListener('abort', onAbort); res.off('close', onClose); active -= 1; }
       }
       if (pathname.startsWith('/api/')) throw new RequestError(404, 'not_found', '接口不存在。');
-      return await staticFile(req, res, pathname === '/study' || pathname.startsWith('/study/') ? '/study.html' : pathname, path.resolve(root));
+      return await staticFile(req, res, pathname === '/study' || pathname.startsWith('/study/') ? '/study.html' : ['/welcome','/welcome/'].includes(pathname) ? '/welcome.html' : pathname, path.resolve(root));
     } catch (error) {
       if (error instanceof RequestError) fail(res, error.status, error.code, error.message);
       else fail(res, 500, 'internal_error', '本地服务处理失败。');

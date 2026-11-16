@@ -1,0 +1,28 @@
+{
+  "schema": "xunzheng-ui-assets/v1",
+  "visualMode": "agent_ui",
+  "assets": [
+    {
+      "path": "assets/ui/auth-books-v1.png",
+      "generation": "built-in image_gen",
+      "classification": "conceptual",
+      "prompt": "Use case: illustration-story. An original ivory and sage engraved-style botanical book illustration for a refined Chinese educational application login screen. Transparent background, preserve real alpha. No words, no letters, no logos. Composition is low and wide, about 4:3: three stacked old hardcover academic books at lower left, an open book fanned at lower middle/right, and a small simple ceramic vase with delicate leafy wildflower stems rising behind it. Fine warm ivory etching lines, subtle sage crosshatching and restrained pale gold details, elegant university press editorial art, calm precise hand-drawn printmaking look. Objects remain mostly ivory so they read beautifully when placed on deep forest green #183E32. No people, no realistic brand covers, no solid rectangular background, no drop shadow outside artwork, no 3D gloss. Upper area and right edges have plenty of transparent breathing room. This is a decorative concept asset, not an actual textbook or teaching evidence.",
+      "humanReview": "用户明确认可此图风格，并要求在项目中多用。",
+      "approvalDate": "2026-11-17",
+      "usage": [
+        "login illustration",
+        "restrained empty states"
+      ],
+      "rightsNote": "AI-generated original decorative artwork; no third-party publisher or textbook identity."
+    },
+    {
+      "path": "assets/ui-design/01-library-v2.png",
+      "generation": "built-in image_gen",
+      "classification": "conceptual",
+      "prompt": "Use case: ui-mockup. Generate ONE crisp front-facing desktop application screenshot, landscape 16:10, no device frame, no perspective, no collage. Original Chinese educational product “循证一课 / LEARN & TEACH”. This is a conceptual design with illustrative content, not a production screenshot or actual student results. Keep a consistent warm ivory #FAF9F5, deep forest #183E32, pale sage #E8EDDF, thin warm gray rules, 5–8px corners, meticulous spacing, heavy Chinese Song serif titles and legible sans-serif controls. Refined university press editorial style. Left 60px forest rail with original eight-point star/compass mark, aligned fine-line icons and Chinese labels 首页/教材/备课/研读/笔记/收藏/设置; appropriate item selected ivory. 54px header brand, subtle breadcrumb, bookmark/note/ellipsis at right. No AI connected badge, no gradient, no 3D, no giant marketing slogan, no floating row of tiny tools below headings. Use generous but purposeful space, substantial readable content, exact alignment, elegant typographic hierarchy. Actual page content and controls described below should dominate; produce a beautiful usable complete screen. Sample book “概率论基础”, real chapter names 事件与概率/条件概率/随机变量/数字特征, example knowledge point 贝叶斯公式; original invented cover art, no publisher logos. Use only clearly illustrative examples, no fabricated authors/URLs/traffic/awards/student effects. If displaying a percentage or score, label it 示例 or 自标. Chinese text should be legible, short and purposeful. Functional buttons and fields look native and restrained. All formula typography must be correct; conceptual graphs must not imply real measurements. Stay consistent with this common design system.\nPAGE: 教材书架，版本2，用户已明确选定竖版封面布局。主标题‘我的教材’，右上‘导入教材’和轻量整理/搜索。Main bookshelf MUST use three standalone upright portrait book covers next to each other: 概率论基础, 线性代数, 教学设计. Book title, chapter count, and thin self-marked progress bar go DIRECTLY BELOW each cover. No horizontal cover-and-metadata card, no surrounding rounded card boxes, no title to the side of the cover, no add-book tile when books already exist. Covers use original understated warm ivory, sage fine-line mathematical contour/geometry/leaf art, editable-looking dark serif book titles. Under the shelf, a calm bordered whole-book processing section with compact 识别目录→整理知识点→准备讲义 steps and a few TRUE chapter-name status rows. Brief AI disclaimer at bottom. Keep this vertical bookshelf arrangement faithful to a quiet university-press reading studio. Active left rail item 教材. Other common design rules unchanged.",
+      "humanReview": "用户明确选定最早认可的竖版封面布局，V2用于同步该选择；尚未声称所有像素通过验收。",
+      "approvalDate": "2026-11-17",
+      "supersedes": "assets/ui-design/01-library-v1.png"
+    }
+  ]
+}
