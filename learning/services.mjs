@@ -9,6 +9,7 @@ import { resolveAnnotationTarget as resolveRawAnnotationTarget } from './annotat
 import { renderOfflineLearningHtml } from './export.mjs';
 import { buildKnowledgeAtlas, createCourseSnapshot, validateSummaryOutput } from './course-tools.mjs';
 import { LEARNING_LIMITS } from './limits.mjs';
+import { createTeachingService } from './teaching-service.mjs';
 export { LEARNING_LIMITS } from './limits.mjs';
 
 const now = () => new Date().toISOString();
@@ -42,6 +43,9 @@ function readServiceJson(req, res, max, timeoutMs) {
 const publicFile = ({ storedName, pages, outline, ...file }) => ({ ...file, ...(pages ? { pageCount: pages.length } : {}) });
 const sourceList = kp => [{ id: kp.id, revision: kp.revision, anchor: kp.sourceAnchor, text: kp.sourceText.slice(0, LEARNING_LIMITS.sourceChars) }];
 const active = job => ['queued', 'running', 'cancelling'].includes(job.status);
+// PDF scans have their own bounded image allowance; direct uploads retain the
+// stricter 12M/4096 preflight. All native work still runs in document-worker.
+const PDF_IMAGE_PIXELS = 16000000;
 const validId = value => typeof value === 'string' && /^[a-zA-Z0-9-]{1,100}$/.test(value);
 function workshopScope(state, conversation, user) {
   if (!conversation.workshopId) return null;
@@ -233,6 +237,16 @@ async function pdfLibrary() {
   for (const name of ['DOMMatrix', 'ImageData', 'Path2D']) if (!globalThis[name] && canvas[name]) globalThis[name] = canvas[name];
   return { pdf: await import('pdfjs-dist/legacy/build/pdf.mjs'), canvas };
 }
+async function pdfPageHasBlockedImage(page) {
+  // pdfjs 5.4.149 resolves a partial operator list before rejecting its stream;
+  // stopAtErrors alone therefore cannot reliably distinguish a blank page from
+  // an image removed at maxImageSize. Its Node fake-worker reports this exact
+  // warning in-process. Scope this observer to one sequential page in the fixed
+  // document subprocess, and restore the logger even when parsing fails.
+  const original=console.log;let blocked=false;
+  console.log=(...values)=>{if(values.length===1&&values[0]==='Warning: Image exceeded maximum allowed size and was removed.'){blocked=true;return;}original.apply(console,values);};
+  try{await page.getOperatorList();return blocked;}finally{console.log=original;}
+}
 async function recognizeImage(bytes, { signal, dataDir, language = 'chi_sim', setCleanup, onOcrStart }) {
   if (!['chi_sim', 'eng'].includes(language)) throw error(400, 'OCR_LANGUAGE', '仅支持本机chi_sim或eng语言包');
   const langPath = path.join(dataDir, 'ocr-langs');
@@ -260,12 +274,12 @@ export async function extractLearningDocument(bytes, file, context, options) {
     return { pages: [{ number: 1, text: content }], outline: [{ title: file.name, startPage: 1, endPage: 1 }], method: 'local-ocr', warnings: ['OCR文字需人工核对'] };
   }
   const { pdf, canvas } = await pdfLibrary();
-  const task = pdf.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false, maxImageSize:LEARNING_LIMITS.imagePixels,useSystemFonts: true, disableFontFace: true, standardFontDataUrl: fileURLToPath(new URL('../node_modules/pdfjs-dist/standard_fonts/', import.meta.url)).replace(/\\/g, '/') });
+  const task = pdf.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false, maxImageSize:PDF_IMAGE_PIXELS, verbosity:pdf.VerbosityLevel.WARNINGS,useSystemFonts: true, disableFontFace: true, standardFontDataUrl: fileURLToPath(new URL('../node_modules/pdfjs-dist/standard_fonts/', import.meta.url)).replace(/\\/g, '/') });
   let document; const stop = async () => { await task.destroy().catch(() => {}); }; context.setCleanup(stop);
   try {
     document = await task.promise;
     if (document.numPages > LEARNING_LIMITS.pages) throw error(413, 'PAGE_LIMIT', `PDF超过本机${LEARNING_LIMITS.pages}页解析预算`);
-    const pages = []; let total = 0, ocrCount = 0;
+    const pages = [], blockedPages = [], ocrAttemptedPages = []; let total = 0, ocrCount = 0, ocrRuns = 0, recognizedPages = 0;
     const ocrBudget = options.ocrPages ?? 3;
     if (!Number.isInteger(ocrBudget) || ocrBudget < 1 || ocrBudget > LEARNING_LIMITS.ocrPages) throw error(400, 'OCR_BUDGET', '单任务OCR预算为1至5页');
     const ocrStart = options.startPage ?? 1, ocrEnd = options.endPage ?? Math.min(document.numPages,ocrStart+ocrBudget-1);
@@ -274,28 +288,44 @@ export async function extractLearningDocument(bytes, file, context, options) {
       context.signal.throwIfAborted(); const page = await document.getPage(pageNumber); const body = await page.getTextContent();
       let content = body.items.map(v => v.str + (v.hasEOL ? '\n' : ' ')).join('').trim();
       if(!content&&context.previousPages?.[pageNumber-1]?.text)content=context.previousPages[pageNumber-1].text;
+      let ocrRender;
       if (!content && options.ocr && pageNumber>=ocrStart && pageNumber<=ocrEnd) {
         if (++ocrCount > ocrBudget) throw error(413, 'OCR_BUDGET', '扫描页超过本次OCR预算，请分拆文档后重试');
-        const viewport = page.getViewport({ scale: 1.5 });
-        if (viewport.width * viewport.height > 12000000) throw error(413, 'OCR_PIXELS', '扫描页尺寸超过1200万像素预算');
-        const surface = canvas.createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
-        const rendering = page.render({ canvasContext: surface.getContext('2d'), viewport, canvas: surface });
-        const abort = () => rendering.cancel(); context.signal.addEventListener('abort', abort, { once: true });
-        try { await rendering.promise; } finally { context.signal.removeEventListener('abort', abort); }
-        content = await recognizeImage(surface.toBuffer('image/png'), { ...context, language: options.ocrLanguage });
+        ocrAttemptedPages.push(pageNumber);
+        const base = page.getViewport({ scale: 1 });
+        if (![base.width,base.height].every(value=>Number.isFinite(value)&&value>0)) throw error(422,'OCR_PIXELS','扫描页尺寸无效，无法安全渲染');
+        // Leave a rounding margin so ceil(width/height) also respects the cap.
+        const scale = Math.min(1.5, Math.sqrt((LEARNING_LIMITS.imagePixels-10000)/(base.width*base.height)), (LEARNING_LIMITS.imageMaxEdge-1)/base.width, (LEARNING_LIMITS.imageMaxEdge-1)/base.height);
+        const viewport = page.getViewport({ scale });
+        if (Math.ceil(viewport.width)*Math.ceil(viewport.height)>LEARNING_LIMITS.imagePixels) throw error(413,'OCR_PIXELS','扫描页无法缩放到安全OCR画布，请先缩小PDF页面');
+        let surface;
+        try {
+          if(await pdfPageHasBlockedImage(page)) throw error(413,'PDF_IMAGE_PIXELS','Image exceeded maximum allowed size and was removed.');
+          context.signal.throwIfAborted();
+          surface = canvas.createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+          const rendering = page.render({ canvasContext: surface.getContext('2d'), viewport, canvas: surface });
+          const abort = () => rendering.cancel(); context.signal.addEventListener('abort', abort, { once: true });
+          try { await rendering.promise; } finally { context.signal.removeEventListener('abort', abort); }
+          content = await recognizeImage(surface.toBuffer('image/png'), { ...context, language: options.ocrLanguage }); ocrRuns++;if(content.trim())recognizedPages++;ocrRender={width:surface.width,height:surface.height,scale};
+        }
+        catch (failure) {
+          if (!String(failure?.message).includes('Image exceeded maximum allowed size and was removed.')) throw failure;
+          blockedPages.push({page:pageNumber,code:'PDF_IMAGE_PIXELS',maxPixels:PDF_IMAGE_PIXELS,message:'PDF内嵌图像超过1600万像素，未解码或OCR；请将该页扫描图缩小至1600万像素以内后重新导入'});
+        } finally { if(surface){surface.width=1;surface.height=1;} }
         context.setCleanup(stop);
       }
       total += content.length; if (total > LEARNING_LIMITS.textChars) throw error(413, 'TEXT_BUDGET', '提取文本超过400万字预算，请分拆文档');
-      pages.push({ number: pageNumber, text: content }); page.cleanup(); await context.progress(pageNumber / document.numPages);
+      pages.push({ number: pageNumber, text: content, ...(ocrRender?{ocrRender}:context.previousPages?.[pageNumber-1]?.ocrRender?{ocrRender:context.previousPages[pageNumber-1].ocrRender}:{}) }); page.cleanup(); await context.progress(pageNumber / document.numPages);
     }
-    if (!pages.some(v => v.text.trim())) throw error(422, 'NO_TEXT', 'PDF没有可提取文字；扫描件请启用本机OCR，未标记为就绪');
+    const pendingPages=pages.filter(v=>!v.text.trim()).map(v=>v.number),partial=pendingPages.length>0;
+    const recovery={pageCount:document.numPages,needsOcr:partial,partial,pendingPages,blockedPages,ocrAttemptedPages,...(ocrAttemptedPages.length&&!recognizedPages?{recoveryError:{status:422,code:'NO_TEXT',message:'本次所选范围未识别到可学习文字；已保存的其他页文字保留，请核对受限页或调整扫描图'}}:{})};
+    if (!pages.some(v => v.text.trim())) return {pages,outline:[],method:ocrRuns?'pdf-text-and-local-ocr':'pdf-text',...recovery,recoveryError:{status:422,code:'NO_TEXT',message:blockedPages.length?'PDF未取得可学习文字，超像素页面须缩小后重新导入；其他待处理页可继续本机OCR':'PDF没有可提取文字；请分范围启用本机OCR，未标记为就绪'},warnings:['尚无可学习文字，未生成章节或知识点',...(blockedPages.length?['部分扫描图超过1600万像素，未进入OCR，请先缩小对应扫描图']:['扫描件可按每次最多5页继续本机OCR；识别结果需人工核对'])]};
     const outline = [];
     async function flatten(items) { for (const item of items || []) { if (outline.length >= 100) break; let startPage = 1; try { const destination = typeof item.dest === 'string' ? await document.getDestination(item.dest) : item.dest; if (destination?.[0]) startPage = typeof destination[0] === 'number' ? destination[0] + 1 : (await document.getPageIndex(destination[0])) + 1; } catch {} outline.push({ title: String(item.title || '未命名目录').slice(0, 200), startPage }); await flatten(item.items); } }
     await flatten(await document.getOutline());
-    const pendingPages=options.ocr?pages.filter(v=>!v.text.trim()).map(v=>v.number):[],partial=pendingPages.length>0;
-    if (!outline.length) return { pages, ...inferPdfOutline(pages), method: ocrCount ? 'pdf-text-and-local-ocr' : 'pdf-text', partial, pendingPages, warnings: pages.some(v => !v.text) ? ['部分页面没有文字；OCR未处理范围保留待处理，可提交其他页范围继续'] : ocrCount ? ['OCR文字需人工核对'] : [] };
+    if (!outline.length) return { pages, ...inferPdfOutline(pages), method: ocrRuns||pages.some(value=>value.ocrRender) ? 'pdf-text-and-local-ocr' : 'pdf-text', ...recovery, warnings: pages.some(v => !v.text) ? ['部分页面没有文字；OCR未处理范围保留待处理，可提交其他页范围继续',...(blockedPages.length?['部分扫描图超过1600万像素，须缩小后重新导入']:[])] : ocrRuns ? ['OCR文字需人工核对'] : [] };
     outline.sort((a, b) => a.startPage - b.startPage); outline.forEach((v, i) => { v.endPage = Math.max(v.startPage, (outline[i + 1]?.startPage ?? pages.length + 1) - 1); });
-    return { pages, outline, outlineMethod: 'pdf-bookmarks', method: ocrCount ? 'pdf-text-and-local-ocr' : 'pdf-text', partial, pendingPages, warnings: pages.some(v => !v.text) ? ['部分页面没有文字，请核对原文或按需OCR'] : ocrCount ? ['OCR文字需人工核对'] : [] };
+    return { pages, outline, outlineMethod: 'pdf-bookmarks', method: ocrRuns||pages.some(value=>value.ocrRender) ? 'pdf-text-and-local-ocr' : 'pdf-text', ...recovery, warnings: pages.some(v => !v.text) ? ['部分页面没有文字，请核对原文或按需OCR',...(blockedPages.length?['部分扫描图超过1600万像素，须缩小后重新导入']:[])] : ocrRuns ? ['OCR文字需人工核对'] : [] };
   } finally { context.setCleanup(null); await stop(); }
 }
 
@@ -303,6 +333,7 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
   if (!store || !dataDir) throw new Error('Learning service requires shared store and private dataDir');
   if (!Number.isSafeInteger(jsonReadTimeoutMs) || jsonReadTimeoutMs < 1 || jsonReadTimeoutMs > 15000) throw new RangeError('Learning JSON read timeout must be 1–15000ms');
   const filesDir = path.resolve(dataDir, 'learning-files'); const running = new Map();
+  const teaching = createTeachingService({store});
   const ready = store.mutate(s => { for (const job of s.jobs) if (active(job)) { job.status = 'interrupted'; job.error = { code: 'RESTARTED', message: '服务重启，需手动恢复；不会自动重发模型请求' }; if(job.type==='grade'){const attempt=s.attempts.find(v=>v.id===job.payload.attemptId&&v.userId===job.userId&&v.gradingJobId===job.id);if(attempt){attempt.status='pending';attempt.gradingError=job.error;}}for (const entry of s.ledger) if (entry.jobId === job.id && entry.status === 'reserved') entry.status = 'released'; } });
   function checkModel() { if (typeof model !== 'function' || model.configured === false) throw error(503, 'MODEL_NOT_CONFIGURED', '未配置模型服务，不能生成学习内容'); }
   function fileOwned(s, id, user) { const file = owned(s, 'fileRecords', id, user); if (file.status === 'deleted') throw error(404, 'NOT_FOUND', '文件已删除'); if (file.textbookId) owned(s, 'textbooks', file.textbookId, user); if (file.workshopId) owned(s, 'workshops', file.workshopId, user); return file; }
@@ -359,6 +390,10 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
         if (payload.traceFingerprint && payload.traceFingerprint !== snapshot.fingerprint) throw error(409, 'STALE_SUMMARY', '总结输入已改变，请按当前章节和学习记录新建任务');
         payload = { textbookId: snapshot.textbook.id, scope: snapshot.scope, traceFingerprint: snapshot.fingerprint };
       }
+      if(type==='teaching-pack'){
+        payload=teaching.prepare(s,user,payload);
+        if(s.jobs.some(job=>job.userId===user.id&&job.type==='teaching-pack'&&job.payload.packId===payload.packId&&active(job)))throw error(409,'TEACHING_BUSY','此教学任务正在生成，请等待或取消后重试');
+      }
       if (type === 'message') { const conversation = owned(s, 'conversations', payload.conversationId, user); if (conversation.textbookId) owned(s,'textbooks',conversation.textbookId,user);const scope=workshopScope(s,conversation,user);if(payload.knowledgePointId){const point=kpOwned(s,payload.knowledgePointId,user);if(point.revision!==payload.sourceRevision||(scope&&!scope.linkedTextbookIds.includes(point.textbookId))||(conversation.textbookId&&point.textbookId!==conversation.textbookId))throw error(409,'SOURCE_SCOPE_CHANGED','知识点已变化或不在当前会话范围');}if (s.jobs.some(v => v.userId === user.id && v.type === 'message' && v.payload.conversationId === conversation.id && active(v))) throw error(409, 'CONVERSATION_BUSY', '此会话已有回答任务，请等待或取消'); if(payload.userContent){s.messages.push(entity(user.id,{conversationId:conversation.id,role:'user',content:payload.userContent}));} payload = { ...payload, conversationUpdatedAt: conversation.updatedAt, ...(scope?{workshopScope:scope}:{}) }; }
       const item = entity(user.id, { type, status: 'queued', progress: 0, payload, resumedFrom, units }); s.jobs.push(item);
       if(gradingAttempt){gradingAttempt.status='grading';gradingAttempt.gradingJobId=item.id;gradingAttempt.updatedAt=now();delete gradingAttempt.gradingError;}
@@ -381,9 +416,20 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
         if (result.kind === 'parse') {
           const file = fileOwned(s, initial.payload.fileId, user); if (file.sha256 !== initial.payload.fileSha256) throw error(409, 'STALE_SOURCE', '文件已改变');
           let book; if (file.textbookId) { book = owned(s, 'textbooks', file.textbookId, user); if ((book.outlineRevision || 0) !== initial.payload.outlineRevision) throw error(409, 'OUTLINE_CONFLICT', '目录已修订，本次解析不会覆盖人工修改'); }
-          Object.assign(file, result.document, { status: result.document.partial ? 'partial' : 'ready', updatedAt: now() });
-          if (book) { const outline = book.outlineSource === 'manual' && book.activeFileId === file.id ? s.chapters.filter(v => v.userId === user.id && v.textbookId === book.id && !v.archived).sort((a,b)=>a.order-b.order).map(v => ({ ...v, knowledgePoints: s.knowledgePoints.filter(k => k.chapterId === v.id && k.userId === user.id && !k.archived).sort((a,b)=>a.order-b.order).map(k => ({id:k.id,title:k.title})) })) : result.document.outline; applyOutline(s, book, file, outline); }
-          j.result = { fileId: file.id, textbookId: file.textbookId, pageCount: file.pages.length, partial: !!file.partial, pendingPages:file.pendingPages||[] };
+          const {recoveryError,ocrAttemptedPages=[],...parsed}=result.document;
+          const pendingSet=new Set(parsed.pendingPages||[]),attemptedSet=new Set(ocrAttemptedPages);
+          parsed.blockedPages=[...(file.blockedPages||[]).filter(value=>pendingSet.has(value.page)&&!attemptedSet.has(value.page)),...(parsed.blockedPages||[])].sort((a,b)=>a.page-b.page);
+          const hasText=parsed.pages.some(page=>page.text.trim());
+          Object.assign(file, parsed, { status: hasText?(parsed.partial?'partial':'ready'):'needs-ocr', updatedAt: now() });
+          if (book && hasText && (!recoveryError||book.activeFileId!==file.id)) { const outline = book.outlineSource === 'manual' && book.activeFileId === file.id ? s.chapters.filter(v => v.userId === user.id && v.textbookId === book.id && !v.archived).sort((a,b)=>a.order-b.order).map(v => ({ ...v, knowledgePoints: s.knowledgePoints.filter(k => k.chapterId === v.id && k.userId === user.id && !k.archived).sort((a,b)=>a.order-b.order).map(k => ({id:k.id,title:k.title})) })) : parsed.outline; applyOutline(s, book, file, outline); }
+          else if(book&&hasText)Object.assign(book,{status:file.status,updatedAt:now()});
+          if (book && !hasText) {
+            // A new textless source must not leave an older file's course active.
+            if(book.activeFileId&&book.activeFileId!==file.id){for(const collection of ['chapters','knowledgePoints'])for(const value of s[collection])if(value.userId===user.id&&value.textbookId===book.id)value.archived=true;book.outlineRevision=(book.outlineRevision||0)+1;}
+            Object.assign(book,{status:'needs-ocr',activeFileId:file.id,updatedAt:now()});
+          }
+          j.result = { fileId: file.id, textbookId: file.textbookId, pageCount: file.pages.length, needsOcr:!!file.needsOcr, partial: !!file.partial, pendingPages:file.pendingPages||[],blockedPages:file.blockedPages||[] };
+          if(recoveryError){j.status='failed';j.error=recoveryError;j.progress=1;j.updatedAt=now();for(const entry of s.ledger)if(entry.jobId===id){entry.status='released';entry.updatedAt=now();}return;}
         } else if(result.kind==='grade'){
           const attempt=owned(s,'attempts',initial.payload.attemptId,user),exercise=owned(s,'exercises',initial.payload.exerciseId,user),point=kpOwned(s,initial.payload.knowledgePointId,user);
           if(attempt.exerciseId!==exercise.id||attempt.gradingJobId!==id||point.revision!==initial.payload.sourceRevision||exercise.sourceRevision!==point.revision||submittedHash(attempt)!==initial.payload.answersHash)throw error(409,'STALE_SOURCE','评分作答、来源或任务版本已变化');
@@ -398,6 +444,7 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
           }
           if (initial.type === 'message') { const conversation = owned(s, 'conversations', initial.payload.conversationId, user); if (conversation.updatedAt !== initial.payload.conversationUpdatedAt) throw error(409, 'STALE_CONVERSATION', '会话已修改，回答未保存'); if (conversation.textbookId) owned(s, 'textbooks', conversation.textbookId, user); assertMessageSources(s,result.value,conversation,user); if (initial.payload.regenerates) owned(s, 'messages', initial.payload.regenerates, user).superseded = true; }
           if (['lessons','exercises'].includes(result.collection)) result.value.version = s[result.collection].filter(v => v.userId === user.id && v.knowledgePointId === result.value.knowledgePointId).length + 1;
+          if(initial.type==='teaching-pack')teaching.commit(s,user,initial,result);
           s[result.collection].push(result.value); j.result = { id: result.value.id, collection: result.collection };
         }
         j.status = 'completed'; j.progress = 1; j.updatedAt = now(); for (const entry of s.ledger) if (entry.jobId === id) { entry.status = 'settled'; entry.updatedAt = now(); }
@@ -409,6 +456,7 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
   async function callModel(messages, context) { checkModel(); context.signal.throwIfAborted(); const content = await model({ messages, temperature: 0.3, signal: context.signal }); context.signal.throwIfAborted(); return content; }
   async function execute(job, user, context) {
     const s = await store.snapshot(), p = job.payload;
+    if(job.type==='teaching-pack')return teaching.execute(job,user,context,{callModel});
     if (job.type === 'summary') {
       const snapshot = createCourseSnapshot(s, user, p.textbookId, summaryOptions(p.scope));
       if (snapshot.fingerprint !== p.traceFingerprint) throw error(409, 'STALE_SUMMARY', '总结输入已经变化，未调用模型');
@@ -485,11 +533,12 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
       await store.mutate(s => { owned(s, kind === 'textbook' ? 'textbooks' : 'workshops', parentId, user); if (kind === 'workshop' && s.fileRecords.filter(v => v.workshopId === parentId && v.userId === user.id && v.status!=='deleted').length >= 10) throw error(409, 'FILE_COUNT', '每个课题最多10个文件'); if (s.fileRecords.filter(v => v.userId === user.id).reduce((sum, v) => sum + v.bytes, 0) + length > LEARNING_LIMITS.totalStorage) throw error(413, 'STORAGE_LIMIT', '私有存储预算不足'); s.fileRecords.push(file); }); return publicFile(file);
     } catch (failure) { await handle.close().catch(() => {}); await unlink(location).catch(() => {}); throw failure; }
   }
-  const bookOutline = (s, id, user) => { const book=owned(s, 'textbooks', id, user); return { status:book.status,outlineRevision:book.outlineRevision,activeFileId:book.activeFileId,chapters: s.chapters.filter(v => v.userId === user.id && v.textbookId === id && !v.archived).sort((a,b) => a.order-b.order), knowledgePoints: s.knowledgePoints.filter(v => v.userId === user.id && v.textbookId === id && !v.archived).map(({ sourceText, ...v }) => v) }; };
+  const bookOutline = (s, id, user) => { const book=owned(s, 'textbooks', id, user),file=s.fileRecords.find(value=>value.id===book.activeFileId&&value.userId===user.id&&value.status!=='deleted'); return { status:book.status,outlineRevision:book.outlineRevision,activeFileId:book.activeFileId,...(file?{pageCount:file.pageCount??file.pages?.length??0,needsOcr:!!file.needsOcr,partial:!!file.partial,pendingPages:file.pendingPages||[],blockedPages:file.blockedPages||[]}:{}),chapters: s.chapters.filter(v => v.userId === user.id && v.textbookId === id && !v.archived).sort((a,b) => a.order-b.order), knowledgePoints: s.knowledgePoints.filter(v => v.userId === user.id && v.textbookId === id && !v.archived).map(({ sourceText, ...v }) => v) }; };
   async function handle(req, res, pathname, user) {
     const json = (request, max = 131072) => readServiceJson(request, res, max, jsonReadTimeoutMs);
     await ready; const parts = pathname.replace(/^\/api\/v1\/?/, '').split('/').filter(Boolean); const [area, id, action, sub, detail] = parts;
     const method = req.method; const url = new URL(req.url, 'http://local'); const s = await store.snapshot();
+    if(await teaching.handle(req,res,pathname,user,{startJob,json,send}))return true;
     if (!['textbooks','workshops','files','knowledge-points','exercises','attempts','jobs','conversations','artifacts','highlights'].includes(area)) return false;
     if (!user?.id) throw error(401, 'AUTH_REQUIRED', '请先登录');
     if (id && !validId(id)) throw error(400, 'INVALID_ID', 'ID格式错误');
@@ -519,7 +568,7 @@ export function createLearningService({ store, model, dataDir, maxDailyUnits = L
     if (area === 'files' && method === 'GET') {
       const file = fileOwned(s, id, user);
       if (['download','preview'].includes(action)) { res.writeHead(200, { 'Content-Type': action==='preview'&&file.mime==='text/markdown'?'text/plain; charset=utf-8':file.mime, 'Content-Length': file.bytes, 'Content-Disposition': `${action==='preview'?'inline':'attachment'}; filename*=UTF-8''${encodeURIComponent(file.name).replace(/'/g,'%27')}`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); createReadStream(path.join(filesDir, file.storedName)).on('error', () => res.destroy()).pipe(res); return true; }
-      if (action === 'content') { const page = Number(url.searchParams.get('page') || 1); if (!['ready','partial'].includes(file.status)) throw error(409, 'NOT_READY', '文档尚未完成解析'); if (!Number.isInteger(page) || page < 1 || page > file.pages.length) throw error(400, 'PAGE_RANGE', '页码越界'); send(res, 200, { fileId: id, page: file.pages[page - 1], pageCount: file.pages.length, method: file.method, partial:!!file.partial,pendingPages:file.pendingPages||[],warnings: file.warnings }); return true; }
+      if (action === 'content') { const page = Number(url.searchParams.get('page') || 1); if (!['ready','partial'].includes(file.status)) throw error(409, 'NOT_READY', '文档尚未完成解析'); if (!Number.isInteger(page) || page < 1 || page > file.pages.length) throw error(400, 'PAGE_RANGE', '页码越界'); send(res, 200, { fileId: id, page: file.pages[page - 1], pageCount: file.pages.length, method: file.method, needsOcr:!!file.needsOcr,partial:!!file.partial,pendingPages:file.pendingPages||[],blockedPages:file.blockedPages||[],warnings: file.warnings }); return true; }
     }
     if(area==='files'&&!action&&method==='PATCH'){
       const body=await json(req);if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>key!=='name'))throw error(400,'FILENAME','只能修改文件显示名称');

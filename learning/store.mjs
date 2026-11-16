@@ -2,13 +2,16 @@ import path from 'node:path';
 import { mkdir, open, readFile, rename, unlink, stat } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 
-export const COLLECTIONS = Object.freeze(['users', 'sessions', 'folders', 'textbooks', 'workshops', 'materials', 'fileRecords', 'conversations', 'messages', 'jobs', 'chapters', 'knowledgePoints', 'lessons', 'exercises', 'attempts', 'artifacts', 'highlights', 'feedbacks', 'ledger', 'activity']);
+export const COLLECTIONS = Object.freeze(['users', 'sessions', 'folders', 'textbooks', 'workshops', 'materials', 'fileRecords', 'conversations', 'messages', 'jobs', 'chapters', 'knowledgePoints', 'lessons', 'exercises', 'attempts', 'artifacts', 'highlights', 'feedbacks', 'ledger', 'activity', 'teachingPacks', 'teachingPackVersions']);
 const MAX_STORE_BYTES = 64 * 1024 * 1024;
 const empty = () => Object.fromEntries([['schema', 1], ...COLLECTIONS.map(name => [name, []])]);
 const clone = value => structuredClone(value);
 
 function validate(value) {
   if (!value || value.schema !== 1 || Object.keys(value).some(key => key !== 'schema' && !COLLECTIONS.includes(key))) throw new Error('Unsupported study store schema');
+  // Additive migration for existing schema-1 private stores; other missing or
+  // malformed collections keep the original fail-closed validation.
+  for (const name of ['teachingPacks', 'teachingPackVersions']) if (!Object.hasOwn(value, name)) value[name] = [];
   for (const name of COLLECTIONS) {
     if (!Array.isArray(value[name]) || value[name].length > 20000 || value[name].some(row => !row || typeof row !== 'object' || Array.isArray(row) || typeof row.id !== 'string' || row.id.length > 100)) throw new Error('Invalid study store collection');
     if (new Set(value[name].map(row => row.id)).size !== value[name].length) throw new Error('Duplicate study record identity');

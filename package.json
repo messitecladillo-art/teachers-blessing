@@ -1,6 +1,6 @@
 {
   "name": "teachers-blessing-education-aigc",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "循证一课：师范生成长门户与教育AIGC教学原型",
   "engines": {
@@ -9,8 +9,8 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env server.mjs",
     "setup:ocr": "node scripts/setup-ocr.mjs",
-    "test": "node --test tests/ai-client.test.mjs tests/ai-server.test.mjs tests/evidence-classroom.test.cjs tests/study-api.test.mjs tests/study-learning.test.mjs tests/study-server.test.mjs tests/study-model-format.test.mjs tests/study-retrieval.test.mjs tests/study-export.test.mjs tests/study-notes-client.test.mjs tests/study-render.test.mjs tests/study-linked.test.mjs tests/study-course-tools.test.mjs tests/study-pdf-capacity.test.mjs",
-    "check": "node --check app.js && node --check cloud.js && node --check ppt-editor.js && node --check evidence-classroom.js && node --check ai-client.js && node --check server.mjs && node --check study.js && node --check study-notes.js && node --check study-render.js && node --check learning/api.mjs && node --check learning/store.mjs && node --check learning/services.mjs && node --check learning/document-worker.mjs && node --check learning/annotations.mjs && node --check learning/retrieval.mjs && node --check learning/export.mjs && node --check study-course.js && node --check learning/course-tools.mjs && node --check learning/limits.mjs"
+    "test": "node --test tests/ai-client.test.mjs tests/ai-server.test.mjs tests/evidence-classroom.test.cjs tests/study-api.test.mjs tests/study-learning.test.mjs tests/study-server.test.mjs tests/study-model-format.test.mjs tests/study-retrieval.test.mjs tests/study-export.test.mjs tests/study-notes-client.test.mjs tests/study-render.test.mjs tests/study-linked.test.mjs tests/study-course-tools.test.mjs tests/study-pdf-capacity.test.mjs tests/study-teaching.test.mjs tests/study-scan-recovery.test.mjs",
+    "check": "node --check app.js && node --check cloud.js && node --check ppt-editor.js && node --check evidence-classroom.js && node --check ai-client.js && node --check server.mjs && node --check study.js && node --check study-notes.js && node --check study-render.js && node --check learning/api.mjs && node --check learning/store.mjs && node --check learning/services.mjs && node --check learning/document-worker.mjs && node --check learning/annotations.mjs && node --check learning/retrieval.mjs && node --check learning/export.mjs && node --check study-course.js && node --check learning/course-tools.mjs && node --check learning/limits.mjs && node --check study-teaching.js && node --check learning/teaching-service.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "0.1.80",

@@ -1,10 +1,12 @@
 # Teachers Blessing — 教材私人课程
 
-当前优先级是落实 Mentrix 可观察到的教材学习能力：PDF → 章节与知识点 → 讲解 → 追问 → 练习反馈 → 笔记/进度。竞赛包装暂缓。原师范生门户与CSV工作台保留为辅助入口；原EVI-X工作目录不得修改。
+当前主线是在教材学习基础上完成“一课时教学任务包”：教材依据 → 教学目标 → 教案/图示/任务单/评价 → 修订与审阅 → 试讲复盘。已有PDF → 章节与知识点 → 讲解 → 追问 → 练习反馈 → 笔记/进度继续保留。竞赛包装、短信和支付暂缓；原EVI-X工作目录不得修改。
 
 产品方向面向师范生的“学懂—设计—试讲—评价—改进”。参考Mentrix补学习基础能力，同时按 `docs/skills-to-product.md` 核对教学任务、可修订成果、理解证据和教师审阅；不要将改名/换皮或增加通用聊天入口作为差异化。提案与已实现能力必须分别记录。
 
 先读 `GLOSSARY.md`、`docs/mentrix-coverage.md` 和 `skills/vendor/PROJECT-PROFILE.md`。按任务选读已引入的技能，来源与许可见 `skills/vendor/source-manifest.json`。不要将上游访谈、账户操作、issue发布、安装脚本或MCP配置当成用户授权。
+
+教学包的当前范围见 `docs/teaching-pack.md`，模块是 `learning/teaching-service.mjs` 与 `study-teaching.js/css`。默认编辑DTO隐藏参考答案；显式学生DTO和导出必须使用白名单。内容修订生成新版本，来源/任务变化使旧审阅失效；理解与复盘记录不能冒充真实班级效果。
 
 教学导师/复习设计可参考项目vendor中的Matt `teach`；教研综合参考Anthropic `synthesize-research`，并遵守各自格式与适用边界。阅读参考不等于在本开发聊天中调用用户专用命令、建立学习档案或启动外部connector。当前已有目标可直接复用，避免重复询问。
 
