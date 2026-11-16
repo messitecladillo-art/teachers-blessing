@@ -58,6 +58,25 @@ function scoreText(text, terms) {
   return { score, matched, firstMatch };
 }
 
+function sourceMetadata(row) {
+  const metadata = {};
+  for (const name of ['title','textbookId','textbookTitle','chapterId']) if (typeof row[name] === 'string' && row[name].length <= 200) metadata[name] = row[name];
+  for (const name of ['revision','textbookRevision','outlineRevision']) if (Number.isSafeInteger(row[name]) && row[name] >= 0) metadata[name] = row[name];
+  if (row.sourceAnchor && typeof row.sourceAnchor === 'object' && !Array.isArray(row.sourceAnchor)) {
+    const anchor = {};
+    for (const name of ['fileId','sha256']) if (typeof row.sourceAnchor[name] === 'string' && row.sourceAnchor[name].length <= 200) anchor[name] = row.sourceAnchor[name];
+    for (const name of ['startPage','endPage','startOffset','endOffset']) if (Number.isSafeInteger(row.sourceAnchor[name]) && row.sourceAnchor[name] >= 0) anchor[name] = row.sourceAnchor[name];
+    metadata.sourceAnchor = anchor;
+  }
+  if (row.collection === 'knowledgePoints' && metadata.textbookId && metadata.revision !== undefined) metadata.citation = {
+    kind: 'textbook-knowledge', textbookId: metadata.textbookId, knowledgePointId: row.id,
+    ...(metadata.textbookTitle ? { textbookTitle: metadata.textbookTitle } : {}), ...(metadata.title ? { title: metadata.title } : {}),
+    revision: metadata.revision, ...(metadata.sourceAnchor ? { sourceAnchor: { ...metadata.sourceAnchor } } : {}),
+    pagePrecision: 'source-range',
+  };
+  return metadata;
+}
+
 function sourcesOf(records) {
   const sources = [];
   const seen = new Set();
@@ -77,7 +96,7 @@ function sourcesOf(records) {
     })) : [{ segment: 0, page: null, text: typeof row.text === 'string' ? row.text : typeof row.content === 'string' ? row.content : '' }];
     const sourceChars = segments.reduce((total, part) => total + part.text.length, 0);
     if (!sourceChars) { skipped++; continue; }
-    sources.push({ id: row.id, collection, updatedAt: typeof row.updatedAt === 'string' ? row.updatedAt : null, index, segments, sourceChars,
+    sources.push({ id: row.id, collection, updatedAt: typeof row.updatedAt === 'string' ? row.updatedAt : null, metadata: sourceMetadata(row), index, segments, sourceChars,
       sourceCharsKnown: !hasPages || row.pages.length <= RETRIEVAL_LIMITS.pagesPerRecord,
       originalPages: hasPages ? row.pages.length : 0, scannedChars: 0, candidates: [], overview: null });
   }
@@ -199,7 +218,7 @@ export function retrieveMaterialSources(records, query, options = {}) {
     if (!excerpt.text) continue;
     remaining -= excerpt.text.length;
     const full = source.sourceCharsKnown && excerpt.returnedChars === source.sourceChars;
-    results.push({ id: source.id, collection: source.collection, updatedAt: source.updatedAt, text: excerpt.text, sourcePages: excerpt.pages,
+    results.push({ id: source.id, collection: source.collection, updatedAt: source.updatedAt, ...source.metadata, text: excerpt.text, sourcePages: excerpt.pages,
       retrieval: {
         method: 'keyword', fallback, fallbackReason: fallback ? (tokenized.terms.length ? 'no-keyword-match-in-scanned-text' : 'no-searchable-query-terms') : null,
         queryTerms: tokenized.terms, queryTermsTruncated: tokenized.truncated, matchedTerms: excerpt.matched, score: fallback ? 0 : source.score,

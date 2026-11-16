@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createStudyHandler } from './learning/api.mjs';
 
 const DEFAULT_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'study.html', 'study.js', 'study-notes.js', 'study-render.js', 'study.css', 'favicon.ico', 'favicon.png', 'robots.txt']);
+const ROOT_FILES = new Set(['index.html', 'styles.css', 'app.js', 'cloud.js', 'ppt-editor.js', 'ai-client.js', 'evidence-classroom.js', 'evidence-classroom.css', 'study.html', 'study.js', 'study-notes.js', 'study-render.js', 'study-course.js', 'study.css', 'favicon.ico', 'favicon.png', 'robots.txt']);
 const RESOURCE_DIRS = new Set(['assets', 'asset', 'data', 'vendor']);
 const RESOURCE_EXTENSIONS = new Set(['.js', '.css', '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.mp3', '.ogg', '.wav', '.mp4', '.pdf', '.txt']);
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.mp4': 'video/mp4', '.pdf': 'application/pdf' };
@@ -285,7 +285,8 @@ export function createServer({ config: inputConfig, fetch: fetchImpl = globalThi
     }
   });
   server.headersTimeout = 10000;
-  server.requestTimeout = 20000;
+  // Large textbook uploads stream to the private store; JSON bodies retain their own short read deadline.
+  server.requestTimeout = 600000;
   server.keepAliveTimeout = 5000;
   return server;
 }

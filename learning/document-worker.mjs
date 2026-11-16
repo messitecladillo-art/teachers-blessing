@@ -12,7 +12,7 @@ process.on('message',async message=>{
   const send=(value,exit)=>{if(!process.connected)return process.exit(exit||0);process.send(value,()=>{if(exit!==undefined)process.exit(exit);});};
   try{
     const{file,location,options,dataDir,previousPages}=message;
-    const maximum=file.mime==='text/markdown'?LEARNING_LIMITS.markdownBytes:LEARNING_LIMITS.workshopBytes,info=await stat(location);
+    const maximum=file.mime==='text/markdown'?LEARNING_LIMITS.markdownBytes:file.textbookId&&file.mime==='application/pdf'?LEARNING_LIMITS.textbookBytes:LEARNING_LIMITS.workshopBytes,info=await stat(location);
     if(!info.isFile()||info.size>maximum||info.size!==file.bytes)throw Object.assign(new Error('私有文件大小已改变或超过解析预算'),{status:413,code:'FILE_LIMIT'});
     const bytes=await readFile(location);if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw Object.assign(new Error('私有文件指纹已改变'),{status:409,code:'STALE_SOURCE'});
     const controller=new AbortController();const context={signal:controller.signal,dataDir,previousPages,onOcrStart:()=>send({type:'ocr-start'}),setCleanup:()=>{},progress:value=>new Promise(resolve=>{const current=++sequence;waiting.set(current,resolve);send({type:'progress',sequence:current,value});})};

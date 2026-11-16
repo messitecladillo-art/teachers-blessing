@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { randomBytes, randomUUID, scrypt as callbackScrypt, timingSafeEqual, createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 import { createStudyStore, COLLECTIONS } from './store.mjs';
+import { LEARNING_LIMITS } from './limits.mjs';
 
 const scrypt = promisify(callbackScrypt);
 const COOKIE = 'edu_study_session';
@@ -38,6 +39,7 @@ async function readJson(req, maxBytes = 131072) {
 }
 function fields(body, allowed) { if (Object.keys(body).some(key => !allowed.includes(key))) throw error(400, 'invalid_fields', '请求包含不支持的字段。'); return body; }
 function text(value, max, fallback) { if (value === undefined && fallback !== undefined) return fallback; if (typeof value !== 'string' || !value.trim() || value.length > max || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value)) throw error(400, 'invalid_text', '文本为空、过长或包含无效字符。'); return value.trim(); }
+function description(value = '') { if (typeof value !== 'string' || value.length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value)) throw error(400, 'invalid_text', '课题说明须为不超过200字符的文本。'); return value.trim(); }
 function owned(state, collection, id, user) { const item = state[collection]?.find(row => row.id === id && row.userId === user.id); if (!item) throw error(404, 'not_found', '记录不存在或无访问权限。'); return item; }
 function boundedList(items) { return { items: items.slice(-200).reverse() }; }
 function preferences(input, existing = DEFAULT_PREFERENCES) {
@@ -110,7 +112,7 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
     try {
       const route = pathname.slice('/api/v1'.length), method = req.method;
       const url = new URL(req.url, 'http://local.invalid');
-      if (method === 'GET' && route === '/config/public') { send(res, 200, { registration: 'local_password', emailVerificationConfigured: false, smsConfigured: false, paymentConfigured: false, modelConfigured: typeof model === 'function' }); return true; }
+      if (method === 'GET' && route === '/config/public') { const {textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages}=LEARNING_LIMITS;send(res, 200, { registration: 'local_password', emailVerificationConfigured: false, smsConfigured: false, paymentConfigured: false, modelConfigured: typeof model === 'function',learningLimits:{textbookBytes,pages,markdownBytes,workshopBytes,ocrPages,structurePages} }); return true; }
       if (['/auth/send-otp', '/auth/reset-password'].includes(route)) throw error(503, 'verification_service_unavailable', '短信与外部账号验证服务未配置；请使用本地邮箱账号和密码登录。');
       if (method === 'POST' && ['/auth/register', '/auth/login', '/auth/login-password'].includes(route)) {
         const body = fields(await readJson(req, 4096), route === '/auth/register' ? ['email', 'password', 'nickname'] : ['email', 'password']);
@@ -169,11 +171,11 @@ export function createStudyHandler({ dataDir = DEFAULT_DIR, model, store: suppli
       }
 
       if (route === '/workshops' && method === 'GET') { send(res, 200, boundedList((await store.snapshot()).workshops.filter(row => row.userId === user.id))); return true; }
-      if (route === '/workshops' && method === 'POST') { const body = fields(await readJson(req, 16384), ['title', 'linkedTextbookIds']); const title = text(body.title, 200); const links = body.linkedTextbookIds ?? []; if (!Array.isArray(links) || links.length > 50 || links.some(value => typeof value !== 'string')) throw error(400, 'invalid_scope', '关联教材范围无效。'); const value = await store.mutate(state => { for (const link of links) owned(state, 'textbooks', link, user); const row = { ...stamp(user), title, linkedTextbookIds: [...new Set(links)] }; state.workshops.push(row); return row; }); send(res, 201, value); return true; }
+      if (route === '/workshops' && method === 'POST') { const body = fields(await readJson(req, 16384), ['title', 'description', 'linkedTextbookIds']); const title = text(body.title, 200), detail = description(body.description); const links = body.linkedTextbookIds ?? []; if (!Array.isArray(links) || links.length > 50 || links.some(value => typeof value !== 'string')) throw error(400, 'invalid_scope', '关联教材范围无效。'); const value = await store.mutate(state => { for (const link of links) owned(state, 'textbooks', link, user); const row = { ...stamp(user), title, description: detail, scopeRevision: 1, linkedTextbookIds: [...new Set(links)] }; state.workshops.push(row); return row; }); send(res, 201, value); return true; }
       const workshopRoute = /^\/workshops\/([^/]+)$/.exec(route);
       if (workshopRoute) { const workshopId = workshopRoute[1];
         if (method === 'GET') send(res, 200, owned(await store.snapshot(), 'workshops', workshopId, user));
-        else if (method === 'PATCH') { const body = fields(await readJson(req, 16384), ['title', 'linkedTextbookIds', 'expectedRevision']); const value = await store.mutate(state => { const row = owned(state, 'workshops', workshopId, user); checkRevision(body, row); if (body.title !== undefined) row.title = text(body.title, 200); if (body.linkedTextbookIds !== undefined) { if (!Array.isArray(body.linkedTextbookIds) || body.linkedTextbookIds.length > 50) throw error(400, 'invalid_scope', '关联教材范围无效。'); for (const link of body.linkedTextbookIds) owned(state, 'textbooks', link, user); row.linkedTextbookIds = [...new Set(body.linkedTextbookIds)]; } row.revision++; row.updatedAt = now(); return row; }); send(res, 200, value); }
+        else if (method === 'PATCH') { const body = fields(await readJson(req, 16384), ['title', 'description', 'linkedTextbookIds', 'expectedRevision']); const value = await store.mutate(state => { const row = owned(state, 'workshops', workshopId, user); checkRevision(body, row); if (body.title !== undefined) row.title = text(body.title, 200); if (body.description !== undefined) row.description = description(body.description); if (body.linkedTextbookIds !== undefined) { if (!Array.isArray(body.linkedTextbookIds) || body.linkedTextbookIds.length > 50 || body.linkedTextbookIds.some(link => typeof link !== 'string')) throw error(400, 'invalid_scope', '关联教材范围无效。'); for (const link of body.linkedTextbookIds) owned(state, 'textbooks', link, user); const links = [...new Set(body.linkedTextbookIds)]; if (JSON.stringify([...links].sort()) !== JSON.stringify([...(row.linkedTextbookIds || [])].sort())) row.scopeRevision = (row.scopeRevision || 1) + 1; row.linkedTextbookIds = links; } row.revision++; row.updatedAt = now(); return row; }); send(res, 200, value); }
         else if (method === 'DELETE') { await store.mutate(state => cascadeOwned(state, 'workshops', workshopId, user, now())); send(res, 200, { deleted: true, binaryCleanup: 'tombstoned_and_counted_until_private_maintenance' }); }
         else throw error(405, 'method_not_allowed', '此工作坊操作不受支持。'); return true;
       }
