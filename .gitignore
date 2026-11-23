@@ -1,0 +1,32 @@
+# Python & Virtual Environment
+backend/.venv/
+.venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local runtime DB, uploads, and generated exports
+backend/storage/
+*.db
+*.db-wal
+*.db-shm
+
+# Environment secrets
+.env
+.env.*
+
+# Node & Frontend build outputs
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Vendor documentation (~35 MB, runtime scripts & MIT license retained)
+vendor/ppt-master/docs/
+
+# OS & Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

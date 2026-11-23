@@ -1,0 +1,128 @@
+[
+  {
+    "id": "math",
+    "name": "数理与逻辑科学",
+    "short_name": "数理逻辑",
+    "tagline": "抽象符号 · 几何直观 · SymPy 符号互证",
+    "default_grades": ["初二/初三", "高一", "高二", "高三复习", "大一/数分", "考研数学"],
+    "branches": [
+      {"id": "math_hs", "name": "初等与高中数学", "default_grade": "高二年级"},
+      {"id": "math_calc", "name": "高等数学与数学分析", "default_grade": "大一/师范数学"},
+      {"id": "math_linalg", "name": "线性代数与空间几何", "default_grade": "大学数学/师范"},
+      {"id": "math_prob", "name": "概率论与数理统计", "default_grade": "大二/师范生"},
+      {"id": "math_discrete", "name": "离散数学与运筹优化", "default_grade": "大二/竞赛培优"}
+    ]
+  },
+  {
+    "id": "physics",
+    "name": "物理与工程技术",
+    "short_name": "物理工程",
+    "tagline": "守恒律 · 场与波 · 理想化物理建模",
+    "default_grades": ["初二/初三物理", "高一年级", "高二年级", "高三复习", "大学物理"],
+    "branches": [
+      {"id": "phys_mech", "name": "经典力学与运动学", "default_grade": "高一年级"},
+      {"id": "phys_em", "name": "电磁学与电动力学", "default_grade": "高二年级"},
+      {"id": "phys_thermo_opt", "name": "热学·光学与近代物理", "default_grade": "高二年级"},
+      {"id": "phys_wave", "name": "声学·振动与波动", "default_grade": "高二/大学物理"},
+      {"id": "phys_eng", "name": "通用技术与工程设计", "default_grade": "高中通用技术"}
+    ]
+  },
+  {
+    "id": "chemistry",
+    "name": "化学与材料科学",
+    "short_name": "化学材料",
+    "tagline": "微观构型 · 平衡移动 · 热力学/动力学竞争",
+    "default_grades": ["初三化学", "高一必修", "高二选择性必修", "高三复习", "大学无机/物化"],
+    "branches": [
+      {"id": "chem_inorg", "name": "无机化学与元素周期", "default_grade": "高一必修"},
+      {"id": "chem_equil", "name": "化学反应原理与平衡", "default_grade": "高二选择性必修"},
+      {"id": "chem_org", "name": "有机化学与分子结构", "default_grade": "高二选择性必修"},
+      {"id": "chem_anal", "name": "分析化学与滴定实验", "default_grade": "高二/大学分析"},
+      {"id": "chem_mat", "name": "材料与绿色能源化学", "default_grade": "高三/通识实验"}
+    ]
+  },
+  {
+    "id": "biology",
+    "name": "生命科学与医学健康",
+    "short_name": "生命医学",
+    "tagline": "稳态调节 · 分子催化 · 群体动力学演化",
+    "default_grades": ["初中生物", "高一必修", "高二选择性必修", "高三复习", "大学生物/医学"],
+    "branches": [
+      {"id": "bio_cell", "name": "细胞与分子生物学", "default_grade": "高一必修"},
+      {"id": "bio_genetics", "name": "遗传学与演化规律", "default_grade": "高一/高二年级"},
+      {"id": "bio_physio", "name": "人体生理与神经调节", "default_grade": "高二选择性必修"},
+      {"id": "bio_eco", "name": "生态学与种群动力学", "default_grade": "高二/大学生态"},
+      {"id": "bio_med", "name": "临床筛查与公共卫生", "default_grade": "大学通识/公卫"}
+    ]
+  },
+  {
+    "id": "cs_ai",
+    "name": "信息科技与人工智能",
+    "short_name": "信息与AI",
+    "tagline": "计算思维 · 信息熵边界 · 可解释算法机制",
+    "default_grades": ["初中信息科技", "高中信息/Python", "大学数据结构", "大模型与机器学习"],
+    "branches": [
+      {"id": "cs_algo", "name": "算法设计与数据结构", "default_grade": "高中信奥/大学"},
+      {"id": "cs_ml", "name": "人工智能与机器学习", "default_grade": "大学AI/高中选修"},
+      {"id": "cs_info", "name": "数据科学与信息论", "default_grade": "大学计算机"},
+      {"id": "cs_sys", "name": "计算机系统与网络", "default_grade": "大学计算机"},
+      {"id": "cs_ethics", "name": "计算思维与数字伦理", "default_grade": "高中信息科技"}
+    ]
+  },
+  {
+    "id": "humanities",
+    "name": "人文文学与语言艺术",
+    "short_name": "人文艺术",
+    "tagline": "文本细读 · 史料互证 · 审美张力与思辨论证",
+    "default_grades": ["初中语文/历史", "高一年级", "高二年级", "高三思辨写作", "大学人文通识"],
+    "branches": [
+      {"id": "hum_lit", "name": "汉语言文学与古诗文", "default_grade": "高一年级"},
+      {"id": "hum_eng", "name": "英语语言与跨文化思辨", "default_grade": "高中/大学英语"},
+      {"id": "hum_hist", "name": "中外历史与史料实证", "default_grade": "高二历史"},
+      {"id": "hum_phil", "name": "哲学逻辑与伦理学", "default_grade": "高中政治/大学哲学"},
+      {"id": "hum_art", "name": "音乐律制与视觉艺术", "default_grade": "高一美育/艺术通识"}
+    ]
+  },
+  {
+    "id": "social_geo_econ",
+    "name": "社科·经管与地球科学",
+    "short_name": "社科经管地理",
+    "tagline": "人地耦合 · 供需均衡 · 博弈激励与认知机制",
+    "default_grades": ["初中地理/道法", "高一地理/政治", "高二选择性必修", "大学经管/心理"],
+    "branches": [
+      {"id": "soc_natgeo", "name": "自然地理与地球系统", "default_grade": "高一地理"},
+      {"id": "soc_humgeo", "name": "人文地理与可持续发展", "default_grade": "高二地理"},
+      {"id": "soc_econ", "name": "微观与宏观经济学", "default_grade": "高中政治/大学经管"},
+      {"id": "soc_law", "name": "法治社会与公共治理", "default_grade": "高中思想政治"},
+      {"id": "soc_psych", "name": "认知与教育心理学", "default_grade": "师范教育/心理学"}
+    ]
+  },
+  {
+    "id": "pedagogy",
+    "name": "教师教育与教学法",
+    "short_name": "教师教育",
+    "tagline": "微格试讲 · 支架追问 · 新课标表现性评价",
+    "default_grades": ["师范生通用", "15分钟微格试讲", "中小学在职教研", "教育硕士"],
+    "branches": [
+      {"id": "ped_micro", "name": "15分钟微格试讲技法", "default_grade": "师范生通用"},
+      {"id": "ped_unit", "name": "新课标大单元教学设计", "default_grade": "中小学教研"},
+      {"id": "ped_socratic", "name": "苏格拉底追问与错题诊断", "default_grade": "全学段通用"},
+      {"id": "ped_eval", "name": "教育测量与学情增值评价", "default_grade": "师范生/教研员"},
+      {"id": "ped_rubric", "name": "跨学科项目式评价量规", "default_grade": "新课标教研"}
+    ]
+  },
+  {
+    "id": "interdisciplinary",
+    "name": "跨学科主题学习 (PBL)",
+    "short_name": "跨学科PBL",
+    "tagline": "真实情境驱动 · 多学科方程耦合 · STEAM 工程闭环",
+    "default_grades": ["初二/初三 PBL", "高一/高二 PBL", "大学通识研讨课", "师范跨学科试讲"],
+    "branches": [
+      {"id": "pbl_eco", "name": "数学×生态×公卫（动力学建模）", "default_grade": "高二/大学通识"},
+      {"id": "pbl_city", "name": "地理×工程×化学（碳中和海绵城市）", "default_grade": "初三/高二 PBL"},
+      {"id": "pbl_music", "name": "物理×音乐×数学（声学频谱与律制）", "default_grade": "高一/美育 STEAM"},
+      {"id": "pbl_med_ai", "name": "概率×医学×AI伦理（智能辅助诊断）", "default_grade": "高二/大学通识"},
+      {"id": "pbl_silk", "name": "历史×地理×数据（丝路时空网络）", "default_grade": "高二文理融通"}
+    ]
+  }
+]
