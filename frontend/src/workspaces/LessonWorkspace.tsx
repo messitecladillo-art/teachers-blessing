@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DOMAIN_QUICK_PRESETS } from '../data/disciplineTaxonomy';
-import { apiJson, postSseStream, uploadSourceFile } from '../services/api';
+import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl, uploadSourceFile } from '../services/api';
 import { ArtifactItem, LessonContent, LessonRecord, TeachingTransferPayload } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import { DisciplineCascadePicker } from '../components/DisciplineCascadePicker';
@@ -379,7 +379,14 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                     <IconSaveDisc size={13} /> {saving ? '保存中…' : '保存修改'}
                   </button>
                   {exportDownloadUrl && (
-                    <a href={exportDownloadUrl} download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }} data-testid="btn-download-lesson-docx">
+                    <a
+                      href={resolveApiUrl(exportDownloadUrl)}
+                      download
+                      onClick={(e) => handleSafeDownload(e, exportDownloadUrl, `${activeLesson?.title || '教学设计'}.docx`)}
+                      className="btn btn-primary btn-sm"
+                      style={{ textDecoration: 'none' }}
+                      data-testid="btn-download-lesson-docx"
+                    >
                       <IconDownloadBox size={13} /> 导出教案
                     </a>
                   )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiJson } from '../services/api';
+import { apiJson, getApiBase, isStaticDemoMode, setApiBase } from '../services/api';
 import { LLMStatusSummary, LearnerWeakTopic, TeacherPreferences } from '../types';
 import { HkScholarAvatar } from './HkAssets';
 
@@ -36,6 +36,7 @@ export const HkSettingsModal: React.FC<HkSettingsModalProps> = ({
   const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/anthropic');
   const [model, setModel] = useState('deepseek-reasoner');
   const [apiKey, setApiKey] = useState('');
+  const [customApiBase, setCustomApiBase] = useState(() => getApiBase());
   const [saving, setSaving] = useState(false);
   const [makingQuiz, setMakingQuiz] = useState(false);
   const [notice, setNotice] = useState('');
@@ -310,6 +311,60 @@ export const HkSettingsModal: React.FC<HkSettingsModalProps> = ({
 
           {tab === 'model' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  background: isStaticDemoMode() ? '#eff6ff' : '#f8fafc',
+                  border: `1px solid ${isStaticDemoMode() ? '#bfdbfe' : '#e2e8f0'}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e3a8a' }}>
+                  {isStaticDemoMode()
+                    ? '当前运行于「静态在线演示模式」（所有操作保存在本地浏览器）'
+                    : getApiBase()
+                    ? `已绑定自定义后端：${getApiBase()}`
+                    : '当前已直连本地 / 同域后端服务'}
+                </div>
+                <div>
+                  <label className="field-label">后端服务地址（可选，静态演示模式下可留空）</label>
+                  <input
+                    className="input"
+                    placeholder="例如 http://127.0.0.1:8008 或 https://your-backend.example.com"
+                    value={customApiBase}
+                    onChange={(e) => setCustomApiBase(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      setApiBase(customApiBase);
+                      window.location.reload();
+                    }}
+                  >
+                    保存并重连
+                  </button>
+                  {customApiBase && (
+                    <button
+                      type="button"
+                      className="btn btn-surface btn-sm"
+                      onClick={() => {
+                        setCustomApiBase('');
+                        setApiBase('');
+                        window.location.reload();
+                      }}
+                    >
+                      恢复内置演示
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label className="field-label">接口协议</label>

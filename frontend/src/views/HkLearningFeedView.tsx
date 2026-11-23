@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { apiJson } from '../services/api';
+import { apiJson, handleSafeDownload, resolveApiUrl } from '../services/api';
 import { CalendarTaskItem, LearnerWeakTopic, StudyPlanRecord } from '../types';
 import { HkIcon } from '../components/HkAssets';
 
@@ -351,7 +351,14 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
               </button>
               {(activePlan?.ics_artifact_id || activePlan?.ics_artifact?.id) && (
                 <a
-                  href={`/api/artifacts/${activePlan.ics_artifact_id || activePlan.ics_artifact?.id}/download`}
+                  href={resolveApiUrl(`/api/artifacts/${activePlan.ics_artifact_id || activePlan.ics_artifact?.id}/download`)}
+                  onClick={(e) =>
+                    handleSafeDownload(
+                      e,
+                      `/api/artifacts/${activePlan.ics_artifact_id || activePlan.ics_artifact?.id}/download`,
+                      `${activePlan.title || '学习日程'}.ics`
+                    )
+                  }
                   className="btn btn-surface btn-sm"
                   style={{ textDecoration: 'none' }}
                 >

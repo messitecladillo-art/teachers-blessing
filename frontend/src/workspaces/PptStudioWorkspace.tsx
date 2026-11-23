@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiJson, postSseStream, uploadSourceFile } from '../services/api';
+import { apiJson, handleSafeDownload, isStaticDemoMode, postSseStream, resolveApiUrl, uploadSourceFile } from '../services/api';
 import { ArtifactItem, PptDeck, PptTheme, TeachingTransferPayload } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import { DisciplineCascadePicker } from '../components/DisciplineCascadePicker';
@@ -536,7 +536,14 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                       <IconStageExpand size={14} /> 试讲计时
                     </button>
                     {downloadPptxUrl && (
-                      <a href={downloadPptxUrl} download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }} data-testid="btn-download-pptx">
+                      <a
+                        href={resolveApiUrl(downloadPptxUrl)}
+                        download
+                        onClick={(e) => handleSafeDownload(e, downloadPptxUrl, `${activeDeck?.title || '演示课件'}.pptx`)}
+                        className="btn btn-primary btn-sm"
+                        style={{ textDecoration: 'none' }}
+                        data-testid="btn-download-pptx"
+                      >
                         <IconDownloadBox size={14} /> 导出课件
                       </a>
                     )}
@@ -769,8 +776,36 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                     </div>
                     {audioUrl && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 8 }}>
-                        <audio key={audioUrl} controls preload="metadata" src={audioUrl} style={{ flex: 1, height: 34 }} />
-                        <a href={audioUrl} download className="btn btn-surface btn-sm" style={{ textDecoration: 'none' }}>
+                        {isStaticDemoMode() ? (
+                          <button
+                            type="button"
+                            className="btn btn-surface btn-sm"
+                            onClick={() => {
+                              if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                                window.speechSynthesis.cancel();
+                                const utter = new SpeechSynthesisUtterance(
+                                  editNotesValue ||
+                                    activeDeck?.slides[activeSlideIdx]?.speaker_notes ||
+                                    activeDeck?.title ||
+                                    '试讲示范文稿'
+                                );
+                                utter.lang = 'zh-CN';
+                                window.speechSynthesis.speak(utter);
+                              }
+                            }}
+                          >
+                            试听浏览器朗读
+                          </button>
+                        ) : (
+                          <audio key={audioUrl} controls preload="metadata" src={resolveApiUrl(audioUrl)} style={{ flex: 1, height: 34 }} />
+                        )}
+                        <a
+                          href={resolveApiUrl(audioUrl)}
+                          download
+                          onClick={(e) => handleSafeDownload(e, audioUrl, `${activeDeck?.title || '试讲配音'}.txt`)}
+                          className="btn btn-surface btn-sm"
+                          style={{ textDecoration: 'none' }}
+                        >
                           <IconDownloadBox size={13} /> 下载音频
                         </a>
                       </div>

@@ -1,0 +1,9 @@
+{
+  "name": "知学工作台",
+  "short_name": "知学",
+  "description": "面向自主学习与教学设计的智能工作台",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#3B4F7D"
+}

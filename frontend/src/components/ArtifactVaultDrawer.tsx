@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { handleSafeDownload, resolveApiUrl } from '../services/api';
 import { ArtifactItem } from '../types';
 import {
   IconCloseX,
@@ -133,8 +134,9 @@ export const ArtifactVaultDrawer: React.FC<ArtifactVaultDrawerProps> = ({
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                       <a
-                        href={art.download_url}
+                        href={resolveApiUrl(art.download_url)}
                         download={art.filename}
+                        onClick={(e) => handleSafeDownload(e, art.download_url, art.filename)}
                         className="btn btn-primary btn-sm"
                         style={{ textDecoration: 'none' }}
                       >

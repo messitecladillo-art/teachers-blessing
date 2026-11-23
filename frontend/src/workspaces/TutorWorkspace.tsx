@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DISCIPLINE_TAXONOMY, DOMAIN_QUICK_PRESETS } from '../data/disciplineTaxonomy';
-import { apiJson, postSseStream } from '../services/api';
+import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl } from '../services/api';
 import {
   DisciplineDomain,
   ErrorBookEntry,
@@ -545,12 +545,24 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {pl.ics_artifact && (
-                          <a href={pl.ics_artifact.download_url} download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
+                          <a
+                            href={resolveApiUrl(pl.ics_artifact.download_url)}
+                            download
+                            onClick={(e) => handleSafeDownload(e, pl.ics_artifact?.download_url, pl.ics_artifact?.filename || `${pl.title}.ics`)}
+                            className="btn btn-primary btn-sm"
+                            style={{ textDecoration: 'none' }}
+                          >
                             <IconDownloadBox size={13} /> 导出日历
                           </a>
                         )}
                         {pl.docx_artifact && (
-                          <a href={pl.docx_artifact.download_url} download className="btn btn-surface btn-sm" style={{ textDecoration: 'none' }}>
+                          <a
+                            href={resolveApiUrl(pl.docx_artifact.download_url)}
+                            download
+                            onClick={(e) => handleSafeDownload(e, pl.docx_artifact?.download_url, pl.docx_artifact?.filename || `${pl.title}.docx`)}
+                            className="btn btn-surface btn-sm"
+                            style={{ textDecoration: 'none' }}
+                          >
                             <IconDownloadBox size={13} /> 导出计划表
                           </a>
                         )}

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { apiJson, postEventStream } from '../services/api';
+import { apiJson, isStaticDemoMode, postEventStream } from '../services/api';
 import { BoardBlock, CourseLecture, CourseRecord, MindMapRecord } from '../types';
 import { FunctionPlotCard } from '../components/FunctionPlotCard';
 import { MathText } from '../components/MathText';
@@ -199,6 +199,10 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
     };
 
     setSpeaking(true);
+    if (isStaticDemoMode()) {
+      fallbackBrowserSpeech();
+      return;
+    }
     try {
       const resp = await fetch(`/api/courses/${course.id}/lectures/${foundLecture.id}/tts`, {
         method: 'POST',

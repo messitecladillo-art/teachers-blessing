@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiJson, postSseStream } from '../services/api';
+import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl } from '../services/api';
 import { AnalyticsReport, ArtifactItem } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import {
@@ -306,7 +306,14 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <a href={`/api/artifacts/${activeReport.artifact_id}/download`} download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }} data-testid="btn-download-analytics-docx">
+                  <a
+                    href={resolveApiUrl(`/api/artifacts/${activeReport.artifact_id}/download`)}
+                    download
+                    onClick={(e) => handleSafeDownload(e, `/api/artifacts/${activeReport.artifact_id}/download`, `${activeReport.title || '成绩分析报告'}.docx`)}
+                    className="btn btn-primary btn-sm"
+                    style={{ textDecoration: 'none' }}
+                    data-testid="btn-download-analytics-docx"
+                  >
                     <IconDownloadBox size={13} /> 导出报告
                   </a>
                   <button

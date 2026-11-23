@@ -1,4 +1,5 @@
 import React from 'react';
+import { assetUrl } from '../utils/assets';
 
 export type HkIconName =
   | 'home'
@@ -23,7 +24,7 @@ export const HkIcon: React.FC<{
   alt?: string;
 }> = ({ name, size = 18, className = '', alt = '' }) => (
   <img
-    src={`/assets/hk/icon_${name}.png`}
+    src={assetUrl(`/assets/hk/icon_${name}.png`)}
     alt={alt}
     width={size}
     height={size}
@@ -42,7 +43,7 @@ export const HkIcon: React.FC<{
 
 export const HkBrandLogo: React.FC<{ size?: number }> = ({ size = 28 }) => (
   <img
-    src="/assets/hk/brand_logo.png"
+    src={assetUrl('/assets/hk/brand_logo.png')}
     alt="知学工作台徽标"
     width={size}
     height={size}
@@ -64,7 +65,7 @@ export const HkMascot: React.FC<{
   className?: string;
 }> = ({ state = 'welcome', size = 54, className = '' }) => (
   <img
-    src={`/assets/hk/mascot_${state}.png`}
+    src={assetUrl(`/assets/hk/mascot_${state}.png`)}
     alt={state === 'thinking' ? '思考中的小知' : '小知学者'}
     width={size}
     height={size}
@@ -84,7 +85,7 @@ export const HkMascot: React.FC<{
 
 export const HkUploadBadge: React.FC<{ size?: number }> = ({ size = 56 }) => (
   <img
-    src="/assets/hk/upload_files_badge.png"
+    src={assetUrl('/assets/hk/upload_files_badge.png')}
     alt="课程资料卡片组"
     width={size}
     height={size}
@@ -102,7 +103,7 @@ export const HkUploadBadge: React.FC<{ size?: number }> = ({ size = 56 }) => (
 
 export const HkScholarAvatar: React.FC<{ size?: number }> = ({ size = 32 }) => (
   <img
-    src="/assets/hk/avatar_scholar.png"
+    src={assetUrl('/assets/hk/avatar_scholar.png')}
     alt="个人头像"
     width={size}
     height={size}

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DOMAIN_QUICK_PRESETS } from '../data/disciplineTaxonomy';
-import { apiJson, postSseStream } from '../services/api';
+import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl } from '../services/api';
 import { ArtifactItem, ExamQuestion, ExamRecord, ExamSubmissionResult } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import { DisciplineCascadePicker } from '../components/DisciplineCascadePicker';
@@ -773,10 +773,24 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                   <button type="button" className="btn btn-surface btn-sm" onClick={handleSaveExam} disabled={saving}>
                     <IconSaveDisc size={13} /> {saving ? '保存中…' : '保存修改'}
                   </button>
-                  <a href={`/api/artifacts/${activeExam.student_artifact_id}/download`} download className={`btn btn-sm ${viewMode === 'student' ? 'btn-primary' : 'btn-surface'}`} style={{ textDecoration: 'none' }} data-testid="btn-download-student-exam">
+                  <a
+                    href={resolveApiUrl(`/api/artifacts/${activeExam.student_artifact_id}/download`)}
+                    download
+                    onClick={(e) => handleSafeDownload(e, `/api/artifacts/${activeExam.student_artifact_id}/download`, `${activeExam.exam.title || '测验试卷'}_学生卷.docx`)}
+                    className={`btn btn-sm ${viewMode === 'student' ? 'btn-primary' : 'btn-surface'}`}
+                    style={{ textDecoration: 'none' }}
+                    data-testid="btn-download-student-exam"
+                  >
                     <IconDownloadBox size={13} /> 下载学生卷
                   </a>
-                  <a href={`/api/artifacts/${activeExam.teacher_artifact_id}/download`} download className={`btn btn-sm ${viewMode === 'student' ? 'btn-surface' : 'btn-primary'}`} style={{ textDecoration: 'none' }} data-testid="btn-download-teacher-exam">
+                  <a
+                    href={resolveApiUrl(`/api/artifacts/${activeExam.teacher_artifact_id}/download`)}
+                    download
+                    onClick={(e) => handleSafeDownload(e, `/api/artifacts/${activeExam.teacher_artifact_id}/download`, `${activeExam.exam.title || '测验试卷'}_解析卷.docx`)}
+                    className={`btn btn-sm ${viewMode === 'student' ? 'btn-surface' : 'btn-primary'}`}
+                    style={{ textDecoration: 'none' }}
+                    data-testid="btn-download-teacher-exam"
+                  >
                     <IconDownloadBox size={13} /> 下载解析卷
                   </a>
                   <button type="button" className="btn btn-surface btn-sm" onClick={() => window.print()}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiJson } from '../services/api';
+import { apiJson, handleSafeDownload, resolveApiUrl } from '../services/api';
 import { ArtifactItem, PedagogyTopic, TeachTab, TutorSubTab } from '../types';
 import {
   IconCloseX,
@@ -229,7 +229,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                       }}
                     >
                       <span style={{ fontSize: 12.5, fontWeight: 600 }}>{a.title}</span>
-                      <a href={a.download_url} download={a.filename} className="btn btn-surface btn-sm" style={{ textDecoration: 'none' }}>
+                      <a
+                        href={resolveApiUrl(a.download_url)}
+                        download={a.filename}
+                        onClick={(e) => handleSafeDownload(e, a.download_url, a.filename)}
+                        className="btn btn-surface btn-sm"
+                        style={{ textDecoration: 'none' }}
+                      >
                         <IconDownloadBox size={12} /> 下载
                       </a>
                     </div>

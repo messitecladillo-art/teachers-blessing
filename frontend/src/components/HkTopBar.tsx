@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isStaticDemoMode } from '../services/api';
 import { HkRoute, HomeTab, LLMStatusSummary } from '../types';
 import { UI_LABELS } from '../utils/i18n';
 import { HkScholarAvatar } from './HkAssets';
@@ -106,7 +107,13 @@ export const HkTopBar: React.FC<HkTopBarProps> = ({
         <button
           type="button"
           className="hk-pill-control hk-hide-mobile"
-          title={llmStatus?.model ? `当前模型：${llmStatus.model}` : '查看模型连接'}
+          title={
+            isStaticDemoMode()
+              ? '当前为静态在线演示模式（可点击绑定自有后端）'
+              : llmStatus?.model
+              ? `当前模型：${llmStatus.model}`
+              : '查看模型连接'
+          }
           onClick={() => onOpenSettings('model')}
         >
           <span
@@ -114,11 +121,15 @@ export const HkTopBar: React.FC<HkTopBarProps> = ({
               width: 7,
               height: 7,
               borderRadius: '999px',
-              background: llmStatus?.has_api_key ? '#16a34a' : '#d97706',
+              background: isStaticDemoMode()
+                ? '#2563eb'
+                : llmStatus?.has_api_key
+                ? '#16a34a'
+                : '#d97706',
               display: 'inline-block',
             }}
           />
-          <span>{t.statusReady}</span>
+          <span>{isStaticDemoMode() ? '在线演示' : t.statusReady}</span>
         </button>
 
         <button

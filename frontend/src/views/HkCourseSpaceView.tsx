@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { apiJson, uploadSourceFile } from '../services/api';
+import { apiJson, handleSafeDownload, resolveApiUrl, uploadSourceFile } from '../services/api';
 import { CourseLecture, CourseRecord, LectureMastery, SourceDocMeta } from '../types';
 import { HkIcon, HkUploadBadge } from '../components/HkAssets';
 import { MathText } from '../components/MathText';
+import { assetUrl } from '../utils/assets';
 
 interface HkCourseSpaceViewProps {
   course: CourseRecord;
@@ -206,7 +207,7 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
 
         {/* Cover Card + 4 Floating Circular Actions */}
         <div className="hk-course-cover-wrap">
-          <img src={course.cover_image} alt={course.title} />
+          <img src={assetUrl(course.cover_image)} alt={course.title} />
           <div className="hk-cover-actions">
             <button
               type="button"
@@ -252,7 +253,8 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
               className="hk-cover-fab"
               title="打包导出整课"
               aria-label="打包导出整课"
-              href={`/api/courses/${course.id}/export-zip`}
+              href={resolveApiUrl(`/api/courses/${course.id}/export-zip`)}
+              onClick={(e) => handleSafeDownload(e, `/api/courses/${course.id}/export-zip`, `${course.title}.zip`)}
               style={{ textDecoration: 'none' }}
             >
               ⬇

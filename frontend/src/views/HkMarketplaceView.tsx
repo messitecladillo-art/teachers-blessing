@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiJson } from '../services/api';
 import { CourseRecord, MarketplaceCourse } from '../types';
+import { assetUrl } from '../utils/assets';
 
 interface HkMarketplaceViewProps {
   onCourseEnrolled: (course: CourseRecord) => void;
@@ -108,7 +109,7 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
                 className={`hk-bento-card size-${b.size || 'medium'}`}
                 onClick={() => setPreviewItem(b)}
               >
-                <img src={b.cover_image} alt={b.title} />
+                <img src={assetUrl(b.cover_image)} alt={b.title} />
                 <div className="hk-bento-overlay">
                   <div className="hk-bento-meta-row">
                     <span className="hk-frosted-tag">{b.level}</span>
@@ -186,7 +187,7 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
             <div>
               <div style={{ height: 148, overflow: 'hidden', background: '#f3f4f6' }}>
                 <img
-                  src={it.cover_image}
+                  src={assetUrl(it.cover_image)}
                   alt={it.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
@@ -235,7 +236,7 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
           <div className="modal-panel" style={{ maxWidth: 580 }} onClick={(e) => e.stopPropagation()}>
             <div style={{ height: 190, borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
               <img
-                src={previewItem.cover_image}
+                src={assetUrl(previewItem.cover_image)}
                 alt={previewItem.title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />

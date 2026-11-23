@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { apiJson } from '../services/api';
+import { apiJson, handleSafeDownload, resolveApiUrl } from '../services/api';
 import { CourseRecord, WeeklyTracker } from '../types';
 import { HkIcon } from '../components/HkAssets';
 
@@ -166,9 +166,12 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
                             </button>
                             <a
                               className="hk-popover-row"
-                              href={`/api/courses/${c.id}/export-zip`}
+                              href={resolveApiUrl(`/api/courses/${c.id}/export-zip`)}
                               style={{ textDecoration: 'none', color: 'inherit' }}
-                              onClick={() => setMenuId(null)}
+                              onClick={(e) => {
+                                handleSafeDownload(e, `/api/courses/${c.id}/export-zip`, `${c.title}.zip`);
+                                setMenuId(null);
+                              }}
                             >
                               <span>打包导出整课</span>
                             </a>

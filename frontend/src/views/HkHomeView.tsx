@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { apiJson, postEventStream, uploadSourceFile } from '../services/api';
+import { apiJson, handleSafeDownload, postEventStream, resolveApiUrl, uploadSourceFile } from '../services/api';
 import {
   AgentLinkedItem,
   AgentPlanStep,
@@ -16,6 +16,7 @@ import {
 import { HkIcon, HkMascot } from '../components/HkAssets';
 import { MathText } from '../components/MathText';
 import { FunctionPlotCard } from '../components/FunctionPlotCard';
+import { assetUrl } from '../utils/assets';
 
 interface HkHomeViewProps {
   homeTab: HomeTab;
@@ -413,7 +414,8 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
                               </button>
                               {item.download_url && (
                                 <a
-                                  href={item.download_url}
+                                  href={resolveApiUrl(item.download_url)}
+                                  onClick={(e) => handleSafeDownload(e, item.download_url, item.title)}
                                   className="btn btn-surface btn-sm"
                                   style={{ textDecoration: 'none' }}
                                 >
@@ -750,7 +752,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
                   }}
                 >
                   <div style={{ height: 138, overflow: 'hidden', background: '#f3f4f6' }}>
-                    <img src={item.cover_image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <img src={assetUrl(item.cover_image)} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                   <div style={{ padding: '14px 16px' }}>
                     <div style={{ fontSize: 11.5, color: '#3b4f7d', fontWeight: 600 }}>
