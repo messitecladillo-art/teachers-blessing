@@ -22,7 +22,42 @@ interface ExamBuilderWorkspaceProps {
   externalViewMode?: 'teacher' | 'student' | 'take' | 'edit';
   onConsumeExternalExam?: () => void;
   onArtifactsChanged: () => void;
-  onExportExamToPpt: (title: string, subject: string, grade: string, material: string) => void;
+  onExportExamToPpt: (
+    title: string,
+    subject: string,
+    grade: string,
+    material: string,
+    domain?: string,
+    branch?: string
+  ) => void;
+}
+
+function formatExamForPpt(rec: ExamRecord): string {
+  const lines: string[] = [
+    `# ${rec.exam.title}（讲评提纲）`,
+    `- 学科与学段：${rec.subject} · ${rec.grade_level}`,
+    `- 满分：${rec.exam.total_score} 分｜建议时长：${rec.exam.duration_minutes} 分钟`,
+    '',
+  ];
+  rec.exam.questions.forEach((q, idx) => {
+    lines.push(`## 第 ${idx + 1} 题（${q.type} · ${q.score} 分 · ${q.knowledge_point}）`);
+    lines.push(`- 题干：${q.stem}`);
+    if (q.options?.length) {
+      lines.push(`- 选项：${q.options.join(' ｜ ')}`);
+    }
+    if (q.parts?.length) {
+      q.parts.forEach((pt, pi) => {
+        lines.push(`- 第（${pi + 1}）问（${pt.points}分）：${pt.prompt}`);
+        lines.push(`  - 答案：${pt.answer}`);
+        lines.push(`  - 解析：${pt.explanation}`);
+      });
+    } else {
+      lines.push(`- 参考答案：${q.answer}`);
+      lines.push(`- 解析：${q.analysis}`);
+    }
+    lines.push('');
+  });
+  return lines.join('\n');
 }
 
 interface BankTopic {
@@ -108,6 +143,31 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
   const [saving, setSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
+  const resetExamAttemptState = () => {
+    setUserAnswers({});
+    setSubmissionResult(null);
+    setTakeSeconds(0);
+    setReplaceTargetIdx(null);
+  };
+
+  const totalQuestionCount = activeExam?.exam.questions.length || 0;
+  const answeredCount = useMemo(() => {
+    if (!activeExam) return 0;
+    return activeExam.exam.questions.reduce((acc, q, idx) => {
+      const qid = q.id || `q${idx + 1}`;
+      const val = userAnswers[qid];
+      if (val === undefined || val === null) return acc;
+      if (typeof val === 'string') return val.trim().length > 0 ? acc + 1 : acc;
+      if (typeof val === 'object') {
+        const hasAny = Object.values(val as Record<string, unknown>).some(
+          (v) => String(v ?? '').trim().length > 0
+        );
+        return hasAny ? acc + 1 : acc;
+      }
+      return acc;
+    }, 0);
+  }, [activeExam, userAnswers]);
+
   const loadInitial = async () => {
     try {
       const [exRes, catRes] = await Promise.all([
@@ -115,8 +175,14 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
         apiJson<{ ok: boolean } & BankCatalog>('/api/exam/bank/catalog').catch(() => null),
       ]);
       setExams(exRes.exams);
-      if (!activeExam && exRes.exams.length > 0) {
-        setActiveExam(exRes.exams[0]);
+      if (exRes.exams.length > 0) {
+        setActiveExam(
+          (curr) =>
+            curr ??
+            (externalExamId
+              ? exRes.exams.find((e) => e.id === externalExamId) || exRes.exams[0]
+              : exRes.exams[0])
+        );
       }
       if (catRes?.chapters?.length) {
         setCatalog(catRes);
@@ -125,13 +191,16 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
         setSelectedUnit(defCh.id);
         setSelectedTopics(defCh.topics.map((t) => t.id));
       }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加载试卷与题库列表失败');
     } finally {
       setLoadingExams(false);
     }
   };
 
   useEffect(() => {
-    loadInitial().catch(() => {});
+    void loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -142,13 +211,15 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
         const found = exRes.exams.find((e) => e.id === externalExamId);
         if (found) {
           setActiveExam(found);
-          setUserAnswers({});
-          setSubmissionResult(null);
-          setTakeSeconds(0);
+          resetExamAttemptState();
+          setErrorMsg('');
+          setToastMsg('');
         }
         if (externalViewMode) setViewMode(externalViewMode);
       })
-      .catch(() => {})
+      .catch((err) => {
+        setErrorMsg(err instanceof Error ? err.message : '加载指定试卷失败');
+      })
       .finally(() => onConsumeExternalExam?.());
   }, [externalExamId, externalViewMode, onConsumeExternalExam]);
 
@@ -187,6 +258,7 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
   const handlePracticeWeakTopics = async () => {
     if (remediating) return;
     setRemediating(true);
+    setErrorMsg('');
     try {
       const res = await apiJson<{ exam_record: ExamRecord }>('/api/agent/memory/remediation-quiz', {
         method: 'POST',
@@ -194,11 +266,12 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
       });
       setExams((prev) => [res.exam_record, ...prev]);
       setActiveExam(res.exam_record);
-      setUserAnswers({});
-      setSubmissionResult(null);
-      setTakeSeconds(0);
+      resetExamAttemptState();
+      setToastMsg('');
       setViewMode('take');
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '生成薄弱点巩固卷失败');
     } finally {
       setRemediating(false);
     }
@@ -278,6 +351,7 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
       if (res.records.length > 0) {
         setBatchRecords(res.records);
         setActiveExam(res.records[0]);
+        resetExamAttemptState();
         setExams((prev) => {
           const newIds = new Set(res.records.map((r) => r.id));
           return [...res.records, ...prev.filter((x) => !newIds.has(x.id))];
@@ -322,6 +396,7 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
           onThinking: (d) => setThinkingText((p) => p + d),
           onResult: (data) => {
             setActiveExam(data.exam_record);
+            resetExamAttemptState();
             setExams((prev) => [data.exam_record, ...prev]);
             setToastMsg('试卷生成完毕，已核对答案并生成可下载文件。');
             onArtifactsChanged();
@@ -339,6 +414,8 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
   const handleSaveExam = async () => {
     if (!activeExam) return;
     setSaving(true);
+    setErrorMsg('');
+    setToastMsg('');
     try {
       const res = await apiJson<{ exam: ExamRecord['exam']; edit_count: number }>(
         `/api/exam/${activeExam.id}`,
@@ -350,6 +427,8 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
       setBatchRecords((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       setToastMsg('修改已保存，学生卷与教师卷同步更新。');
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '保存试卷修改失败');
     } finally {
       setSaving(false);
     }
@@ -358,6 +437,8 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
   const handleReplaceQuestion = async (qIdx: number) => {
     if (!activeExam || !replaceInstruction.trim()) return;
     setReplacingIdx(qIdx);
+    setErrorMsg('');
+    setToastMsg('');
     try {
       const res = await apiJson<{ exam: ExamRecord['exam']; edit_count: number }>(
         `/api/exam/${activeExam.id}/replace-question`,
@@ -369,9 +450,12 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
       const updated = { ...activeExam, exam: res.exam, edit_count: res.edit_count };
       setActiveExam(updated);
       setExams((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+      setBatchRecords((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       setReplaceTargetIdx(null);
       setToastMsg(`第 ${qIdx + 1} 题已替换并完成核对。`);
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '替换试题失败');
     } finally {
       setReplacingIdx(null);
     }
@@ -384,10 +468,25 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
     setActiveExam({ ...activeExam, exam: { ...activeExam.exam, questions } });
   };
 
+  const updatePartField = (
+    qIdx: number,
+    pIdx: number,
+    field: 'prompt' | 'answer' | 'explanation',
+    value: string
+  ) => {
+    if (!activeExam) return;
+    const questions = [...activeExam.exam.questions];
+    const parts = [...(questions[qIdx].parts || [])];
+    if (!parts[pIdx]) return;
+    parts[pIdx] = { ...parts[pIdx], [field]: value };
+    questions[qIdx] = { ...questions[qIdx], parts };
+    setActiveExam({ ...activeExam, exam: { ...activeExam.exam, questions } });
+  };
+
   return (
     <div className="desk-split">
       {/* Left Intent Column */}
-      <div className="pane-intent">
+      <div className="pane-intent no-print">
         <div className="pane-intent-scroll">
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -657,9 +756,8 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                   onClick={() => {
                     setActiveExam(ex);
                     setToastMsg('');
-                    setUserAnswers({});
-                    setSubmissionResult(null);
-                    setTakeSeconds(0);
+                    setErrorMsg('');
+                    resetExamAttemptState();
                   }}
                 >
                   <span className="spine-item-text" style={{ fontSize: 12.5 }}>{ex.title}</span>
@@ -715,7 +813,7 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
 
           {activeExam && (
             <>
-              <div className="folio-strip" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+              <div className="folio-strip no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   <div className="seg-switch">
                     <button
@@ -759,7 +857,12 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                           key={rec.id}
                           type="button"
                           className={`seg-switch-btn ${activeExam.id === rec.id ? 'active' : ''}`}
-                          onClick={() => setActiveExam(rec)}
+                          onClick={() => {
+                            setActiveExam(rec);
+                            setToastMsg('');
+                            setErrorMsg('');
+                            resetExamAttemptState();
+                          }}
                           data-testid={`exam-batch-${bi}`}
                         >
                           {'ABC'[bi]}卷
@@ -804,7 +907,9 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                         `${activeExam.exam.title}·讲评课件`,
                         activeExam.subject,
                         activeExam.grade_level,
-                        JSON.stringify(activeExam.exam.questions, null, 2)
+                        formatExamForPpt(activeExam),
+                        domainId,
+                        branch
                       )
                     }
                   >
@@ -903,15 +1008,32 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                         提交后自动判分，未通过题目将自动收录进错题本并生成针对性巩固建议
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <span className="stamp-badge stamp-accent mono-num" data-testid="exam-answered-pill">
+                        已答 {answeredCount} / {totalQuestionCount} 题
+                      </span>
                       <span className="stamp-badge stamp-neutral mono-num">
                         <IconClockTimer size={13} /> {Math.floor(takeSeconds / 60)}:{String(takeSeconds % 60).padStart(2, '0')}
                       </span>
+                      {submissionResult && (
+                        <button
+                          type="button"
+                          className="btn btn-surface btn-sm"
+                          onClick={() => {
+                            resetExamAttemptState();
+                            setToastMsg('');
+                            setErrorMsg('');
+                          }}
+                          data-testid="btn-retake-exam"
+                        >
+                          <IconRefreshSwap size={13} /> 重新作答
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
                         onClick={handleSubmitOnlineExam}
-                        disabled={submittingExam}
+                        disabled={submittingExam || Boolean(submissionResult)}
                         data-testid="btn-submit-exam"
                       >
                         {submittingExam ? '批改中…' : '提交并批改'}
@@ -1026,9 +1148,50 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                               className={itemGrade.correct ? 'callout-verified' : 'callout-danger'}
                               style={{ marginTop: 10, fontSize: 12.5 }}
                             >
-                              <div><strong>判分说明：</strong>{itemGrade.feedback}</div>
-                              {!itemGrade.correct && (
-                                <div style={{ marginTop: 3 }}><strong>参考解析：</strong><MathText text={q.analysis || q.answer} /></div>
+                              <div>
+                                <strong>判分说明：</strong>
+                                <MathText inline text={itemGrade.feedback} />
+                              </div>
+                              {q.parts && q.parts.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                                  {q.parts.map((pt, pi) => (
+                                    <div
+                                      key={pi}
+                                      style={{
+                                        padding: '6px 9px',
+                                        borderRadius: 6,
+                                        background: 'rgba(255, 255, 255, 0.72)',
+                                        borderLeft: '2px solid var(--accent)',
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 600 }}>
+                                        （{pi + 1}）参考答案：<MathText inline text={pt.answer} />
+                                      </div>
+                                      {pt.explanation && (
+                                        <div style={{ color: 'var(--ink-secondary)', marginTop: 2 }}>
+                                          解析：<MathText inline text={pt.explanation} />
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                !itemGrade.correct && (
+                                  <div style={{ marginTop: 4 }}>
+                                    {q.answer && (
+                                      <div>
+                                        <strong>参考答案：</strong>
+                                        <MathText inline text={q.answer} />
+                                      </div>
+                                    )}
+                                    {(q.analysis || !q.answer) && (
+                                      <div style={{ marginTop: 2 }}>
+                                        <strong>参考解析：</strong>
+                                        <MathText text={q.analysis || q.answer} />
+                                      </div>
+                                    )}
+                                  </div>
+                                )
                               )}
                             </div>
                           )}
@@ -1185,16 +1348,39 @@ export const ExamBuilderWorkspace: React.FC<ExamBuilderWorkspaceProps> = ({
                         <label className="field-label">题干</label>
                         <textarea className="textarea" rows={2} value={q.stem} onChange={(e) => updateQuestionField(idx, 'stem', e.target.value)} />
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 10 }}>
-                        <div>
-                          <label className="field-label">参考答案</label>
-                          <textarea className="textarea" rows={3} style={{ fontSize: 12.5 }} value={q.answer} onChange={(e) => updateQuestionField(idx, 'answer', e.target.value)} />
+                      {q.parts && q.parts.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {q.parts.map((pt, pi) => (
+                            <div key={pi} style={{ padding: '8px 10px', borderRadius: 6, background: 'var(--bg-subtle)', border: '1px solid var(--border-hairline)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                              <div>
+                                <label className="field-label">第（{pi + 1}）问设问（{pt.points}分）</label>
+                                <input className="input" value={pt.prompt} onChange={(e) => updatePartField(idx, pi, 'prompt', e.target.value)} />
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 8 }}>
+                                <div>
+                                  <label className="field-label">第（{pi + 1}）问答案</label>
+                                  <textarea className="textarea" rows={2} style={{ fontSize: 12.5 }} value={pt.answer} onChange={(e) => updatePartField(idx, pi, 'answer', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label className="field-label">第（{pi + 1}）问解析</label>
+                                  <textarea className="textarea" rows={2} style={{ fontSize: 12.5 }} value={pt.explanation} onChange={(e) => updatePartField(idx, pi, 'explanation', e.target.value)} />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <div>
-                          <label className="field-label">分步解析</label>
-                          <textarea className="textarea" rows={3} style={{ fontSize: 12.5 }} value={q.analysis} onChange={(e) => updateQuestionField(idx, 'analysis', e.target.value)} />
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 10 }}>
+                          <div>
+                            <label className="field-label">参考答案</label>
+                            <textarea className="textarea" rows={3} style={{ fontSize: 12.5 }} value={q.answer} onChange={(e) => updateQuestionField(idx, 'answer', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="field-label">分步解析</label>
+                            <textarea className="textarea" rows={3} style={{ fontSize: 12.5 }} value={q.analysis} onChange={(e) => updateQuestionField(idx, 'analysis', e.target.value)} />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>

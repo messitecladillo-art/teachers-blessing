@@ -126,13 +126,20 @@ async def create_remediation_quiz_endpoint(req: RemediationQuizReq) -> dict[str,
 @router.post("/insert-visual")
 async def insert_canvas_visual_into_document(req: InsertVisualReq) -> dict[str, Any]:
     """Insert a function/geometry plot from the visual canvas directly into the active/latest lesson or PPT deck."""
-    plot_expr = (req.expr or "").strip() or "x**3 - 3*x**2 + 2"
+    target = (req.target or "").strip().lower()
+    if target not in ("ppt", "lesson"):
+        raise HTTPException(status_code=400, detail="不支持的目标文档类型，仅支持 ppt 或 lesson")
+
+    plot_expr = (req.expr or "").strip()
+    if not plot_expr:
+        raise HTTPException(status_code=400, detail="函数表达式不能为空")
+
     check_plot = sample_function_plot(plot_expr)
     if not check_plot.get("ok"):
-        plot_expr = "x**3 - 3*x**2 + 2"
+        raise HTTPException(status_code=400, detail=str(check_plot.get("error") or "无效的函数表达式"))
 
     now = time.time()
-    if req.target == "lesson":
+    if target == "lesson":
         with get_conn() as conn:
             if req.target_id:
                 row = conn.execute("SELECT * FROM lessons WHERE id = ?", (req.target_id,)).fetchone()

@@ -160,6 +160,9 @@ class CalendarTaskPatch(BaseModel):
 
 @router.post("/solve")
 async def solve_question_stream(req: SolveRequest) -> StreamingResponse:
+    if not (req.question or "").strip():
+        raise HTTPException(status_code=400, detail="请输入需要解答或导学的题目内容")
+
     async def event_gen():
         t0 = time.time()
         yield sse_event("stage", {"stage": "analyzing", "message": "正在审题并梳理推导步骤…"})
@@ -205,17 +208,26 @@ async def solve_question_stream(req: SolveRequest) -> StreamingResponse:
                     full_text = chunk["text"]
 
             yield sse_event("stage", {"stage": "verifying", "message": "正在核对计算结果与自动复查偏差…"})
-            parsed = extract_json_payload(full_text)
+            raw_parsed = extract_json_payload(full_text)
+            parsed = raw_parsed if isinstance(raw_parsed, dict) else {}
             parsed, verification = await verify_and_repair_tutor_solution(
                 question=req.question,
                 subject=req.subject,
                 parsed=parsed,
                 max_retries=2,
             )
-            checks = parsed.get("sympy_checks") or []
+            if not isinstance(parsed, dict):
+                parsed = {}
+            raw_checks = parsed.get("sympy_checks")
+            checks = [c for c in raw_checks if isinstance(c, dict)] if isinstance(raw_checks, list) else []
             if req.student_attempt.strip():
-                diag = parsed.get("draft_diagnosis") or {}
-                diag_text = str(diag.get("summary") or "")
+                raw_diag = parsed.get("draft_diagnosis")
+                if isinstance(raw_diag, dict):
+                    diag_text = str(raw_diag.get("summary") or raw_diag.get("detail") or "").strip()
+                elif isinstance(raw_diag, str):
+                    diag_text = raw_diag.strip()
+                else:
+                    diag_text = ""
                 record_learning_outcome(
                     topic_tag=str(parsed.get("topic_tag") or req.question[:24]),
                     subject=req.subject,
@@ -322,28 +334,71 @@ async def list_error_book() -> dict[str, Any]:
 
 
 @router.post("/error-book")
-async def add_error_book_item(item: ErrorBookCreate) -> dict[str, Any]:
-    eid = new_id("err")
+async def save_error_book_entry(item: ErrorBookCreate) -> dict[str, Any]:
+    q_text = (item.question_text or "").strip()
+    if not q_text:
+        raise HTTPException(status_code=400, detail="错题题干不能为空")
+
     now = time.time()
+    sol_str = json.dumps(item.solution_json, ensure_ascii=False)
+    deduplicated = False
     with get_conn() as conn:
-        conn.execute(
-            """
-            INSERT INTO error_book (id, subject, grade_level, topic_tag, question_text, my_mistake, key_takeaway, solution_json, mastery_level, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
-            """,
-            (
-                eid,
-                item.subject,
-                item.grade_level,
-                item.topic_tag,
-                item.question_text,
-                item.my_mistake,
-                item.key_takeaway,
-                json.dumps(item.solution_json, ensure_ascii=False),
-                now,
-            ),
-        )
-    log_telemetry("tutor", "save_error_book", verified_ok=True)
+        existing = conn.execute(
+            "SELECT * FROM error_book WHERE question_text = ? ORDER BY created_at DESC LIMIT 1",
+            (q_text,),
+        ).fetchone()
+        if existing:
+            eid = str(existing["id"])
+            deduplicated = True
+            new_mistake = item.my_mistake if item.my_mistake.strip() else str(existing["my_mistake"] or "")
+            new_takeaway = item.key_takeaway if item.key_takeaway.strip() else str(existing["key_takeaway"] or "")
+            new_sol = sol_str if item.solution_json else str(existing["solution_json"] or "{}")
+            conn.execute(
+                """
+                UPDATE error_book
+                SET subject = ?, grade_level = ?, topic_tag = ?, my_mistake = ?, key_takeaway = ?, solution_json = ?, created_at = ?
+                WHERE id = ?
+                """,
+                (
+                    item.subject or existing["subject"],
+                    item.grade_level or existing["grade_level"],
+                    item.topic_tag or existing["topic_tag"],
+                    new_mistake,
+                    new_takeaway,
+                    new_sol,
+                    now,
+                    eid,
+                ),
+            )
+            row = conn.execute("SELECT * FROM error_book WHERE id = ?", (eid,)).fetchone()
+        else:
+            eid = new_id("err")
+            conn.execute(
+                """
+                INSERT INTO error_book (id, subject, grade_level, topic_tag, question_text, my_mistake, key_takeaway, solution_json, mastery_level, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+                """,
+                (
+                    eid,
+                    item.subject,
+                    item.grade_level,
+                    item.topic_tag,
+                    q_text,
+                    item.my_mistake,
+                    item.key_takeaway,
+                    sol_str,
+                    now,
+                ),
+            )
+            row = conn.execute("SELECT * FROM error_book WHERE id = ?", (eid,)).fetchone()
+
+    entry = dict(row)
+    try:
+        entry["solution"] = json.loads(entry.pop("solution_json") or "{}")
+    except Exception:
+        entry["solution"] = {}
+
+    log_telemetry("tutor", "save_error_book", verified_ok=True, meta={"deduplicated": deduplicated})
     record_learning_outcome(
         topic_tag=item.topic_tag,
         subject=item.subject,
@@ -351,7 +406,7 @@ async def add_error_book_item(item: ErrorBookCreate) -> dict[str, Any]:
         correct=False,
         mistake_note=item.my_mistake,
     )
-    return {"ok": True, "id": eid}
+    return {"ok": True, "id": eid, "deduplicated": deduplicated, "item": entry}
 
 
 @router.get("/sessions/{session_id}/followups")
@@ -384,10 +439,10 @@ async def tutor_followup_turn(req: TutorFollowupRequest) -> dict[str, Any]:
                 if not s_ctx:
                     s_ctx = str(s_row["result_json"] or "")[:2500]
         prev_msgs = conn.execute(
-            "SELECT role, content FROM tutor_followups WHERE session_id = ? ORDER BY created_at ASC LIMIT 8",
+            "SELECT role, content FROM tutor_followups WHERE session_id = ? ORDER BY created_at DESC LIMIT 8",
             (sid,),
         ).fetchall()
-        for pm in prev_msgs:
+        for pm in reversed(prev_msgs):
             prefix = "学生" if pm["role"] == "user" else "老师"
             history_lines.append(f"{prefix}：{pm['content']}")
 
@@ -461,6 +516,7 @@ async def list_study_plans() -> dict[str, Any]:
 @router.post("/study-plans")
 async def create_study_plan(req: StudyPlanRequest) -> dict[str, Any]:
     """Generate an executable 7-day plan and export both .ics calendar and .docx check-in sheet."""
+    daily_mins = max(5, min(240, int(req.daily_minutes or 45)))
     topics = req.weak_topics or [req.title]
     plan_id = new_id("pln")
     days: list[dict[str, Any]] = []
@@ -470,7 +526,7 @@ async def create_study_plan(req: StudyPlanRequest) -> dict[str, Any]:
         ("同型变式专项突破", "完成 AI 生成的进阶变式题组并利用符号校验核对结果", "独立做出 2 道进阶变式并记录卡点"),
         ("跨知识点综合串联", "绘制本章前后置知识图谱卡片，打通与关联专题的联系", "能向同伴口述 3 分钟知识脉络"),
         ("错题二次清零重测", "从错题本抽取同类错题限时闭卷重测", "曾经做错题目一次通过"),
-        ("模拟微测与时间压迫训练", f"在 {req.daily_minutes} 分钟内完成整套薄弱点微测卷", "得分率 ≥ 85%"),
+        ("模拟微测与时间压迫训练", f"在 {daily_mins} 分钟内完成整套薄弱点微测卷", "得分率 ≥ 85%"),
         ("总复盘与学转教输出试讲", "尝试用费曼学习法/微格试讲形式把该专题讲给别人听", "完成 1 份自查清单或导出试讲教案"),
     ]
     for idx, (focus_suffix, task_desc, chk) in enumerate(phase_templates, start=1):
@@ -480,7 +536,7 @@ async def create_study_plan(req: StudyPlanRequest) -> dict[str, Any]:
                 "day": f"第 {idx} 天",
                 "focus": f"{topic} · {focus_suffix}",
                 "task": task_desc,
-                "minutes": req.daily_minutes,
+                "minutes": daily_mins,
                 "checkpoint": chk,
             }
         )
@@ -532,7 +588,7 @@ async def create_study_plan(req: StudyPlanRequest) -> dict[str, Any]:
                     str(d_item.get("focus") or f"第 {idx + 1} 天学习任务"),
                     req.title,
                     topics[idx % len(topics)] if topics else req.title,
-                    int(d_item.get("minutes") or req.daily_minutes or 30),
+                    int(d_item.get("minutes") or daily_mins),
                     plan_id,
                     now + idx * 0.001,
                 ),
@@ -569,14 +625,22 @@ def _row_to_calendar_task(row: Any) -> dict[str, Any]:
 
 @router.get("/calendar-tasks")
 async def list_calendar_tasks(start_date: str = "", end_date: str = "") -> dict[str, Any]:
+    s_dt = (start_date or "").strip()
+    e_dt = (end_date or "").strip()
+    clauses: list[str] = []
+    params: list[str] = []
+    if s_dt:
+        clauses.append("date_str >= ?")
+        params.append(s_dt)
+    if e_dt:
+        clauses.append("date_str <= ?")
+        params.append(e_dt)
+    where_sql = f" WHERE {' AND '.join(clauses)}" if clauses else ""
     with get_conn() as conn:
-        if start_date and end_date:
-            rows = conn.execute(
-                "SELECT * FROM calendar_tasks WHERE date_str >= ? AND date_str <= ? ORDER BY date_str ASC, created_at ASC",
-                (start_date.strip(), end_date.strip()),
-            ).fetchall()
-        else:
-            rows = conn.execute("SELECT * FROM calendar_tasks ORDER BY date_str ASC, created_at ASC").fetchall()
+        rows = conn.execute(
+            f"SELECT * FROM calendar_tasks{where_sql} ORDER BY date_str ASC, created_at ASC",
+            params,
+        ).fetchall()
     return {"ok": True, "tasks": [_row_to_calendar_task(r) for r in rows]}
 
 

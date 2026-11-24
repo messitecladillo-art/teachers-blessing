@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { apiJson } from '../services/api';
 import {
   FunctionPlotData,
@@ -7,7 +7,17 @@ import {
   Surface3DData,
 } from '../types';
 import { IconDimensionCube, IconFunctionCurve, IconLessonDoc, IconMindMap, IconSlideDeck } from './EduIcons';
-import { MindMapDrawioWorkbench } from './MindMapDrawioWorkbench';
+import { MathText } from './MathText';
+
+const MindMapDrawioWorkbench = lazy(() =>
+  import('./MindMapDrawioWorkbench').then((m) => ({ default: m.MindMapDrawioWorkbench }))
+);
+
+function wrapInlineTex(raw: string | undefined): string {
+  const s = (raw || '').trim();
+  if (!s) return '';
+  return s.includes('$') ? s : `$${s}$`;
+}
 
 export type WorkbenchDimension = '2d' | '3d' | 'phase' | 'mindmap';
 
@@ -375,8 +385,13 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
   const [expr3DInput, setExpr3DInput] = useState('x^2 - y^2');
   const [surfaceData, setSurfaceData] = useState<Surface3DData | null>(null);
   const [loading3D, setLoading3D] = useState(false);
+  const [error3D, setError3D] = useState('');
   const canvas3DRef = useRef<HTMLCanvasElement | null>(null);
   const drag3DRef = useRef<{ down: boolean; lx: number; ly: number }>({ down: false, lx: 0, ly: 0 });
+  const prevInitialExprRef = useRef(initialExpr);
+
+  const rawClipUid = useId();
+  const plotClipId = `tutor-plot-clip-${rawClipUid.replace(/:/g, '')}`;
 
   // === Dimension 3: High-D Phase Space & Fields State ===
   const [phaseModel, setPhaseModel] = useState<PhaseModelId>('lorenz');
@@ -388,56 +403,192 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
   const dragPhaseRef = useRef<{ down: boolean; lx: number }>({ down: false, lx: 0 });
   const [insertingTarget, setInsertingTarget] = useState<'ppt' | 'lesson' | null>(null);
   const [insertToast, setInsertToast] = useState('');
+  const mountedRef = useRef(true);
+  const toastTimerRef = useRef<number | null>(null);
+  const plotReqRef = useRef(0);
+  const surfaceReqRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleInsertVisual = async (target: 'ppt' | 'lesson', dynamicTitle?: string, dynamicCaption?: string) => {
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
     setInsertingTarget(target);
     setInsertToast('');
     try {
       let activeExpr = exprInput || 'x^3 - 3*x^2 + 2';
-      if (dimension === '2d' && sandbox2D !== 'sympy') {
-        if (sandbox2D === 'cubic_extrema') activeExpr = `x^3 - ${paramA}*x^2 + ${paramB}`;
-        else if (sandbox2D === 'logistic') activeExpr = `${paramB}/(1 + exp(-${paramA}*(x - 1.5)))`;
-        else if (sandbox2D === 'damped_wave') activeExpr = `exp(-${paramA}*x)*cos(${paramB}*x)`;
-        else if (sandbox2D === 'michaelis') activeExpr = `${paramA}*x/(${paramB} + x)`;
+      let visualTitle = dynamicTitle || `函数图像 (${activeExpr})`;
+      let visualCaption = dynamicCaption || '结合图像变化趋势观察临界点与单调区间';
+
+      if (dimension === '2d') {
+        if (sandbox2D !== 'sympy') {
+          if (sandbox2D === 'cubic_extrema') activeExpr = `x^3 - ${paramA}*x^2 + ${paramB}`;
+          else if (sandbox2D === 'logistic') activeExpr = `${paramB}/(1 + ${Math.max(1.1, paramB - 1)}*exp(-${paramA}*x))`;
+          else if (sandbox2D === 'damped_wave') activeExpr = `4*exp(-${paramA}*x)*cos(${paramB}*x)`;
+          else if (sandbox2D === 'michaelis') activeExpr = `${paramA}*x/(${paramB} + x)`;
+          else if (sandbox2D === 'bayes_ppv') activeExpr = `${paramA}*x/(${paramA}*x + ${Number((1 - paramB).toFixed(4))}*(1 - x))`;
+          else if (sandbox2D === 'marginal_econ') activeExpr = `${paramA}*x*exp(-${paramB}*x)`;
+          else if (sandbox2D === 'cyclic_group') activeExpr = `cos(2*3.14159*x/${Math.max(4, Math.round(paramA))})`;
+          visualTitle = dynamicTitle || dynamic2D?.title || `函数模型 (${activeExpr})`;
+          visualCaption = dynamicCaption || dynamic2D?.formulaLabel || '结合参数变化观察模型临界特征';
+        }
+      } else if (dimension === '3d') {
+        if (model3D === 'saddle') {
+          activeExpr = '0.45*x^2';
+          visualTitle = '三维马鞍面 z = x² - y²';
+          visualCaption = '沿 X 方向上凹、沿 Y 方向下凸的双曲抛物面鞍点截面';
+        } else if (model3D === 'complex_surface') {
+          activeExpr = 'sqrt(abs(x))';
+          visualTitle = '复变平方根黎曼曲面 Re(√z)';
+          visualCaption = '沿负实轴支割线两侧正负分支连续延拓截面';
+        } else if (model3D === 'wave_interf') {
+          activeExpr = '0.65*(cos(3.4*(x+0.9))/(1+0.35*abs(x+0.9)) + cos(3.4*(x-0.9))/(1+0.35*abs(x-0.9)))';
+          visualTitle = '双波源相干叠加干涉场';
+          visualCaption = '波程差决定干涉加强峰与相消节线分布';
+        } else if (model3D === 'dihedral') {
+          activeExpr = 'abs(x)';
+          visualTitle = `空间二面角翻折模型 (θ=${dihedralDeg}°)`;
+          visualCaption = '法向量夹角与二面角平面角互补/相等判定示意';
+        } else if (model3D === 'vsepr') {
+          activeExpr = 'x^2 - 1';
+          visualTitle = `VSEPR 分子空间构型 (${vseprMolecule})`;
+          visualCaption = '孤对电子排斥效应对键角的压缩机制示意';
+        } else if (model3D === 'peaks') {
+          activeExpr = '1.4*exp(-(x-0.7)^2) - 1.2*exp(-(x+0.8)^2) + 0.35*cos(1.4*x)';
+          visualTitle = '多极值等高地形曲面';
+          visualCaption = '局部极大峰、极小谷与等高投影线对照';
+        } else {
+          const raw3D = (surfaceData?.expression || expr3DInput || 'x^2 - y^2').trim();
+          const stripped3D = raw3D.replace(/^(?:[a-zA-Z]\s*\(\s*x\s*,\s*y\s*\)|z)\s*=\s*/i, '');
+          activeExpr = (stripped3D || 'x^2 - y^2')
+            .replace(/([0-9xX)])\s*y(?![A-Za-z0-9_])/g, '$1*0')
+            .replace(/\by\b/g, '0');
+          visualTitle = `三维曲面 z = ${stripped3D || 'f(x,y)'}`;
+          visualCaption = surfaceData?.surface_feature
+            ? `${surfaceData.surface_feature}（截面投影对照）`
+            : '三维二元函数曲面高低与偏导特征';
+        }
+      } else if (dimension === 'phase') {
+        if (phaseModel === 'lorenz') {
+          activeExpr = 'sin(2*x)*exp(-0.15*abs(x))';
+          visualTitle = `洛伦兹混沌吸引子 (ρ=${lorenzRho})`;
+          visualCaption = '初值微扰 0.001 下的双轨指数发散与蝴蝶吸引子结构';
+        } else if (phaseModel === 'lotka') {
+          activeExpr = '1.5 + 0.8*cos(2*x)';
+          visualTitle = `捕食-猎物相空间轨线 (α=${lotkaAlpha.toFixed(1)})`;
+          visualCaption = 'Lotka-Volterra 周期振荡闭合相轨线与不动平衡中心';
+        } else {
+          activeExpr = '1/(x^2 + 0.5) - 1/((x-1.5)^2 + 0.5)';
+          visualTitle = '电偶极子电场线与等势面分布';
+          visualCaption = '正负点电荷 +q / -q 叠加矢量场线与电势衰减特征';
+        }
       }
+
       const res = await apiJson<{ ok: boolean; target_title: string }>('/api/agent/insert-visual', {
         method: 'POST',
         body: JSON.stringify({
           target,
-          visual_title: dynamicTitle || `函数图像 (${activeExpr})`,
+          visual_title: visualTitle,
           expr: activeExpr,
-          caption: dynamicCaption || '结合图像变化趋势观察临界点与单调区间',
+          caption: visualCaption,
         }),
       });
+      if (!mountedRef.current) return;
       setInsertToast(`已插入${target === 'lesson' ? '教案' : '课件'}《${res.target_title.slice(0, 14)}》`);
       onArtifactsChanged?.();
     } catch (e) {
+      if (!mountedRef.current) return;
       setInsertToast(e instanceof Error ? e.message : '插入失败');
     } finally {
-      setInsertingTarget(null);
-      window.setTimeout(() => setInsertToast(''), 4000);
+      if (mountedRef.current) {
+        setInsertingTarget(null);
+        if (toastTimerRef.current !== null) {
+          window.clearTimeout(toastTimerRef.current);
+        }
+        toastTimerRef.current = window.setTimeout(() => {
+          toastTimerRef.current = null;
+          if (mountedRef.current) {
+            setInsertToast('');
+          }
+        }, 4000);
+      }
     }
   };
 
   const loadPlot = async (expr: string) => {
-    if (!expr.trim()) return;
+    const cleanExpr = expr.trim();
+    if (!cleanExpr) return;
+    const reqId = ++plotReqRef.current;
     setLoading2D(true);
     try {
-      const res = await apiJson<FunctionPlotData>('/api/tutor/plot-function', {
+      const raw = await apiJson<
+        FunctionPlotData & {
+          detail?: string;
+          x_min?: number;
+          x_max?: number;
+          y_min?: number;
+          y_max?: number;
+          segments?: { x: number; y: number }[][];
+        }
+      >('/api/tutor/plot-function', {
         method: 'POST',
-        body: JSON.stringify({ expression: expr }),
+        body: JSON.stringify({ expression: cleanExpr }),
       });
-      setPlot(res);
-      if (res.ok && res.curve_samples?.length) {
-        const mid = res.curve_samples[Math.floor(res.curve_samples.length * 0.35)];
+      if (!mountedRef.current || reqId !== plotReqRef.current) return;
+
+      let normalized: FunctionPlotData = raw;
+      if (raw.ok && (!raw.f_segments || raw.f_segments.length === 0) && Array.isArray(raw.segments)) {
+        const fSegs: [number, number][][] = raw.segments.map((seg) => seg.map((p) => [p.x, p.y]));
+        const flat = fSegs[0] || [];
+        const samples = flat.map((pt, idx) => {
+          const prev = flat[Math.max(0, idx - 1)];
+          const next = flat[Math.min(flat.length - 1, idx + 1)];
+          const dy = (next[1] - prev[1]) / Math.max(1e-5, next[0] - prev[0]);
+          return { x: pt[0], y: pt[1], dy };
+        });
+        normalized = {
+          ok: true,
+          expression: raw.expression || cleanExpr,
+          expr_latex: raw.expr_latex || cleanExpr,
+          deriv_latex: raw.deriv_latex || '',
+          x_domain: raw.x_domain || [raw.x_min ?? -2, raw.x_max ?? 3.5],
+          y_domain: raw.y_domain || [raw.y_min ?? -4, raw.y_max ?? 4],
+          f_segments: fSegs,
+          df_segments: samples.length ? [samples.map((s) => [s.x, s.dy])] : [],
+          critical_points: raw.critical_points || [],
+          curve_samples: samples,
+        };
+      } else if (!raw.ok) {
+        normalized = {
+          ...raw,
+          ok: false,
+          error: raw.error || raw.detail || '未能解析该函数表达式，请检查语法后点击重绘',
+        };
+      }
+
+      setPlot(normalized);
+      if (normalized.ok && normalized.curve_samples?.length) {
+        const mid = normalized.curve_samples[Math.floor(normalized.curve_samples.length * 0.35)];
         setXCursor(mid?.x ?? 0);
       }
     } catch (err) {
+      if (!mountedRef.current || reqId !== plotReqRef.current) return;
       setPlot({
         ok: false,
         error: err instanceof Error ? err.message : '绘图失败',
-        expression: expr,
-        expr_latex: expr,
+        expression: cleanExpr,
+        expr_latex: cleanExpr,
         deriv_latex: '',
         x_domain: [-2, 3.5],
         y_domain: [-4, 4],
@@ -447,24 +598,37 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
         curve_samples: [],
       });
     } finally {
-      setLoading2D(false);
+      if (mountedRef.current && reqId === plotReqRef.current) {
+        setLoading2D(false);
+      }
     }
   };
 
   const loadSurface3D = async (expr: string) => {
-    if (!expr.trim()) return;
+    const cleanExpr = expr.trim();
+    if (!cleanExpr) return;
+    const reqId = ++surfaceReqRef.current;
     setLoading3D(true);
+    setError3D('');
     try {
-      const res = await apiJson<Surface3DData>('/api/tutor/plot-surface-3d', {
+      const res = await apiJson<Surface3DData & { detail?: string }>('/api/tutor/plot-surface-3d', {
         method: 'POST',
-        body: JSON.stringify({ expression: expr, grid_size: 23 }),
+        body: JSON.stringify({ expression: cleanExpr, grid_size: 23 }),
       });
+      if (!mountedRef.current || reqId !== surfaceReqRef.current) return;
+      if (!res.ok) {
+        setError3D(res.error || res.detail || '三维曲面采样失败，请检查关于 x, y 的表达式语法');
+        return;
+      }
       setSurfaceData(res);
       setModel3D('custom_3d');
-    } catch {
-      /* ignore transient */
+    } catch (err) {
+      if (!mountedRef.current || reqId !== surfaceReqRef.current) return;
+      setError3D(err instanceof Error ? err.message : '三维曲面绘制失败');
     } finally {
-      setLoading3D(false);
+      if (mountedRef.current && reqId === surfaceReqRef.current) {
+        setLoading3D(false);
+      }
     }
   };
 
@@ -474,18 +638,21 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
       setExprInput(initialPlotData.expression);
       const mid = initialPlotData.curve_samples?.[Math.floor((initialPlotData.curve_samples?.length || 1) * 0.35)];
       if (mid) setXCursor(mid.x);
-    } else if (!plot) {
-      loadPlot(initialExpr);
+    } else {
+      void loadPlot(initialExpr);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPlotData]);
 
   useEffect(() => {
-    if (!initialPlotData && initialExpr && initialExpr !== exprInput) {
+    if (prevInitialExprRef.current === initialExpr) return;
+    prevInitialExprRef.current = initialExpr;
+    if (!initialPlotData?.ok && initialExpr) {
       setExprInput(initialExpr);
       setSandbox2D('sympy');
-      loadPlot(initialExpr);
+      void loadPlot(initialExpr);
     }
-  }, [initialExpr]);
+  }, [initialExpr, initialPlotData]);
 
   // Apply external preset pushed by matrix or discipline switcher
   useEffect(() => {
@@ -533,7 +700,9 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
   // 2D Dynamic Sandbox switcher helper
   const handleSelect2DSandbox = (id: Sandbox2DId) => {
     setSandbox2D(id);
-    if (id === 'cubic_extrema') { setParamA(3.0); setParamB(2.0); setXCursor(1.0); }
+    if (id === 'sympy' && !plot?.ok) {
+      void loadPlot(exprInput || initialExpr);
+    } else if (id === 'cubic_extrema') { setParamA(3.0); setParamB(2.0); setXCursor(1.0); }
     else if (id === 'cyclic_group') { setParamA(12); setParamB(5); }
     else if (id === 'logistic') { setParamA(1.5); setParamB(8.0); setXCursor(1.3); }
     else if (id === 'damped_wave') { setParamA(0.22); setParamB(3.2); setXCursor(1.4); }
@@ -1139,7 +1308,7 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
               type="button"
               className="btn btn-surface btn-sm"
               disabled={insertingTarget !== null}
-              onClick={() => handleInsertVisual('lesson', dynamic2D?.title, dynamic2D?.formulaLabel)}
+              onClick={() => handleInsertVisual('lesson')}
               data-testid="btn-insert-plot-lesson"
             >
               <IconLessonDoc size={13} color="var(--accent)" />
@@ -1149,7 +1318,7 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
               type="button"
               className="btn btn-surface btn-sm"
               disabled={insertingTarget !== null}
-              onClick={() => handleInsertVisual('ppt', dynamic2D?.title, dynamic2D?.formulaLabel)}
+              onClick={() => handleInsertVisual('ppt')}
               data-testid="btn-insert-plot-ppt"
             >
               <IconSlideDeck size={13} color="var(--accent)" />
@@ -1207,11 +1376,28 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                   style={{ width: 168, padding: '4px 9px', fontSize: 12 }}
                   value={exprInput}
                   onChange={(e) => setExprInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void loadPlot(exprInput);
+                    }
+                  }}
                   placeholder="例如 x^3 - 3*x^2 + 2"
                   aria-label="函数表达式"
                 />
-                <button type="button" className="btn btn-surface btn-sm" onClick={() => loadPlot(exprInput)} disabled={loading2D}>
-                  {loading2D ? '采样…' : '重绘'}
+                {loading2D && (
+                  <span className="mono-num" style={{ fontSize: 11.5, color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>
+                    采样中…
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-surface btn-sm"
+                  onClick={() => loadPlot(exprInput)}
+                  disabled={loading2D || !exprInput.trim()}
+                  data-testid="btn-replot-2d"
+                >
+                  重绘
                 </button>
                 <button
                   type="button"
@@ -1338,7 +1524,7 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
               <div style={{ border: '1px solid var(--border-hairline)', borderRadius: 6, background: '#FFFFFF', padding: '6px 8px' }}>
                 <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
                   <defs>
-                    <clipPath id="tutor-plot-clip">
+                    <clipPath id={plotClipId}>
                       <rect x={px0} y={py0} width={pw} height={ph} />
                     </clipPath>
                   </defs>
@@ -1380,7 +1566,7 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                     <text x="126" y="7.5" fontSize="10" fontWeight="600" fill="#B43B2A">{dynamic2D ? dynamic2D.dfLegend : "f'(x)"}</text>
                   </g>
 
-                  <g clipPath="url(#tutor-plot-clip)">
+                  <g clipPath={`url(#${plotClipId})`}>
                     {dynamic2D ? (
                       <>
                         {showDeriv && (
@@ -1445,7 +1631,7 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                   })}
 
                   {activeSample && tangentLine && (
-                    <g clipPath="url(#tutor-plot-clip)">
+                    <g clipPath={`url(#${plotClipId})`}>
                       <line x1={toX(activeSample.x)} y1={py0} x2={toX(activeSample.x)} y2={py0 + ph} stroke="#9A5B13" strokeOpacity="0.3" strokeWidth="1.2" strokeDasharray="3,3" />
                       <line x1={tangentLine.x1} y1={tangentLine.y1} x2={tangentLine.x2} y2={tangentLine.y2} stroke="#9A5B13" strokeWidth="2.2" />
                       <circle cx={toX(activeSample.x)} cy={toY(activeSample.y)} r="5.5" fill="#9A5B13" stroke="#FDFCF9" strokeWidth="2" />
@@ -1484,9 +1670,13 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                 )}
               </div>
             </>
+          ) : loading2D ? (
+            <div style={{ fontSize: 12.5, color: 'var(--ink-muted)', padding: '16px 8px', textAlign: 'center' }}>
+              正在采样绘制函数图像…
+            </div>
           ) : (
-            <div style={{ fontSize: 12.5, color: 'var(--seal)', padding: '12px 4px' }}>
-              {plot?.error || '请输入一元函数后点击重绘'}
+            <div className="callout-danger" style={{ fontSize: 12.5, padding: '10px 12px' }}>
+              {plot?.error || '当前表达式暂未生成实数曲线，请检查上方输入框语法后点击「重绘」。'}
             </div>
           )}
         </div>
@@ -1512,7 +1702,10 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                   type="button"
                   className="preset-chip"
                   style={model3D === m.id ? { background: 'var(--accent)', color: '#FFFFFF', borderColor: 'var(--accent)' } : undefined}
-                  onClick={() => setModel3D(m.id)}
+                  onClick={() => {
+                    setModel3D(m.id);
+                    setError3D('');
+                  }}
                   data-testid={`model-3d-${m.id}`}
                 >
                   {m.label}
@@ -1526,6 +1719,12 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
                 style={{ width: 145, padding: '4px 8px', fontSize: 12 }}
                 value={expr3DInput}
                 onChange={(e) => setExpr3DInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    void loadSurface3D(expr3DInput);
+                  }
+                }}
                 placeholder="z = sin(x)*cos(y)"
                 data-testid="input-3d-expr"
               />
@@ -1534,6 +1733,12 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
               </button>
             </div>
           </div>
+
+          {error3D && (
+            <div className="callout-danger" style={{ fontSize: 12, padding: '6px 10px' }} data-testid="plot-3d-error">
+              {error3D}
+            </div>
+          )}
 
           {/* Model-specific Interactive Controls */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', padding: '6px 10px', background: 'var(--bg-subtle)', borderRadius: 6, fontSize: 12 }}>
@@ -1564,7 +1769,11 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
             ) : model3D === 'custom_3d' && surfaceData?.ok ? (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="stamp-badge stamp-verified">{surfaceData.surface_feature}</span>
-                <span className="mono-num">∂z/∂x = {surfaceData.fx_latex} ｜ ∂z/∂y = {surfaceData.fy_latex}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span>∂z/∂x = <MathText inline text={wrapInlineTex(surfaceData.fx_latex)} /></span>
+                  <span>｜</span>
+                  <span>∂z/∂y = <MathText inline text={wrapInlineTex(surfaceData.fy_latex)} /></span>
+                </span>
               </div>
             ) : (
               <span style={{ color: 'var(--ink-secondary)' }}>
@@ -1669,15 +1878,23 @@ export const FunctionPlotCard: React.FC<FunctionPlotCardProps> = ({
 
       {/* ================== DIMENSION 4: MINDMAP / DRAW.IO ================== */}
       {dimension === 'mindmap' && (
-        <MindMapDrawioWorkbench
-          compact
-          subject={subject}
-          domainId={domainId}
-          branch={branch}
-          externalMap={externalMindmap}
-          onExpandFull={onExpandMindmap}
-          onArtifactsChanged={onArtifactsChanged}
-        />
+        <Suspense
+          fallback={
+            <div style={{ padding: 24, textAlign: 'center', fontSize: 12.5, color: 'var(--ink-muted)' }}>
+              正在载入思维导图画板…
+            </div>
+          }
+        >
+          <MindMapDrawioWorkbench
+            compact
+            subject={subject}
+            domainId={domainId}
+            branch={branch}
+            externalMap={externalMindmap}
+            onExpandFull={onExpandMindmap}
+            onArtifactsChanged={onArtifactsChanged}
+          />
+        </Suspense>
       )}
     </div>
   );

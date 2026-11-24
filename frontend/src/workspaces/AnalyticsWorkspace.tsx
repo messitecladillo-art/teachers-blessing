@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl } from '../services/api';
 import { AnalyticsReport, ArtifactItem } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
+import { MathText } from '../components/MathText';
 import {
   IconAlertWarn,
   IconAnalyticsRadar,
   IconDownloadBox,
+  IconExamPaper,
   IconEyePreview,
   IconShieldLock,
   IconSlideDeck,
@@ -16,7 +18,42 @@ import {
 
 interface AnalyticsWorkspaceProps {
   onArtifactsChanged: () => void;
-  onExportAnalyticsToPpt: (title: string, subject: string, grade: string, material: string) => void;
+  onExportAnalyticsToPpt: (
+    title: string,
+    subject: string,
+    grade: string,
+    material: string,
+    domain?: string,
+    branch?: string
+  ) => void;
+  onCreateRemediationQuiz?: (weakTopics: string[]) => void | Promise<void>;
+}
+
+function formatAnalyticsForPpt(report: AnalyticsReport): string {
+  const s = report.stats;
+  const n = report.ai_narrative;
+  const lines: string[] = [
+    `# ${report.title}`,
+    `- 样本人数：N = ${s.student_count}｜满分：${s.full_score} 分`,
+    `- 平均分：${s.summary.mean}｜中位数：${s.summary.median}｜标准差：${s.summary.std}`,
+    `- 及格率：${s.summary.pass_rate}%｜优秀率：${s.summary.excellent_rate}%`,
+    '',
+    '## 一、分数段分布',
+    ...(s.distribution || []).map((d) => `- ${d.bucket} 分段：${d.count} 人`),
+    '',
+    '## 二、各题知识点掌握度与区分度',
+    ...(s.item_metrics || []).map(
+      (m) => `- ${m.item}：均分 ${m.mean_score}/${m.full_score}，掌握率 ${m.mastery_pct}%，区分度 D=${m.discrimination}`
+    ),
+    '',
+    '## 三、学情整体判断与薄弱归因',
+    `- 整体诊断：${n.overall_diagnosis || ''}`,
+    `- 薄弱归因：${n.weakness_attribution || ''}`,
+    '',
+    '## 四、分层靶向干预建议',
+    ...(n.teaching_interventions || []).map((t, idx) => `${idx + 1}. ${t}`),
+  ];
+  return lines.join('\n');
 }
 
 interface DesensPreview {
@@ -31,6 +68,7 @@ interface DesensPreview {
 export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
   onArtifactsChanged,
   onExportAnalyticsToPpt,
+  onCreateRemediationQuiz,
 }) => {
   const [reports, setReports] = useState<AnalyticsReport[]>([]);
   const [activeReport, setActiveReport] = useState<AnalyticsReport | null>(null);
@@ -49,6 +87,7 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
   const [reviewChecked, setReviewChecked] = useState(false);
   const [teacherNote, setTeacherNote] = useState('');
   const [savingReview, setSavingReview] = useState(false);
+  const [creatingRemediation, setCreatingRemediation] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
   const loadInitial = async () => {
@@ -71,46 +110,64 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
         body: JSON.stringify({ csv_text: sampleRes.csv_text }),
       });
       setPreview(pv);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加载学情分析数据失败');
     } finally {
       setLoadingReports(false);
     }
   };
 
   useEffect(() => {
-    loadInitial().catch(() => {});
+    void loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLoadSample = async () => {
-    const sampleRes = await apiJson<{ dataset_name: string; csv_text: string }>('/api/analytics/sample-csv');
-    setDatasetName(sampleRes.dataset_name);
-    setCsvText(sampleRes.csv_text);
-    const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
-      method: 'POST',
-      body: JSON.stringify({ csv_text: sampleRes.csv_text }),
-    });
-    setPreview(pv);
+    setErrorMsg('');
+    try {
+      const sampleRes = await apiJson<{ dataset_name: string; csv_text: string }>('/api/analytics/sample-csv');
+      setDatasetName(sampleRes.dataset_name);
+      setCsvText(sampleRes.csv_text);
+      const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
+        method: 'POST',
+        body: JSON.stringify({ csv_text: sampleRes.csv_text }),
+      });
+      setPreview(pv);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '载入示范成绩单失败');
+    }
   };
 
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const text = await f.text();
-    setDatasetName(f.name);
-    setCsvText(text);
-    const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
-      method: 'POST',
-      body: JSON.stringify({ csv_text: text }),
-    });
-    setPreview(pv);
+    setErrorMsg('');
+    try {
+      const text = await f.text();
+      setDatasetName(f.name);
+      setCsvText(text);
+      const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
+        method: 'POST',
+        body: JSON.stringify({ csv_text: text }),
+      });
+      setPreview(pv);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '读取成绩表格并执行脱敏预览失败');
+    }
   };
 
   const handlePreviewDesens = async () => {
     if (!csvText.trim()) return;
-    const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
-      method: 'POST',
-      body: JSON.stringify({ csv_text: csvText }),
-    });
-    setPreview(pv);
+    setErrorMsg('');
+    try {
+      const pv = await apiJson<DesensPreview>('/api/analytics/desensitize-preview', {
+        method: 'POST',
+        body: JSON.stringify({ csv_text: csvText }),
+      });
+      setPreview(pv);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '脱敏预览检验失败');
+    }
   };
 
   const handleAnalyze = async () => {
@@ -149,6 +206,8 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
   const handleSaveReview = async () => {
     if (!activeReport) return;
     setSavingReview(true);
+    setErrorMsg('');
+    setToastMsg('');
     try {
       await apiJson(`/api/analytics/${activeReport.id}/review`, {
         method: 'PUT',
@@ -159,8 +218,41 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
       setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setToastMsg('教师复核签章已更新至 Word 报告。');
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '保存复核签章失败');
     } finally {
       setSavingReview(false);
+    }
+  };
+
+  const handleRemediationQuiz = async () => {
+    if (!activeReport || creatingRemediation) return;
+    const weakTopics = activeReport.stats.item_metrics
+      .filter((m) => m.mastery_pct < 75)
+      .map((m) => m.item);
+    const targetTopics =
+      weakTopics.length > 0
+        ? weakTopics
+        : activeReport.stats.item_metrics.slice(0, 2).map((m) => m.item);
+
+    setCreatingRemediation(true);
+    setErrorMsg('');
+    setToastMsg('');
+    try {
+      if (onCreateRemediationQuiz) {
+        await onCreateRemediationQuiz(targetTopics);
+        return;
+      }
+      await apiJson('/api/agent/memory/remediation-quiz', {
+        method: 'POST',
+        body: JSON.stringify({ topics: targetTopics, count: 4 }),
+      });
+      setToastMsg('已根据薄弱知识点生成靶向巩固卷，可在组卷工作台查看与作答。');
+      onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '生成靶向巩固卷失败');
+    } finally {
+      setCreatingRemediation(false);
     }
   };
 
@@ -253,6 +345,8 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
                     setActiveReport(rep);
                     setReviewChecked(rep.teacher_reviewed);
                     setTeacherNote(rep.teacher_note || '');
+                    setErrorMsg('');
+                    setToastMsg('');
                   }}
                 >
                   <span className="spine-item-text" style={{ fontSize: 12.5 }}>{rep.title}</span>
@@ -302,20 +396,34 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
                       <span className="stamp-badge stamp-warn"><IconAlertWarn size={12} /> 待教师核对</span>
                     )}
                   </div>
-                  <h2 className="serif-heading" style={{ margin: '8px 0 0', fontSize: 20, fontWeight: 600 }}>{activeReport.title}</h2>
+                  <h2 className="serif-heading" style={{ margin: '8px 0 0', fontSize: 20, fontWeight: 600 }}>
+                    <MathText inline text={activeReport.title} />
+                  </h2>
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <a
-                    href={resolveApiUrl(`/api/artifacts/${activeReport.artifact_id}/download`)}
-                    download
-                    onClick={(e) => handleSafeDownload(e, `/api/artifacts/${activeReport.artifact_id}/download`, `${activeReport.title || '成绩分析报告'}.docx`)}
-                    className="btn btn-primary btn-sm"
-                    style={{ textDecoration: 'none' }}
-                    data-testid="btn-download-analytics-docx"
+                  {activeReport.artifact_id && (
+                    <a
+                      href={resolveApiUrl(`/api/artifacts/${activeReport.artifact_id}/download`)}
+                      download
+                      onClick={(e) => handleSafeDownload(e, `/api/artifacts/${activeReport.artifact_id}/download`, `${activeReport.title || '成绩分析报告'}.docx`)}
+                      className="btn btn-primary btn-sm"
+                      style={{ textDecoration: 'none' }}
+                      data-testid="btn-download-analytics-docx"
+                    >
+                      <IconDownloadBox size={13} /> 导出报告
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-surface btn-sm"
+                    disabled={creatingRemediation}
+                    onClick={handleRemediationQuiz}
+                    data-testid="btn-analytics-remediation-quiz"
                   >
-                    <IconDownloadBox size={13} /> 导出报告
-                  </a>
+                    <IconExamPaper size={13} color="var(--accent)" />
+                    {creatingRemediation ? '组卷中…' : '生成靶向巩固卷'}
+                  </button>
                   <button
                     type="button"
                     className="btn btn-surface btn-sm"
@@ -324,7 +432,9 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
                         `${activeReport.title}·讲评课件`,
                         '学科教学分析',
                         '班级讲评',
-                        JSON.stringify({ stats: activeReport.stats, narrative: activeReport.ai_narrative }, null, 2)
+                        formatAnalyticsForPpt(activeReport),
+                        'pedagogy',
+                        '教育测量与学情增值评价'
                       )
                     }
                   >
@@ -395,7 +505,7 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
                     {activeReport.stats.item_metrics.map((m) => (
                       <div key={m.item} style={{ fontSize: 12 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                          <span style={{ fontWeight: 600 }}>{m.item}</span>
+                          <span style={{ fontWeight: 600 }}><MathText inline text={m.item} /></span>
                           <span className="mono-num" style={{ fontWeight: 700, color: m.mastery_pct < 70 ? 'var(--seal)' : 'var(--success)' }}>
                             {m.mastery_pct}% (D={m.discrimination})
                           </span>
@@ -420,17 +530,17 @@ export const AnalyticsWorkspace: React.FC<AnalyticsWorkspaceProps> = ({
               <div style={{ padding: '14px 16px', background: 'var(--bg-subtle)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13.5, lineHeight: 1.68 }}>
                 <div>
                   <strong>整体学情判断：</strong>
-                  {activeReport.ai_narrative.overall_diagnosis}
+                  <MathText inline text={activeReport.ai_narrative.overall_diagnosis} />
                 </div>
                 <div>
                   <strong>薄弱环节归因：</strong>
-                  {activeReport.ai_narrative.weakness_attribution}
+                  <MathText inline text={activeReport.ai_narrative.weakness_attribution} />
                 </div>
                 <div>
                   <strong>分层靶向干预建议：</strong>
                   <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
                     {(activeReport.ai_narrative.teaching_interventions || []).map((t, i) => (
-                      <li key={i}>{t}</li>
+                      <li key={i}><MathText inline text={t} /></li>
                     ))}
                   </ul>
                 </div>

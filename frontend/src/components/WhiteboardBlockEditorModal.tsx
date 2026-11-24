@@ -19,6 +19,7 @@ interface WhiteboardBlockEditorModalProps {
   open: boolean;
   mode: 'add_block' | 'edit_block' | 'add_page';
   pageIndex: number;
+  totalPages?: number;
   initialBlock?: BoardBlock | null;
   saving: boolean;
   onClose: () => void;
@@ -37,6 +38,7 @@ export const WhiteboardBlockEditorModal: React.FC<WhiteboardBlockEditorModalProp
   open,
   mode,
   pageIndex,
+  totalPages,
   initialBlock,
   saving,
   onClose,
@@ -70,9 +72,10 @@ export const WhiteboardBlockEditorModal: React.FC<WhiteboardBlockEditorModalProp
       setNarration('');
       setTeachingTip('');
       setVisualExpr('');
-      setRoadmapTitle(`扩展板书 · 第 ${pageIndex + 1} 页`);
+      const nextPageNum = (typeof totalPages === 'number' && totalPages >= 0 ? totalPages : pageIndex) + 1;
+      setRoadmapTitle(`扩展板书 · 第 ${nextPageNum} 页`);
     }
-  }, [open, mode, initialBlock, pageIndex]);
+  }, [open, mode, initialBlock, pageIndex, totalPages]);
 
   if (!open) return null;
 
@@ -152,7 +155,7 @@ export const WhiteboardBlockEditorModal: React.FC<WhiteboardBlockEditorModalProp
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="hk-wb-grid-2">
             <div>
               <label className="field-label">重点提醒标签（可选）</label>
               <input

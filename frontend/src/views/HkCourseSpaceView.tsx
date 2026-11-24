@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { apiJson, handleSafeDownload, resolveApiUrl, uploadSourceFile } from '../services/api';
 import { CourseLecture, CourseRecord, LectureMastery, SourceDocMeta } from '../types';
 import { HkIcon, HkUploadBadge } from '../components/HkAssets';
@@ -55,6 +55,18 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
   const [quizSubmitted, setQuizSubmitted] = useState(false);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setActiveUnitIdx(0);
+    setEditingMeta(false);
+    setEditTitle(course.title);
+    setEditDesc(course.description || '');
+    setQuizLecture(null);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setNotice('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course.id]);
 
   const allLectures = course.units.flatMap((u) => u.lectures.map((l) => ({ unit: u.unit_index, lecture: l })));
   const nextStepTarget =
@@ -160,7 +172,13 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
   };
 
   const handleOpenQuiz = (lec: CourseLecture) => {
-    if (lec.kind === 'quiz' && course.linked_ids?.exam_id) {
+    if (lec.quiz_items && lec.quiz_items.length > 0) {
+      setQuizLecture(lec);
+      setQuizAnswers({});
+      setQuizSubmitted(false);
+      return;
+    }
+    if (course.linked_ids?.exam_id) {
       onOpenLinkedTool('exam', course.linked_ids.exam_id);
       return;
     }
@@ -341,17 +359,34 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
         {/* Left Panel Tab Body */}
         {leftTab === 'units' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {course.units.map((u) => (
-              <button
-                key={u.unit_index}
-                type="button"
-                className={`hk-unit-pill ${activeUnit?.unit_index === u.unit_index ? 'active' : ''}`}
-                onClick={() => setActiveUnitIdx(u.unit_index)}
-              >
-                <span className="hk-unit-num">{u.unit_index}</span>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.title}</span>
-              </button>
-            ))}
+            {course.units.map((u) => {
+              const masteredCount = u.lectures.filter((l) => l.mastery === 'mastered').length;
+              const totalCount = u.lectures.length;
+              return (
+                <button
+                  key={u.unit_index}
+                  type="button"
+                  className={`hk-unit-pill ${activeUnit?.unit_index === u.unit_index ? 'active' : ''}`}
+                  onClick={() => setActiveUnitIdx(u.unit_index)}
+                >
+                  <span className="hk-unit-num">{u.unit_index}</span>
+                  <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {u.title}
+                  </span>
+                  <span
+                    className="mono-num"
+                    style={{
+                      fontSize: 11.5,
+                      color: masteredCount === totalCount && totalCount > 0 ? '#166534' : '#6b7280',
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {masteredCount}/{totalCount}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -563,6 +598,7 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
                 key={lecture.id}
                 type="button"
                 title={`单元 ${unit} · ${lecture.title}（${MASTERY_LABEL[lecture.mastery]}，点击切换状态）`}
+                aria-label={`切换「${lecture.title}」掌握度（当前：${MASTERY_LABEL[lecture.mastery]}）`}
                 className={`hk-mastery-dot ${lecture.mastery}`}
                 onClick={() => handleCycleMastery(lecture)}
               >
@@ -624,7 +660,7 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
                         讲次 {lIdx + 1}：{lec.title}
                       </div>
                       <div style={{ fontSize: 13.5, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>
-                        {lec.summary}
+                        <MathText text={lec.summary} />
                       </div>
                     </div>
                     <button
@@ -682,6 +718,7 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
                       <button
                         type="button"
                         title={`当前掌握度：${MASTERY_LABEL[lec.mastery]}（点击切换）`}
+                        aria-label={`切换「${lec.title}」掌握度（当前：${MASTERY_LABEL[lec.mastery]}）`}
                         className={`hk-mastery-dot ${lec.mastery}`}
                         onClick={() => handleCycleMastery(lec)}
                       >
@@ -705,7 +742,7 @@ export const HkCourseSpaceView: React.FC<HkCourseSpaceViewProps> = ({
                 <span className="badge badge-info">随堂微测</span>
                 <h2 style={{ margin: '6px 0 0', fontSize: 19 }}>{quizLecture.title}</h2>
               </div>
-              <button type="button" className="hk-collapse-btn" onClick={() => setQuizLecture(null)}>
+              <button type="button" className="hk-collapse-btn" aria-label="关闭随堂微测" onClick={() => setQuizLecture(null)}>
                 ✕
               </button>
             </div>

@@ -52,11 +52,12 @@ _SAFE_LOCALS: dict[str, Any] = {
 
 
 def _normalize_expr_text(expr_str: str) -> str:
-    s = (expr_str or "").strip()
+    s = (expr_str or "").strip().rstrip("。.;；,")
     replacements = {
         "−": "-",
         "–": "-",
         "—": "-",
+        "′": "'",
         "×": "*",
         "·": "*",
         "÷": "/",
@@ -72,12 +73,25 @@ def _normalize_expr_text(expr_str: str) -> str:
     for k, v in replacements.items():
         s = s.replace(k, v)
     # Strip common LaTeX wrappers
-    s = s.replace("$", "").replace("\\left", "").replace("\\right", "")
-    s = re.sub(r"\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}", r"((\1)/(\2))", s)
-    s = re.sub(r"\\sqrt\s*\{([^{}]+)\}", r"sqrt(\1)", s)
+    s = s.replace("$", "")
+    s = re.sub(r"\\(?:left|right)(?![A-Za-z])", "", s)
+    s = re.sub(r"\\infty(?![A-Za-z])", "oo", s)
+    # Unwrap nested roots and \frac / \dfrac / \tfrac (up to 3 passes)
+    for _ in range(3):
+        prev = s
+        s = re.sub(r"\\sqrt\s*\[([^\]]+)\]\s*\{([^{}]+)\}", r"((\2)**(1/(\1)))", s)
+        s = re.sub(r"\\sqrt\s*\{([^{}]+)\}", r"sqrt(\1)", s)
+        s = re.sub(r"\\(?:d|t)?frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}", r"((\1)/(\2))", s)
+        if s == prev:
+            break
+    s = re.sub(r"\\sqrt\s*([0-9]+(?:\.[0-9]+)?|[A-Za-z])", r"sqrt(\1)", s)
+    # Normalize Unicode radical √(...) and √x / √3 (preserving implicit multiplication like 2√3)
+    s = re.sub(r"([0-9A-Za-z_\)])\s*√", r"\1*√", s)
+    s = re.sub(r"√\s*\(", "sqrt(", s)
+    s = re.sub(r"√\s*([0-9]+(?:\.[0-9]+)?|[A-Za-z_]\w*)", r"sqrt(\1)", s)
     s = s.replace("\\cdot", "*").replace("\\times", "*").replace("\\pi", "pi")
     s = re.sub(r"\\(sin|cos|tan|ln|log|exp)\b", r"\1", s)
-    return s.strip()
+    return s.strip().rstrip("。.;；,").strip()
 
 
 def safe_parse(expr_str: str) -> sp.Expr:
@@ -96,7 +110,10 @@ def run_symbolic_checks(
     passed_count = 0
     failed_count = 0
 
-    for idx, spec in enumerate(check_specs or [], start=1):
+    valid_specs = [c for c in (check_specs if isinstance(check_specs, list) else []) if isinstance(c, dict)]
+    valid_evidence = [c for c in (evidence_checks if isinstance(evidence_checks, list) else []) if isinstance(c, dict)]
+
+    for idx, spec in enumerate(valid_specs, start=1):
         ctype = str(spec.get("type", "evaluate")).strip().lower()
         label = str(spec.get("label") or f"核验项 #{idx}")
         try:
@@ -208,7 +225,8 @@ def run_symbolic_checks(
 
             else:
                 expr = safe_parse(str(spec.get("expr") or spec.get("equation") or ""))
-                subs_raw = dict(spec.get("subs") or {})
+                raw_subs = spec.get("subs")
+                subs_raw = dict(raw_subs) if isinstance(raw_subs, dict) else {}
                 if not subs_raw:
                     var_name = str(spec.get("var") or "x")
                     for key in ("point", "at", "value", var_name):
@@ -234,9 +252,9 @@ def run_symbolic_checks(
         except Exception as exc:
             results.append({"label": label, "type": ctype, "passed": False, "detail": f"符号解析提示（需人工复核）：{exc}"})
 
-    if not results and evidence_checks:
+    if not results and valid_evidence:
         ev_results: list[dict[str, Any]] = []
-        for idx, ev in enumerate(evidence_checks[:5], start=1):
+        for idx, ev in enumerate(valid_evidence[:5], start=1):
             ev_label = str(ev.get("label") or ev.get("criterion") or f"思辨/史料核验 #{idx}")
             ev_detail = str(ev.get("detail") or ev.get("basis") or "已完成文本/概念边界校验")
             ev_results.append({"label": ev_label, "type": "evidence", "passed": True, "detail": ev_detail})
@@ -272,9 +290,9 @@ def run_symbolic_checks(
 
 def verify_freeform_expression(expr_or_eq: str) -> dict[str, Any]:
     """Quick standalone symbolic verifier endpoint helper returning KaTeX-ready LaTeX."""
-    raw = (expr_or_eq or "").strip()
-    if "=" in raw and "==" not in raw:
-        lhs_s, rhs_s = raw.split("=", 1)
+    raw = re.sub(r"(?<![<>!])={2,}", "=", (expr_or_eq or "").strip())
+    if re.search(r"(?<![<>!])=(?!=)", raw):
+        lhs_s, rhs_s = re.split(r"(?<![<>!])=(?!=)", raw, maxsplit=1)
         try:
             lhs = safe_parse(lhs_s)
             rhs = safe_parse(rhs_s)
@@ -292,10 +310,12 @@ def verify_freeform_expression(expr_or_eq: str) -> dict[str, Any]:
             return {"status": "needs_review", "badge": "无法自动解析", "detail": str(exc)}
     try:
         expr = safe_parse(raw)
+        if isinstance(expr, bool) or not isinstance(expr, sp.Expr):
+            return {"status": "needs_review", "badge": "布尔关系待转换", "detail": str(expr)}
         x = _SAFE_LOCALS["x"]
         simp = sp.simplify(expr)
         details = [f"化简：${sp.latex(simp)}$"]
-        if x in expr.free_symbols:
+        if isinstance(expr, sp.Expr) and x in expr.free_symbols:
             d1 = sp.simplify(sp.diff(expr, x))
             integ = sp.simplify(sp.integrate(expr, x))
             details.append(f"一阶导数：${sp.latex(d1)}$")
@@ -337,6 +357,9 @@ def sample_function_plot(
     except Exception as exc:
         return {"ok": False, "error": f"表达式无法解析: {exc}"}
 
+    if not isinstance(expr, sp.Expr):
+        return {"ok": False, "error": "仅支持标量代数/初等函数表达式绘图"}
+
     if x not in expr.free_symbols and not expr.is_number:
         return {"ok": False, "error": "暂仅支持以 x 为自变量的一元函数绘图"}
 
@@ -354,8 +377,14 @@ def sample_function_plot(
         x_lo = 0.15
         x_hi = max(4.2, x_hi)
 
-    f_fn = sp.lambdify(x, expr, modules=["math"])
-    df_fn = sp.lambdify(x, d1, modules=["math"])
+    try:
+        f_fn = sp.lambdify(x, expr, modules=["math"])
+    except Exception:
+        f_fn = None
+    try:
+        df_fn = sp.lambdify(x, d1, modules=["math"])
+    except Exception:
+        df_fn = None
 
     raw_samples: list[dict[str, float | None]] = []
     valid_ys: list[float] = []
@@ -365,16 +394,29 @@ def sample_function_plot(
         xv = x_lo + i * step
         yv: float | None = None
         dyv: float | None = None
-        try:
-            yv = _is_finite_real(f_fn(xv))
-        except Exception:
+        if f_fn is not None:
+            try:
+                yv = _is_finite_real(f_fn(xv))
+            except Exception:
+                try:
+                    yv = _is_finite_real(expr.subs(x, xv).evalf())
+                except Exception:
+                    yv = None
+        else:
             try:
                 yv = _is_finite_real(expr.subs(x, xv).evalf())
             except Exception:
                 yv = None
-        try:
-            dyv = _is_finite_real(df_fn(xv))
-        except Exception:
+
+        if df_fn is not None:
+            try:
+                dyv = _is_finite_real(df_fn(xv))
+            except Exception:
+                try:
+                    dyv = _is_finite_real(d1.subs(x, xv).evalf())
+                except Exception:
+                    dyv = None
+        else:
             try:
                 dyv = _is_finite_real(d1.subs(x, xv).evalf())
             except Exception:
@@ -521,12 +563,13 @@ def extract_plottable_expression(question: str, sympy_checks: list[dict[str, Any
         except Exception:
             pass
 
-    for chk in sympy_checks or []:
+    safe_checks = [c for c in (sympy_checks if isinstance(sympy_checks, list) else []) if isinstance(c, dict)]
+    for chk in safe_checks:
         if chk.get("type") in ("derivative", "extrema", "evaluate") and chk.get("expr"):
             cand = str(chk["expr"]).strip()
             try:
                 parsed = safe_parse(cand)
-                if _SAFE_LOCALS["x"] in parsed.free_symbols and len(parsed.free_symbols) == 1:
+                if isinstance(parsed, sp.Expr) and _SAFE_LOCALS["x"] in parsed.free_symbols and len(parsed.free_symbols) == 1:
                     if parsed.has(sp.log) and default_range[0] <= 0:
                         return cand, (0.15, max(4.0, default_range[1]))
                     return cand, default_range
@@ -534,20 +577,24 @@ def extract_plottable_expression(question: str, sympy_checks: list[dict[str, Any
                 continue
 
     # Regex fallback on question string: match f(x) = ... until Chinese char, comma, semicolon, dollar, or newline
-    m_fn = re.search(
-        r"(?:[fgh]\s*\(\s*x\s*\)|y)\s*=\s*([A-Za-z0-9 \t\+\-\*/\^\(\)\\{}\.²³]+)",
+    for m_fn in re.finditer(
+        r"(?<![A-Za-z_])(?:[fgh]\s*\(\s*x\s*\)|y)\s*=\s*([A-Za-z0-9 \t\+\-\*/\^\(\)\\{}\.²³]+)",
         question or "",
-    )
-    if m_fn:
+    ):
         cand = m_fn.group(1).strip().rstrip(".,;，。；$ ")
+        while cand.count("(") > cand.count(")"):
+            cand = cand[: cand.rfind("(")].strip()
+        cand = cand.rstrip(".,;，。；$ ")
+        if not cand:
+            continue
         try:
             parsed = safe_parse(cand)
-            if _SAFE_LOCALS["x"] in parsed.free_symbols and len(parsed.free_symbols) == 1:
+            if isinstance(parsed, sp.Expr) and _SAFE_LOCALS["x"] in parsed.free_symbols and len(parsed.free_symbols) == 1:
                 if parsed.has(sp.log) and default_range[0] <= 0:
                     return cand, (0.15, max(4.0, default_range[1]))
                 return cand, default_range
         except Exception:
-            pass
+            continue
 
     return None
 
@@ -573,6 +620,9 @@ def sample_surface_3d(
     except Exception as exc:
         return {"ok": False, "error": f"二元表达式解析失败: {exc}"}
 
+    if not isinstance(expr, sp.Expr):
+        return {"ok": False, "error": "仅支持标量代数/初等函数表达式绘图"}
+
     bad_syms = [s for s in expr.free_symbols if s not in (x, y)]
     if bad_syms:
         return {"ok": False, "error": f"3D 曲面暂支持自变量 x 与 y（检测到未知符号: {', '.join(str(s) for s in bad_syms)}）"}
@@ -588,11 +638,22 @@ def sample_surface_3d(
     surface_feature = "多元空间连续曲面"
     try:
         crit_pts = sp.solve([fx, fy], (x, y), dict=True)
+        real_pt: tuple[float, float] | None = None
         if crit_pts and isinstance(crit_pts, list):
-            p0 = crit_pts[0]
-            h_val = _is_finite_real(hess.subs(p0).evalf())
-            xx_val = _is_finite_real(fxx.subs(p0).evalf())
-            pt_lbl = f"({round(float(p0.get(x, 0)), 2):g}, {round(float(p0.get(y, 0)), 2):g})"
+            for cand_p in crit_pts:
+                if not isinstance(cand_p, dict):
+                    continue
+                px = _is_finite_real(sp.sympify(cand_p.get(x, 0)).evalf())
+                py = _is_finite_real(sp.sympify(cand_p.get(y, 0)).evalf())
+                if px is not None and py is not None:
+                    real_pt = (px, py)
+                    break
+        if real_pt is not None:
+            px, py = real_pt
+            p0_num = {x: px, y: py}
+            h_val = _is_finite_real(hess.subs(p0_num).evalf())
+            xx_val = _is_finite_real(fxx.subs(p0_num).evalf())
+            pt_lbl = f"({round(px, 2):g}, {round(py, 2):g})"
             if h_val is not None:
                 if h_val < -1e-5:
                     surface_feature = f"驻点 {pt_lbl}：马鞍点（曲面呈双曲异号特征）"
@@ -614,22 +675,35 @@ def sample_surface_3d(
 
     n = max(13, min(33, int(grid_size)))
     x_lo, x_hi = float(min(x_min, x_max)), float(max(x_min, x_max))
+    if abs(x_hi - x_lo) < 0.2:
+        x_hi = x_lo + 4.0
     y_lo, y_hi = float(min(y_min, y_max)), float(max(y_min, y_max))
+    if abs(y_hi - y_lo) < 0.2:
+        y_hi = y_lo + 4.0
     dx = (x_hi - x_lo) / (n - 1)
     dy = (y_hi - y_lo) / (n - 1)
     x_vals = [round(x_lo + i * dx, 4) for i in range(n)]
     y_vals = [round(y_lo + j * dy, 4) for j in range(n)]
 
-    fn = sp.lambdify((x, y), expr, modules=["math"])
+    try:
+        fn = sp.lambdify((x, y), expr, modules=["math"])
+    except Exception:
+        fn = None
     z_grid: list[list[float | None]] = []
     valid_zs: list[float] = []
     for yv in y_vals:
         row: list[float | None] = []
         for xv in x_vals:
             zv: float | None = None
-            try:
-                zv = _is_finite_real(fn(xv, yv))
-            except Exception:
+            if fn is not None:
+                try:
+                    zv = _is_finite_real(fn(xv, yv))
+                except Exception:
+                    try:
+                        zv = _is_finite_real(expr.subs({x: xv, y: yv}).evalf())
+                    except Exception:
+                        zv = None
+            else:
                 try:
                     zv = _is_finite_real(expr.subs({x: xv, y: yv}).evalf())
                 except Exception:

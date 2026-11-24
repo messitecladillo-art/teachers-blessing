@@ -802,3 +802,202 @@ def test_whiteboard_teach_step_board_crud_and_quiz() -> None:
         client.delete(f"/api/courses/{crs_id}")
 
 
+def test_v50_tts_left_right_and_math_verifier_edges() -> None:
+    from engines.math_verifier import extract_plottable_expression, sample_surface_3d, verify_freeform_expression
+    from engines.tts_narrator import latex_to_spoken_zh
+
+    spoken = latex_to_spoken_zh(r"\left( \frac{1}{x} \right) \le 0, a_n \to \infty")
+    assert "ft" not in spoken
+    assert "小于等于" in spoken
+    assert "下标" in spoken
+    assert "趋近于" in spoken
+
+    spoken_ext = latex_to_spoken_zh(r"A^\top, \sum_{k=1}^n \tfrac{1}{k}, \int_0^1 x dx, \emptyset")
+    assert "趋近于 p" not in spoken_ext
+    assert "求和" in spoken_ext
+    assert "积分" in spoken_ext
+    assert "空集" in spoken_ext
+    assert "分之" in spoken_ext
+
+    extracted = extract_plottable_expression("已知 log(x) = x - 1，讨论 f(x) = x^2 - 1 (x > 0)")
+    assert extracted is not None
+    assert extracted[0] == "x^2 - 1"
+    assert extract_plottable_expression("已知 velocity = 2*x") is None
+
+    ver = verify_freeform_expression("x^2 - 1 == 0")
+    assert ver["status"] == "verified"
+
+    surf = sample_surface_3d("x^3 + x + y^2", x_min=1.0, x_max=1.0, y_min=0.0, y_max=0.0)
+    assert surf["ok"] is True
+    assert (surf["x_vals"][-1] - surf["x_vals"][0]) >= 3.9
+    assert (surf["y_vals"][-1] - surf["y_vals"][0]) >= 3.9
+
+
+def test_v50_exam_grading_accuracy_and_errorbook_dedup() -> None:
+    import uuid
+    from routers.courses import _build_weekly_tracker, _recompute_progress, _safe_int, _safe_json_loads
+    from routers.exam import _answers_match, _grade_single_question
+
+    assert _answers_match("100", "10") is False
+    assert _answers_match("不是单调递增", "单调递增") is False
+    assert _answers_match("x = 2", "2") is True
+    assert _answers_match("2", "x = 2") is True
+
+    earned_ms, _, ok_ms, _ = _grade_single_question(
+        {"score": 6, "options": ["A. 1", "B. 2", "C. 3"], "answer": "AC"},
+        "C, A",
+    )
+    assert ok_ms is True and earned_ms == 6.0
+
+    earned_pt, _, ok_pt, _ = _grade_single_question(
+        {"score": 10, "parts": [{"points": 4, "answer": "1"}, {"answer": "2"}]},
+        {"0": "1", "1": ""},
+    )
+    assert ok_pt is False and earned_pt < 10.0
+
+    pct, st, next_lec = _recompute_progress(
+        [{"unit_index": 1, "lectures": [{"id": "l1", "title": "讲1", "mastery": "mastered"}]}]
+    )
+    assert pct == 100 and st == "completed" and next_lec is None
+
+    mock_units = [
+        {
+            "unit_index": 1,
+            "lectures": [
+                {"id": "l1", "title": "讲1", "mastery": "mastered"},
+                {"id": "l2", "title": "讲2", "mastery": "unstarted"},
+            ],
+        }
+    ]
+    _, _, nxt = _recompute_progress(mock_units)
+    tracker = _build_weekly_tracker(
+        [{"id": "c1", "title": "课程1", "status": "in_progress", "last_lecture_id": "l1", "units": mock_units, "next_lecture": nxt}]
+    )
+    assert tracker["continue_learning"]["lecture_id"] == "l2"
+    assert _safe_int("15分钟", 16) == 15
+    assert _safe_json_loads("{bad", []) == []
+
+    q_unique = f"测试错题幂等去重_{uuid.uuid4().hex[:8]}：求 f(x)=x^2 的极小值点。"
+    with TestClient(app) as client:
+        r1 = client.post(
+            "/api/tutor/error-book",
+            json={
+                "subject": "高中数学",
+                "grade_level": "高二年级",
+                "topic_tag": "极值点定义",
+                "question_text": q_unique,
+                "my_mistake": "第一次保存错因",
+                "key_takeaway": "初版总结",
+                "solution_json": {"final_answer": "x = 0"},
+            },
+        )
+        assert r1.status_code == 200 and r1.json()["ok"] is True
+        eid = r1.json()["id"]
+
+        r2 = client.post(
+            "/api/tutor/error-book",
+            json={
+                "subject": "高中数学",
+                "grade_level": "高二年级",
+                "topic_tag": "极值点定义",
+                "question_text": q_unique,
+                "my_mistake": "更新后的错因笔记",
+                "key_takeaway": "更新后的核心收获",
+                "solution_json": {"final_answer": "x = 0", "verified": True},
+            },
+        )
+        assert r2.status_code == 200 and r2.json()["ok"] is True
+        assert r2.json()["id"] == eid
+        assert r2.json()["deduplicated"] is True
+
+        all_items = client.get("/api/tutor/error-book").json()["items"]
+        matched = [it for it in all_items if it["question_text"] == q_unique]
+        assert len(matched) == 1
+        assert matched[0]["my_mistake"] == "更新后的错因笔记"
+
+        client.delete(f"/api/tutor/error-book/{eid}")
+
+        bad_expr = client.post(
+            "/api/agent/insert-visual",
+            json={"target": "ppt", "visual_title": "非法表达式测试", "expr": "invalid_func(???"},
+        )
+        assert bad_expr.status_code == 400
+
+        empty_expr = client.post(
+            "/api/agent/insert-visual",
+            json={"target": "ppt", "visual_title": "空表达式测试", "expr": "   "},
+        )
+        assert empty_expr.status_code == 400
+
+        bad_target = client.post(
+            "/api/agent/insert-visual",
+            json={"target": "invalid_doc", "visual_title": "非法目标测试", "expr": "x^2"},
+        )
+        assert bad_target.status_code == 400
+
+        empty_solve = client.post("/api/tutor/solve", json={"question": "   "})
+        assert empty_solve.status_code == 400
+
+
+def test_v50_round2_verifier_grading_and_tts_edges() -> None:
+    from engines.math_verifier import safe_parse, sample_surface_3d
+    from engines.tts_narrator import latex_to_spoken_zh
+    from routers.courses import _safe_int
+    from routers.exam import _answers_match, _grade_single_question
+
+    # 1. Non-scalar / relational / bare function plot guards + Unicode/nested LaTeX normalization
+    assert sample_function_plot("1, 2")["ok"] is False
+    assert sample_function_plot("True")["ok"] is False
+    assert sample_function_plot("sin")["ok"] is False
+    assert sample_surface_3d("x > 0")["ok"] is False
+    assert sample_surface_3d("1, 2")["ok"] is False
+    assert safe_parse(r"\frac{\sqrt{3}}{2}。") == safe_parse("√3 / 2")
+    assert safe_parse("√(x + 1)") == safe_parse(r"\sqrt{x + 1}")
+    guarded_checks = run_symbolic_checks(["not_a_dict", None], evidence_checks=["bad_ev", {"label": "条件核验", "detail": "成立"}])  # type: ignore[list-item]
+    assert guarded_checks["status"] == "verified" and guarded_checks["total"] == 1
+
+    # 2. Exam algebraic equation, multi-blank, interval/set & single-choice prefix grading
+    assert _answers_match("1 = 2", "3 = 5") is False
+    assert _answers_match("2*x - 4 = 0", "x = 2") is True
+    assert _answers_match("0.5, -2", "1/2, -2") is True
+    assert _answers_match("1/10。", "0.1") is True
+    assert _answers_match("[-sqrt(3), sqrt(3)]", r"$[-\sqrt{3}, \sqrt{3}]$") is True
+    assert _answers_match("{sqrt(3), -sqrt(3)}", r"$\{-\sqrt{3}, \sqrt{3}\}$") is True
+    assert _answers_match("[-1, 1]", "(-1, 1)") is False
+
+    assert _grade_single_question({"type": "single_choice", "answer": "D. e^x + C", "points": 5}, "D")["correct"] is True
+    assert _grade_single_question({"type": "single_choice", "answer": "A", "points": 5}, "ABCD")["correct"] is False
+    assert _grade_single_question({"type": "single_choice", "answer": "A", "points": 5}, ["A", "B"])["correct"] is False
+
+    # 3. Course numeric finiteness & TTS blockquote / inequality / nested fraction narration
+    assert _safe_int(float("nan"), 16) == 16
+    assert _safe_int(float("inf"), 16) == 16
+
+    spoken_ineq = latex_to_spoken_zh(r"$f'(x) > 0$")
+    assert "大于" in spoken_ineq
+    spoken_frac_sqrt = latex_to_spoken_zh(r"$\frac{\sqrt{3}}{2}$")
+    assert "分之" in spoken_frac_sqrt and "根号下" in spoken_frac_sqrt
+    spoken_quote = latex_to_spoken_zh("> 重点提示：定义域优先")
+    assert "大于" not in spoken_quote
+
+    with TestClient(app) as client:
+        crs = client.get("/api/courses/crs_showcase_01").json()["course"]
+        lec_1_1 = crs["units"][0]["lectures"][0]
+        assert lec_1_1["id"] == "lec_crs1_1_1"
+        assert lec_1_1.get("annotations") == []
+
+        bad_tts = client.post(
+            "/api/courses/crs_showcase_01/lectures/lec_crs1_1_1/tts",
+            json={"text": "$$$", "voice": "zh_female_clear"},
+        )
+        assert bad_tts.status_code == 400
+
+        bad_plot = client.post("/api/tutor/plot-function", json={"expression": "1, 2"})
+        assert bad_plot.status_code == 200 and bad_plot.json()["ok"] is False
+
+        bad_surf = client.post("/api/tutor/plot-surface-3d", json={"expression": "x > 0"})
+        assert bad_surf.status_code == 200 and bad_surf.json()["ok"] is False
+
+
+
+

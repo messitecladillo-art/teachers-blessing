@@ -119,13 +119,18 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
     }
   };
 
-  const handleQuickRemediation = async () => {
+  const handleQuickRemediation = async (targetTopics?: string[]) => {
+    const chosen =
+      targetTopics && targetTopics.length > 0
+        ? targetTopics
+        : weakTopics.slice(0, 3).map((w) => w.topic_tag);
     try {
-      const res = await apiJson<{ exam_record: { id: string } }>('/api/agent/memory/remediation-quiz', {
+      const res = await apiJson<{ exam_record?: { id: string }; exam_id?: string }>('/api/agent/memory/remediation-quiz', {
         method: 'POST',
-        body: JSON.stringify({ topics: weakTopics.slice(0, 3).map((w) => w.topic_tag), count: 4 }),
+        body: JSON.stringify({ topics: chosen, weak_topics: chosen, count: 4 }),
       });
-      if (res.exam_record?.id) onStartRemediationExam(res.exam_record.id);
+      const examId = res.exam_record?.id || res.exam_id;
+      if (examId) onStartRemediationExam(examId);
     } catch {
       /* ignore */
     }
@@ -167,20 +172,20 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
   const completedTasks = calendarTasks.filter((t) => t.completed);
 
   const prevMonth = () => {
-    if (viewMonth === 0) {
-      setViewYear((y) => y - 1);
-      setViewMonth(11);
-    } else {
-      setViewMonth((m) => m - 1);
-    }
+    const nextYear = viewMonth === 0 ? viewYear - 1 : viewYear;
+    const nextM = viewMonth === 0 ? 11 : viewMonth - 1;
+    const maxDay = new Date(nextYear, nextM + 1, 0).getDate();
+    setViewYear(nextYear);
+    setViewMonth(nextM);
+    setSelectedDay((d) => Math.min(d, maxDay));
   };
   const nextMonth = () => {
-    if (viewMonth === 11) {
-      setViewYear((y) => y + 1);
-      setViewMonth(0);
-    } else {
-      setViewMonth((m) => m + 1);
-    }
+    const nextYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+    const nextM = viewMonth === 11 ? 0 : viewMonth + 1;
+    const maxDay = new Date(nextYear, nextM + 1, 0).getDate();
+    setViewYear(nextYear);
+    setViewMonth(nextM);
+    setSelectedDay((d) => Math.min(d, maxDay));
   };
 
   return (
@@ -393,7 +398,7 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
               {creatingPlan ? '生成中…' : '+ 生成7日学习计划'}
             </button>
             {weakTopics.length > 0 && (
-              <button type="button" className="btn btn-surface btn-sm" onClick={handleQuickRemediation}>
+              <button type="button" className="btn btn-surface btn-sm" onClick={() => handleQuickRemediation()}>
                 薄弱点立刻强化测验
               </button>
             )}
@@ -415,7 +420,11 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
                         {w.mistake_patterns[0] ? ` · ${w.mistake_patterns[0]}` : ''}
                       </div>
                     </div>
-                    <button type="button" className="btn btn-primary btn-sm" onClick={handleQuickRemediation}>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleQuickRemediation([w.topic_tag])}
+                    >
                       安排专项练习
                     </button>
                   </div>
@@ -483,6 +492,22 @@ export const HkLearningFeedView: React.FC<HkLearningFeedViewProps> = ({ onStartR
                             {tk.title}
                           </div>
                         ))}
+                        {dayTasks.length > 2 && (
+                          <div
+                            className="mono-num"
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: '#3b4f7d',
+                              background: '#f1f5f9',
+                              borderRadius: 4,
+                              padding: '1px 5px',
+                              alignSelf: 'flex-start',
+                            }}
+                          >
+                            +{dayTasks.length - 2}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

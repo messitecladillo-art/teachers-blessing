@@ -23,7 +23,48 @@ interface LessonWorkspaceProps {
   externalLessonId?: string | null;
   onConsumeExternalLesson?: () => void;
   onArtifactsChanged: () => void;
-  onGeneratePptFromLesson: (title: string, subject: string, grade: string, material: string) => void;
+  onGeneratePptFromLesson: (
+    title: string,
+    subject: string,
+    grade: string,
+    material: string,
+    domain?: string,
+    branch?: string
+  ) => void;
+}
+
+function formatLessonForPpt(draft: LessonContent, domainId: string, branch: string): string {
+  const lines: string[] = [
+    `# ${draft.title}`,
+    `- 学科与学段：${draft.subject} · ${draft.grade_level}`,
+    `- 学科领域与分支：${domainId} · ${branch}`,
+    `- 课型与时长：${draft.lesson_type}（${draft.duration}）`,
+    '',
+    '## 一、教学目标',
+    ...(draft.objectives || []).map((o, idx) => `${idx + 1}. ${o}`),
+    '',
+    '## 二、学情与教学重难点',
+    `- 学情分析：${draft.learner_analysis || ''}`,
+    `- 教学重点：${draft.key_points || ''}`,
+    `- 教学难点：${draft.difficult_points || ''}`,
+    '',
+    '## 三、结构化教学过程',
+    ...(draft.teaching_steps || []).map(
+      (st, idx) =>
+        `${idx + 1}. 【${st.phase}｜${st.duration}】教师：${st.teacher_activity}；学生：${st.student_activity}；意图：${st.design_intent}`
+    ),
+    '',
+    '## 四、结构化板书设计',
+    draft.blackboard_design || '',
+  ];
+  if (draft.exercises?.length) {
+    lines.push(
+      '',
+      '## 五、分层随堂练习',
+      ...draft.exercises.map((ex, idx) => `${idx + 1}. [${ex.tier}] ${ex.question}（解析：${ex.solution}）`)
+    );
+  }
+  return lines.join('\n');
 }
 
 const LESSON_PRESETS = [
@@ -74,13 +115,16 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
         setActiveLesson(res.lessons[0]);
         setDraft(res.lessons[0].content);
       }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加载教案列表失败');
     } finally {
       setLoadingLessons(false);
     }
   };
 
   useEffect(() => {
-    loadLessons().catch(() => {});
+    void loadLessons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -92,10 +136,16 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
         if (found) {
           setActiveLesson(found);
           setDraft(found.content);
+          setLatestArtifact(null);
+          setSaveToast('');
+          setErrorMsg('');
+          setRewriteTarget(null);
           setViewMode('paper');
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        setErrorMsg(err instanceof Error ? err.message : '加载指定教案失败');
+      })
       .finally(() => onConsumeExternalLesson?.());
   }, [externalLessonId, onConsumeExternalLesson]);
 
@@ -104,7 +154,11 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
       setTopic(transferPayload.title);
       setSubject(transferPayload.subject);
       setGradeLevel(transferPayload.grade_level);
+      if (transferPayload.domain) setDomainId(transferPayload.domain);
+      if (transferPayload.branch) setBranch(transferPayload.branch);
       setFromTutorCtx(transferPayload.context_summary);
+      setErrorMsg('');
+      setSaveToast('');
       onConsumeTransfer();
     }
   }, [transferPayload, onConsumeTransfer]);
@@ -112,6 +166,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setErrorMsg('');
     try {
       const res = await uploadSourceFile(file);
       setUploadedFilename(res.filename);
@@ -127,6 +182,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
     setStageMsg('正在生成教案…');
     setThinkingText('');
     setErrorMsg('');
+    setSaveToast('');
 
     try {
       await postSseStream<{ lesson: LessonRecord; artifact: ArtifactItem }>(
@@ -166,6 +222,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
     if (!activeLesson || !draft) return;
     setSaving(true);
     setSaveToast('');
+    setErrorMsg('');
     try {
       const res = await apiJson<{ edit_count: number; edited_char_delta: number; artifact: ArtifactItem }>(
         `/api/lesson/${activeLesson.id}`,
@@ -183,6 +240,8 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
       setLatestArtifact(res.artifact);
       setSaveToast(`修改已保存（累计修订 ${res.edit_count} 次，变更 ${res.edited_char_delta} 字）。`);
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '保存教案修改失败');
     } finally {
       setSaving(false);
     }
@@ -191,6 +250,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
   const handleRewriteSection = async (sectionKey: string, instruction: string) => {
     if (!activeLesson || !instruction.trim()) return;
     setRewritingKey(sectionKey);
+    setErrorMsg('');
     try {
       const res = await apiJson<{ content: LessonContent; artifact: ArtifactItem; edit_count: number }>(
         `/api/lesson/${activeLesson.id}/rewrite-section`,
@@ -204,6 +264,8 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
       setRewriteTarget(null);
       setSaveToast('局部内容已更新，教案文件已同步保存。');
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '局部内容重写失败');
     } finally {
       setRewritingKey(null);
     }
@@ -313,6 +375,8 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                     setDraft(l.content);
                     setLatestArtifact(null);
                     setSaveToast('');
+                    setErrorMsg('');
+                    setRewriteTarget(null);
                   }}
                 >
                   <span className="spine-item-text" style={{ fontSize: 12.5 }}>{l.title}</span>
@@ -398,7 +462,9 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                         draft.title,
                         draft.subject,
                         draft.grade_level,
-                        JSON.stringify(draft, null, 2)
+                        formatLessonForPpt(draft, domainId, branch),
+                        domainId,
+                        branch
                       )
                     }
                     data-testid="btn-lesson-to-ppt"
@@ -422,7 +488,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                       教学设计方案
                     </div>
                     <h1 className="serif-heading" style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 600 }}>
-                      {draft.title}
+                      <MathText inline text={draft.title} />
                     </h1>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--ink-secondary)' }}>
                       <span>学科：{draft.subject}</span>
@@ -468,10 +534,14 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                   {/* Section 2 */}
                   <section style={{ marginBottom: 20 }}>
                     <h3 className="serif-heading" style={{ margin: '0 0 10px', fontSize: 15.5, color: 'var(--accent)' }}>二、学情预判与教学重难点</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, fontSize: 13.5, lineHeight: 1.7 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, fontSize: 13.5, lineHeight: 1.7 }}>
                       <div style={{ padding: '2px 0 4px 12px', borderLeft: '2px solid var(--border-strong)' }}>
                         <strong style={{ color: 'var(--ink-primary)' }}>学情前置分析：</strong>
                         <MathText text={draft.learner_analysis} />
+                      </div>
+                      <div style={{ padding: '2px 0 4px 12px', borderLeft: '2px solid var(--accent)' }}>
+                        <strong style={{ color: 'var(--ink-primary)' }}>教学重点：</strong>
+                        <MathText text={draft.key_points || ''} />
                       </div>
                       <div style={{ padding: '2px 0 4px 12px', borderLeft: '2px solid var(--border-strong)' }}>
                         <strong style={{ color: 'var(--ink-primary)' }}>教学难点与突破：</strong>
@@ -519,7 +589,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                           {(draft.teaching_steps || []).map((st, idx) => (
                             <tr key={idx}>
                               <td style={{ fontWeight: 700 }}>
-                                <div>{st.phase}</div>
+                                <div><MathText inline text={st.phase} /></div>
                                 <div className="mono-num" style={{ fontSize: 11.5, color: 'var(--accent)', marginTop: 2 }}>{st.duration}</div>
                               </td>
                               <td><MathText text={st.teacher_activity} /></td>
@@ -573,7 +643,7 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                         {(draft.verification_checklist || []).map((c, i) => (
                           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '7px 2px', borderBottom: '1px solid var(--border-hairline)' }}>
                             <IconVerifyCheck size={14} color="var(--success)" style={{ marginTop: 2, flexShrink: 0 }} />
-                            <span style={{ lineHeight: 1.6 }}>{c}</span>
+                            <span style={{ lineHeight: 1.6 }}><MathText inline text={c} /></span>
                           </div>
                         ))}
                       </div>
@@ -590,10 +660,14 @@ export const LessonWorkspace: React.FC<LessonWorkspaceProps> = ({
                     <label className="field-label">一、教学目标（每行一条）</label>
                     <textarea className="textarea" rows={3} value={(draft.objectives || []).join('\n')} onChange={(e) => setDraft({ ...draft, objectives: e.target.value.split('\n') })} />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                     <div>
                       <label className="field-label">二、学情前置分析</label>
                       <textarea className="textarea" rows={3} value={draft.learner_analysis} onChange={(e) => setDraft({ ...draft, learner_analysis: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="field-label">教学重点</label>
+                      <textarea className="textarea" rows={3} value={draft.key_points || ''} onChange={(e) => setDraft({ ...draft, key_points: e.target.value })} />
                     </div>
                     <div>
                       <label className="field-label">教学难点与突破策略</label>

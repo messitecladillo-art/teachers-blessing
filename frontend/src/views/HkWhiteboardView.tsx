@@ -1,12 +1,14 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiJson, isStaticDemoMode, postEventStream, resolveApiUrl } from '../services/api';
-import { BoardBlock, CourseLecture, CourseRecord, MindMapRecord } from '../types';
-import { FunctionPlotCard } from '../components/FunctionPlotCard';
+import { BoardBlock, CourseLecture, CourseRecord, MindMapRecord, SandboxPresetConfig } from '../types';
 import { MathText } from '../components/MathText';
 import { HkIcon, HkMascot } from '../components/HkAssets';
 import { buildBlockNarration, extractPlottableFromBlock, latexToSpokenZh } from '../utils/speechMath';
 import type { BoardEditorPayload } from '../components/WhiteboardBlockEditorModal';
 
+const FunctionPlotCard = lazy(() =>
+  import('../components/FunctionPlotCard').then((m) => ({ default: m.FunctionPlotCard }))
+);
 const MindMapDrawioWorkbench = lazy(() =>
   import('../components/MindMapDrawioWorkbench').then((m) => ({ default: m.MindMapDrawioWorkbench }))
 );
@@ -41,7 +43,9 @@ const BLOCK_TYPE_BADGES: Record<string, { label: string; cls: string }> = {
   summary: { label: '课堂小结', cls: 'hk-wb-type-summary' },
 };
 
-const STROKES_STORAGE_KEY = 'eduforge_wb_strokes_v1';
+const STROKES_STORAGE_KEY = 'eduforge_wb_strokes_v50';
+const GROUP_Z6_PRESET: SandboxPresetConfig = { preset_id: 'cyclic_group', dimension: '2d' };
+const RIEMANN_PRESET: SandboxPresetConfig = { preset_id: 'complex_surface', dimension: '3d' };
 
 interface SavedStroke {
   id: string;
@@ -88,7 +92,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       ? flatLectures[currentLectureIdx + 1]
       : null;
 
-  const [boardMode, setBoardMode] = useState<'board' | 'visual' | 'mindmap' | 'quiz'>('board');
+  const [boardMode, setBoardMode] = useState<'board' | 'split' | 'visual' | 'mindmap' | 'quiz'>('board');
   const [classroomRole, setClassroomRole] = useState<'self_study' | 'teaching'>(() =>
     course.mode === 'teaching' ? 'teaching' : 'self_study'
   );
@@ -97,6 +101,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   const [pageIdx, setPageIdx] = useState(0);
   const [drawerWidth, setDrawerWidth] = useState(375);
   const [focusMode, setFocusMode] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [handwritingFont, setHandwritingFont] = useState(true);
   const [showDots, setShowDots] = useState(true);
   const [speechRate, setSpeechRate] = useState(1.1);
@@ -113,7 +118,11 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   const [elapsedSec, setElapsedSec] = useState(0);
 
   // Visual / Plot bridge state
-  const [visualExprOverride, setVisualExprOverride] = useState('');
+  const [visualExprOverride, setVisualExprOverride] = useState(() => {
+    const firstPg = (foundLecture?.board_pages || []).find((pg) => (pg.blocks || []).length > 0);
+    const firstBlk = firstPg?.blocks?.[0];
+    return (firstBlk ? extractPlottableFromBlock(firstBlk) : '') || '';
+  });
 
   // Modals & Highlights
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -121,12 +130,14 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   const [pulsedBlockId, setPulsedBlockId] = useState<string>('');
   const [focusedBlockId, setFocusedBlockId] = useState<string>('');
+  const [pendingAnchorReq, setPendingAnchorReq] = useState<{ id: string; nonce: number } | null>(null);
   const [boardEditorState, setBoardEditorState] = useState<{
     open: boolean;
     mode: 'add_block' | 'edit_block' | 'add_page';
     initialBlock?: BoardBlock | null;
   }>({ open: false, mode: 'add_block', initialBlock: null });
   const [mutatingBoard, setMutatingBoard] = useState(false);
+  const [boardMutationError, setBoardMutationError] = useState('');
 
   // Annotations & Laser Pointer
   const [annotateMode, setAnnotateMode] = useState<'off' | 'draw' | 'laser'>('off');
@@ -156,9 +167,12 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
   const safetyTimerRef = useRef<number | null>(null);
+  const ttsFetchTimerRef = useRef<number | null>(null);
   const playTokenRef = useRef(0);
   const ttsAbortRef = useRef<AbortController | null>(null);
   const speechRecRef = useRef<{ stop: () => void } | null>(null);
+  const seededLectureIdRef = useRef<string>('');
+  const pendingAutoSpeechRef = useRef<string>('');
 
   const pages = foundLecture?.board_pages || [];
   const safePageIdx = Math.min(pageIdx, Math.max(0, pages.length - 1));
@@ -181,11 +195,20 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
     return out;
   }, [foundLecture?.board_pages]);
 
+  const initialStepPlotExpr = useMemo(() => {
+    const firstBlk = lectureSteps[0]?.block;
+    return (firstBlk ? extractPlottableFromBlock(firstBlk) : '') || '';
+  }, [lectureSteps]);
+
   const safeActiveStepIdx = Math.min(activeStepIdx, Math.max(0, lectureSteps.length - 1));
   const currentStep = lectureSteps[safeActiveStepIdx];
 
   const clearTimersAndAudio = useCallback(() => {
     playTokenRef.current += 1;
+    if (ttsFetchTimerRef.current !== null) {
+      window.clearTimeout(ttsFetchTimerRef.current);
+      ttsFetchTimerRef.current = null;
+    }
     if (ttsAbortRef.current) {
       ttsAbortRef.current.abort();
       ttsAbortRef.current = null;
@@ -195,6 +218,9 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       safetyTimerRef.current = null;
     }
     if (audioRef.current) {
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current.onloadedmetadata = null;
       audioRef.current.pause();
       audioRef.current = null;
     }
@@ -252,9 +278,24 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
     setElapsedSec(0);
     setLectureCompletedBar(false);
     setFocusedBlockId('');
-    setVisualExprOverride('');
+    setPendingAnchorReq(null);
+    setBoardMutationError('');
+    pendingAutoSpeechRef.current = '';
+    const firstPg = (foundLecture?.board_pages || []).find((pg) => (pg.blocks || []).length > 0);
+    const firstBlk = firstPg?.blocks?.[0];
+    setVisualExprOverride((firstBlk ? extractPlottableFromBlock(firstBlk) : '') || '');
+    seededLectureIdRef.current = foundLecture?.id || lectureId;
     stopAudioPlayback();
   }, [lectureId, stopAudioPlayback]);
+
+  // Seed visualExprOverride if active lecture resolves asynchronously or via fallback
+  useEffect(() => {
+    const lid = foundLecture?.id || lectureId;
+    if (seededLectureIdRef.current === lid) return;
+    seededLectureIdRef.current = lid;
+    const firstBlk = lectureSteps[0]?.block;
+    setVisualExprOverride((firstBlk ? extractPlottableFromBlock(firstBlk) : '') || '');
+  }, [foundLecture?.id, lectureId, lectureSteps]);
 
   useEffect(() => () => stopAudioPlayback(), [stopAudioPlayback]);
 
@@ -295,7 +336,9 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   const handleAnchorJump = useCallback(
     (blockId?: string) => {
       if (!blockId) return;
-      setBoardMode('board');
+      stopAudioPlayback();
+      setLectureCompletedBar(false);
+      setBoardMode((prev) => (prev === 'split' ? 'split' : 'board'));
       const pIndex = pages.findIndex((p) => (p.blocks || []).some((b) => b.id === blockId));
       if (pIndex !== -1 && pIndex !== safePageIdx) {
         setPageIdx(pIndex);
@@ -303,6 +346,8 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       const stIdx = lectureSteps.findIndex((st) => st.block.id === blockId);
       if (stIdx >= 0) {
         setActiveStepIdx(stIdx);
+        const expr = extractPlottableFromBlock(lectureSteps[stIdx].block);
+        if (expr) setVisualExprOverride(expr);
       }
       window.setTimeout(() => {
         const el = blockRefs.current[blockId];
@@ -313,15 +358,23 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
         window.setTimeout(() => setPulsedBlockId(''), 1600);
       }, 65);
     },
-    [pages, safePageIdx, lectureSteps]
+    [stopAudioPlayback, pages, safePageIdx, lectureSteps]
   );
 
   const speakPlainText = useCallback(
     (
       rawText: string,
-      options?: { cacheKey?: string; onDone?: () => void; rateOverride?: number }
+      options?: {
+        cacheKey?: string;
+        onDone?: () => void;
+        rateOverride?: number;
+        keepLecturePlaying?: boolean;
+      }
     ) => {
       clearTimersAndAudio();
+      if (!options?.keepLecturePlaying) {
+        setLecturePlaying(false);
+      }
       const myToken = playTokenRef.current;
       const spoken = latexToSpokenZh(rawText);
       if (!spoken) {
@@ -390,10 +443,23 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
         return;
       }
 
-      // Start fallback check timer before fetch; cleared/replaced once audio.play() starts
-      scheduleTimer(safeFallbackMs + 1500);
+      // Abort /tts fetch after 10000ms and fall back to browser speech instead of prematurely firing onDone
+      let timedOut = false;
       const controller = new AbortController();
       ttsAbortRef.current = controller;
+      ttsFetchTimerRef.current = window.setTimeout(() => {
+        if (playTokenRef.current !== myToken) return;
+        timedOut = true;
+        controller.abort();
+      }, 10000);
+
+      const clearFetchTimeout = () => {
+        if (ttsFetchTimerRef.current !== null) {
+          window.clearTimeout(ttsFetchTimerRef.current);
+          ttsFetchTimerRef.current = null;
+        }
+      };
+
       fetch(resolveApiUrl(`/api/courses/${course.id}/lectures/${foundLecture.id}/tts`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -402,29 +468,50 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       })
         .then(async (resp) => {
           if (ttsAbortRef.current === controller) ttsAbortRef.current = null;
-          if (playTokenRef.current !== myToken) return;
+          if (playTokenRef.current !== myToken) {
+            clearFetchTimeout();
+            return;
+          }
           if (!resp.ok) throw new Error('tts failed');
           const blob = await resp.blob();
+          clearFetchTimeout();
           if (playTokenRef.current !== myToken) return;
           const url = URL.createObjectURL(blob);
           audioUrlRef.current = url;
           const audio = new Audio(url);
           audio.playbackRate = rate;
           audioRef.current = audio;
+
+          const updateWatchdogFromDuration = () => {
+            if (playTokenRef.current !== myToken) return;
+            if (Number.isFinite(audio.duration) && audio.duration > 0) {
+              const realMs = Math.round((audio.duration * 1000) / Math.max(0.4, rate)) + 1500;
+              scheduleTimer(Math.min(120000, Math.max(3000, realMs)));
+            }
+          };
+
+          audio.onloadedmetadata = updateWatchdogFromDuration;
           audio.onended = () => finishNow();
-          audio.onerror = () => runBrowserSpeech();
+          audio.onerror = () => {
+            if (playTokenRef.current !== myToken) return;
+            if (!audioConfirmedStarted) {
+              runBrowserSpeech();
+            } else {
+              finishNow();
+            }
+          };
+
+          scheduleTimer(Math.min(60000, safeFallbackMs + 15000));
           await audio.play();
           if (playTokenRef.current !== myToken) return;
           audioConfirmedStarted = true;
-          // Give real audio up to expected duration before advancing
-          const durMs = Number.isFinite(audio.duration) && audio.duration > 0 ? Math.round((audio.duration * 1000) / rate) + 1200 : safeFallbackMs + 12000;
-          scheduleTimer(Math.min(45000, Math.max(3000, durMs)));
+          updateWatchdogFromDuration();
         })
         .catch((err) => {
-          if (err && (err as { name?: string }).name === 'AbortError') return;
-          if (playTokenRef.current === myToken) {
-            runBrowserSpeech();
-          }
+          clearFetchTimeout();
+          if (playTokenRef.current !== myToken) return;
+          if (!timedOut && err && (err as { name?: string }).name === 'AbortError') return;
+          runBrowserSpeech();
         });
     },
     [clearTimersAndAudio, speechRate, foundLecture, course.id, voiceId]
@@ -437,9 +524,13 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       if (!lectureSteps.length || !foundLecture) return;
       const clamped = Math.max(0, Math.min(lectureSteps.length - 1, idx));
       const targetStep = lectureSteps[clamped];
+      const expr = extractPlottableFromBlock(targetStep.block);
+      if (expr) {
+        setVisualExprOverride(expr);
+      }
       setActiveStepIdx(clamped);
       setPageIdx(targetStep.pageIndex);
-      setBoardMode('board');
+      setBoardMode((prev) => (prev === 'split' ? 'split' : 'board'));
       setLectureCompletedBar(false);
       setLecturePlaying(continueSequence);
 
@@ -450,6 +541,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
 
       const narration = buildBlockNarration(targetStep.block, foundLecture.title);
       speakPlainText(narration, {
+        keepLecturePlaying: continueSequence,
         onDone: () => {
           if (!continueSequence) return;
           if (clamped + 1 < lectureSteps.length) {
@@ -466,6 +558,22 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   );
 
   useEffect(() => {
+    if (!pendingAnchorReq) return;
+    const targetId = pendingAnchorReq.id;
+    const readyInSteps = lectureSteps.some((st) => st.block.id === targetId);
+    const readyInPages = pages.some((p) => (p.blocks || []).some((b) => b.id === targetId));
+    if (readyInSteps || readyInPages) {
+      handleAnchorJump(targetId);
+      setPendingAnchorReq(null);
+      if (pendingAutoSpeechRef.current) {
+        const queuedSpeech = pendingAutoSpeechRef.current;
+        pendingAutoSpeechRef.current = '';
+        speakPlainText(queuedSpeech);
+      }
+    }
+  }, [pendingAnchorReq, course, lectureSteps, pages, handleAnchorJump, speakPlainText]);
+
+  useEffect(() => {
     playStepRef.current = playStep;
   }, [playStep]);
 
@@ -477,6 +585,30 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
     }
   }, [lecturePlaying, stopAudioPlayback, playStep, safeActiveStepIdx]);
 
+  const jumpToStepSilently = useCallback(
+    (idx: number) => {
+      if (!lectureSteps.length) return;
+      const clamped = Math.max(0, Math.min(lectureSteps.length - 1, idx));
+      const target = lectureSteps[clamped];
+      stopAudioPlayback();
+      const expr = extractPlottableFromBlock(target.block);
+      if (expr) {
+        setVisualExprOverride(expr);
+      }
+      setActiveStepIdx(clamped);
+      setPageIdx(target.pageIndex);
+      setLectureCompletedBar(false);
+      setBoardMode((prev) => (prev === 'split' ? 'split' : 'board'));
+      window.setTimeout(() => {
+        const el = blockRefs.current[target.block.id];
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setPulsedBlockId(target.block.id);
+        window.setTimeout(() => setPulsedBlockId(''), 1200);
+      }, 60);
+    },
+    [lectureSteps, stopAudioPlayback]
+  );
+
   const handleStepDelta = useCallback(
     (delta: number) => {
       if (!lectureSteps.length) return;
@@ -484,50 +616,92 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       if (lecturePlaying) {
         playStep(next, true);
       } else {
-        setActiveStepIdx(next);
-        setPageIdx(lectureSteps[next].pageIndex);
-        setBoardMode('board');
-        window.setTimeout(() => {
-          const el = blockRefs.current[lectureSteps[next].block.id];
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 60);
+        jumpToStepSilently(next);
       }
     },
-    [lectureSteps, safeActiveStepIdx, lecturePlaying, playStep]
+    [lectureSteps.length, safeActiveStepIdx, lecturePlaying, playStep, jumpToStepSilently]
   );
 
-  // Keyboard Shortcuts (ignored while typing inside inputs/textareas)
+  // Keyboard Shortcuts (Escape closes modals/modes first; stage keys ignored inside inputs)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+      if (typeof document !== 'undefined' && document.querySelector('[data-testid="command-palette-modal"]')) return;
+
       const target = e.target as HTMLElement | null;
-      if (
+      const isTypingTarget = Boolean(
         target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT' ||
-          target.isContentEditable)
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable)
+      );
+
+      if (e.key === 'Escape' || e.code === 'Escape') {
+        if (settingsOpen) {
+          e.preventDefault();
+          setSettingsOpen(false);
+          return;
+        }
+        if (exitConfirmOpen) {
+          e.preventDefault();
+          setExitConfirmOpen(false);
+          return;
+        }
+        if (boardEditorState.open) {
+          if (!mutatingBoard) {
+            e.preventDefault();
+            setBoardEditorState((prev) => ({ ...prev, open: false }));
+          }
+          return;
+        }
+        if (!isTypingTarget) {
+          if (annotateMode !== 'off') {
+            e.preventDefault();
+            setAnnotateMode('off');
+            return;
+          }
+          if (focusMode) {
+            e.preventDefault();
+            setFocusMode(false);
+            return;
+          }
+          if (mobileDrawerOpen) {
+            e.preventDefault();
+            setMobileDrawerOpen(false);
+            return;
+          }
+        }
+        return;
+      }
+
+      if (isTypingTarget) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (
+        boardEditorState.open ||
+        settingsOpen ||
+        exitConfirmOpen ||
+        (typeof document !== 'undefined' && document.querySelector('.modal-backdrop'))
       ) {
         return;
       }
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (boardEditorState.open || settingsOpen || exitConfirmOpen) return;
 
-      if (e.code === 'Space' && boardMode === 'board') {
+      const onBoardOrSplit = boardMode === 'board' || boardMode === 'split';
+
+      if (e.code === 'Space' && onBoardOrSplit) {
         e.preventDefault();
         handleToggleLecturePlay();
-      } else if (e.code === 'ArrowLeft' && boardMode === 'board') {
+      } else if (e.code === 'ArrowLeft' && onBoardOrSplit) {
         e.preventDefault();
         handleStepDelta(-1);
-      } else if (e.code === 'ArrowRight' && boardMode === 'board') {
+      } else if (e.code === 'ArrowRight' && onBoardOrSplit) {
         e.preventDefault();
         handleStepDelta(1);
-      } else if (e.code === 'KeyL') {
+      } else if (e.code === 'KeyL' && onBoardOrSplit) {
         e.preventDefault();
-        setBoardMode('board');
         setAnnotateMode((m) => (m === 'laser' ? 'off' : 'laser'));
-      } else if (e.code === 'KeyA') {
+      } else if (e.code === 'KeyA' && onBoardOrSplit) {
         e.preventDefault();
-        setBoardMode('board');
         setAnnotateMode((m) => (m === 'draw' ? 'off' : 'draw'));
       } else if (e.code === 'KeyF') {
         e.preventDefault();
@@ -538,8 +712,12 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
     boardEditorState.open,
+    mutatingBoard,
     settingsOpen,
     exitConfirmOpen,
+    annotateMode,
+    focusMode,
+    mobileDrawerOpen,
     boardMode,
     handleToggleLecturePlay,
     handleStepDelta,
@@ -614,10 +792,15 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       );
       if (receivedQuiz) {
         setBoardMode('quiz');
+        if (autoReadReply && replyToSpeak) {
+          speakPlainText(replyToSpeak);
+        }
       } else if (createdBlockId) {
-        handleAnchorJump(createdBlockId);
-      }
-      if (autoReadReply && replyToSpeak) {
+        if (autoReadReply && replyToSpeak) {
+          pendingAutoSpeechRef.current = replyToSpeak;
+        }
+        setPendingAnchorReq({ id: createdBlockId, nonce: Date.now() });
+      } else if (autoReadReply && replyToSpeak) {
         speakPlainText(replyToSpeak);
       }
     } catch {
@@ -666,8 +849,14 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
           }
         }
       );
-      if (createdBlockId) handleAnchorJump(createdBlockId);
-      if (autoReadReply && replyToSpeak) speakPlainText(replyToSpeak);
+      if (createdBlockId) {
+        if (autoReadReply && replyToSpeak) {
+          pendingAutoSpeechRef.current = replyToSpeak;
+        }
+        setPendingAnchorReq({ id: createdBlockId, nonce: Date.now() });
+      } else if (autoReadReply && replyToSpeak) {
+        speakPlainText(replyToSpeak);
+      }
     } catch {
       /* ignore stream transient */
     } finally {
@@ -679,7 +868,10 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   };
 
   const handleBoardModalSubmit = async (payload: BoardEditorPayload) => {
+    if (mutatingBoard) return;
+    stopAudioPlayback();
     setMutatingBoard(true);
+    setBoardMutationError('');
     try {
       const res = await apiJson<{ ok: boolean; course: CourseRecord; page_index: number; block?: BoardBlock }>(
         `/api/courses/${course.id}/lectures/${foundLecture.id}/board`,
@@ -691,10 +883,27 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       if (res.course) onCourseUpdated(res.course);
       if (res.page_index >= 1) setPageIdx(res.page_index - 1);
       setBoardEditorState((prev) => ({ ...prev, open: false }));
-      if (res.block?.id) {
-        setBoardMode('board');
-        window.setTimeout(() => handleAnchorJump(res.block!.id), 80);
+      if (res.block) {
+        const editedExpr = extractPlottableFromBlock(res.block);
+        if (editedExpr) setVisualExprOverride(editedExpr);
       }
+      let targetBlockId = res.block?.id || payload.block_id || '';
+      if (!targetBlockId && payload.op === 'add_page' && res.course) {
+        const updatedLec = res.course.units.flatMap((u) => u.lectures).find((l) => l.id === foundLecture.id);
+        const targetPg =
+          updatedLec?.board_pages?.[
+            res.page_index >= 1 ? res.page_index - 1 : Math.max(0, (updatedLec?.board_pages?.length || 1) - 1)
+          ];
+        if (targetPg?.blocks?.[0]?.id) {
+          targetBlockId = targetPg.blocks[0].id;
+        }
+      }
+      if (targetBlockId) {
+        setBoardMode((prev) => (prev === 'split' ? 'split' : 'board'));
+        setPendingAnchorReq({ id: targetBlockId, nonce: Date.now() });
+      }
+    } catch (err) {
+      setBoardMutationError(err instanceof Error ? err.message : '保存板书更改失败，请稍后重试');
     } finally {
       setMutatingBoard(false);
     }
@@ -702,7 +911,9 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
 
   const handleMoveOrDeleteBlock = async (op: 'move_block' | 'delete_block', blockId: string, direction?: 'up' | 'down') => {
     if (mutatingBoard) return;
+    stopAudioPlayback();
     setMutatingBoard(true);
+    setBoardMutationError('');
     try {
       const res = await apiJson<{ ok: boolean; course: CourseRecord; page_index: number }>(
         `/api/courses/${course.id}/lectures/${foundLecture.id}/board`,
@@ -713,6 +924,11 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       );
       if (res.course) onCourseUpdated(res.course);
       if (res.page_index >= 1) setPageIdx(res.page_index - 1);
+      if (op === 'delete_block' && focusedBlockId === blockId) {
+        setFocusedBlockId('');
+      }
+    } catch (err) {
+      setBoardMutationError(err instanceof Error ? err.message : '调整板书模块失败，请稍后重试');
     } finally {
       setMutatingBoard(false);
     }
@@ -768,13 +984,16 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
 
   const pageStrokeKey = `${course.id}:${foundLecture.id}:${safePageIdx}`;
   const currentStrokes = strokesByPage[pageStrokeKey] || [];
-  const scaleFactor = Math.max(0.5, zoomPct / 100);
+  const BOARD_SVG_VIEW_W = 860;
+  const BOARD_SVG_VIEW_H = 1100;
 
   const getScaledCoords = (e: React.PointerEvent<SVGSVGElement>): [number, number] => {
     const rect = e.currentTarget.getBoundingClientRect();
+    const rw = Math.max(1, rect.width);
+    const rh = Math.max(1, rect.height);
     return [
-      Math.round((e.clientX - rect.left) / scaleFactor),
-      Math.round((e.clientY - rect.top) / scaleFactor),
+      Math.round(((e.clientX - rect.left) / rw) * BOARD_SVG_VIEW_W * 10) / 10,
+      Math.round(((e.clientY - rect.top) / rh) * BOARD_SVG_VIEW_H * 10) / 10,
     ];
   };
 
@@ -819,6 +1038,16 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       ? '1/(x^2 + 0.35)'
       : 'x^3 - 3*x^2 + 2';
 
+  const activePlotPreset: SandboxPresetConfig | null =
+    foundLecture.visualizer_preset === 'group_z6'
+      ? GROUP_Z6_PRESET
+      : foundLecture.visualizer_preset === 'riemann'
+      ? RIEMANN_PRESET
+      : null;
+
+  const resolvedPlotExpr = visualExprOverride || initialStepPlotExpr || defaultVisualExpr;
+  const isBoardStage = boardMode === 'board' || boardMode === 'split';
+
   const quizCount = (foundLecture.quiz_items || []).length;
   const focusedBlock = lectureSteps.find((s) => s.block.id === focusedBlockId)?.block || null;
   const hasSpeechRec =
@@ -835,6 +1064,378 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
   };
 
   const activeCaptionText = currentStep ? buildBlockNarration(currentStep.block, foundLecture.title) : '';
+
+  const renderBoardPageContent = (inSplit: boolean) => {
+    if (!currentPage) return null;
+    const pageBlocks = currentPage.blocks || [];
+    return (
+      <div
+        style={{
+          position: 'relative',
+          maxWidth: inSplit ? 'none' : 780,
+          margin: '0 auto',
+          transform: `scale(${zoomPct / 100})`,
+          transformOrigin: inSplit ? 'top left' : 'top center',
+          transition: 'transform 0.16s ease',
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <h2
+            className={`hk-marker-yellow ${handwritingFont ? '' : 'serif-heading'}`}
+            style={{
+              margin: 0,
+              fontSize: inSplit ? 24 : 27,
+              fontFamily: handwritingFont ? 'var(--font-hand)' : 'var(--font-sans)',
+              color: '#2c4370',
+            }}
+          >
+            {currentPage.roadmap_title}
+          </h2>
+        </div>
+
+        {pageBlocks.map((blk, blkIdxInPage) => {
+          const stepEntry = lectureSteps.find((s) => s.block.id === blk.id);
+          const blkStepIdx = stepEntry ? stepEntry.stepIndex : 0;
+          const isActiveStep = currentStep?.block.id === blk.id;
+          const isFutureStep = stepByStepReveal && blkStepIdx > safeActiveStepIdx;
+          const typeMeta = BLOCK_TYPE_BADGES[blk.block_type || 'concept'] || BLOCK_TYPE_BADGES.concept;
+          const plotExpr = extractPlottableFromBlock(blk);
+
+          return (
+            <div
+              key={blk.id}
+              ref={(el) => {
+                blockRefs.current[blk.id] = el;
+              }}
+              className={`hk-wb-block ${handwritingFont ? 'handwriting' : ''} ${
+                isActiveStep ? 'active-step' : ''
+              } ${pulsedBlockId === blk.id ? 'pulsed' : ''} ${isFutureStep ? 'dim-future' : ''}`}
+              style={{
+                borderLeft: `3px solid ${isActiveStep ? '#3b4f7d' : '#c8dcfa'}`,
+                background: isActiveStep ? 'rgba(244, 248, 255, 0.96)' : 'rgba(255, 255, 255, 0.78)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  flexWrap: 'wrap',
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span className={`hk-wb-type-badge ${typeMeta.cls}`}>{typeMeta.label}</span>
+                  <div
+                    style={{
+                      fontSize: handwritingFont ? 21 : 17.5,
+                      fontWeight: 700,
+                      color: '#181a1f',
+                    }}
+                  >
+                    <MathText text={blk.heading} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {isActiveStep && speaking && (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: '#1d4ed8',
+                        background: '#e0e7ff',
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      <span className="hk-wb-wave">
+                        <span />
+                        <span />
+                        <span />
+                      </span>
+                      正在讲解
+                    </span>
+                  )}
+                  {blk.verified_badge && (
+                    <span
+                      className="badge badge-verified"
+                      style={{
+                        fontSize: 11,
+                        padding: '2px 8px',
+                        background: '#ecfdf5',
+                        color: '#166534',
+                        border: '1px solid #a7f3d0',
+                        borderRadius: 999,
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      ✓ {blk.verified_badge}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: handwritingFont ? 18 : 15 }}>
+                {blk.lines.map((line, i) => (
+                  <div key={i} style={{ paddingLeft: 12 }}>
+                    <MathText text={line} />
+                  </div>
+                ))}
+              </div>
+
+              {blk.highlight_note && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    background: '#fef9c3',
+                    color: '#713f12',
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                  }}
+                >
+                  重点：<MathText text={blk.highlight_note} />
+                </div>
+              )}
+
+              {classroomRole === 'teaching' && blk.teaching_tip && (
+                <div className="hk-wb-tip-box">
+                  <strong>授课提示：</strong>
+                  {blk.teaching_tip}
+                </div>
+              )}
+
+              {/* Per-Block Interactive Micro-Actions */}
+              <div className="hk-wb-micro-actions">
+                <button
+                  type="button"
+                  className="hk-wb-micro-btn"
+                  onClick={() => playStep(blkStepIdx, false)}
+                  data-testid={`wb-speak-blk-${blk.id}`}
+                >
+                  {isActiveStep && speaking ? '🔊 讲授中' : '▶ 精讲此段'}
+                </button>
+                <button
+                  type="button"
+                  className="hk-wb-micro-btn"
+                  disabled={sending}
+                  onClick={() => handleTeachAction('reexplain_analogy', blk, `请为「${blk.heading}」换个通俗类比`)}
+                >
+                  💡 换个比喻
+                </button>
+                <button
+                  type="button"
+                  className="hk-wb-micro-btn"
+                  disabled={sending}
+                  onClick={() => handleTeachAction('worked_example', blk, `围绕「${blk.heading}」补一道分步例题`)}
+                >
+                  📝 看个例题
+                </button>
+                {plotExpr && (
+                  <button
+                    type="button"
+                    className="hk-wb-micro-btn"
+                    style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
+                    onClick={() => {
+                      setVisualExprOverride(plotExpr);
+                      setBoardMode(typeof window !== 'undefined' && window.innerWidth > 1080 ? 'split' : 'visual');
+                    }}
+                    data-testid={`wb-plot-blk-${blk.id}`}
+                  >
+                    📈 画图
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="hk-wb-micro-btn"
+                  onClick={() => {
+                    setFocusedBlockId(blk.id);
+                    setDrawerTab('chat');
+                    if (focusMode) setFocusMode(false);
+                    setMobileDrawerOpen(true);
+                  }}
+                >
+                  💬 追问此块
+                </button>
+
+                {classroomRole === 'teaching' && (
+                  <>
+                    <button
+                      type="button"
+                      className="hk-wb-micro-btn"
+                      style={{ marginLeft: 'auto' }}
+                      disabled={mutatingBoard}
+                      onClick={() => setBoardEditorState({ open: true, mode: 'edit_block', initialBlock: blk })}
+                    >
+                      ✎ 编辑
+                    </button>
+                    {blkIdxInPage > 0 && (
+                      <button
+                        type="button"
+                        className="hk-wb-micro-btn"
+                        disabled={mutatingBoard}
+                        title="上移"
+                        onClick={() => handleMoveOrDeleteBlock('move_block', blk.id, 'up')}
+                      >
+                        ↑
+                      </button>
+                    )}
+                    {blkIdxInPage + 1 < pageBlocks.length && (
+                      <button
+                        type="button"
+                        className="hk-wb-micro-btn"
+                        disabled={mutatingBoard}
+                        title="下移"
+                        onClick={() => handleMoveOrDeleteBlock('move_block', blk.id, 'down')}
+                      >
+                        ↓
+                      </button>
+                    )}
+                    {lectureSteps.length > 1 && (
+                      <button
+                        type="button"
+                        className="hk-wb-micro-btn"
+                        style={{ color: '#b91c1c' }}
+                        disabled={mutatingBoard}
+                        onClick={() => handleMoveOrDeleteBlock('delete_block', blk.id)}
+                      >
+                        删
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Freehand Annotation & Ephemeral Laser Overlay */}
+        <svg
+          viewBox={`0 0 ${BOARD_SVG_VIEW_W} ${BOARD_SVG_VIEW_H}`}
+          preserveAspectRatio="none"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            zIndex: 8,
+            pointerEvents: annotateMode !== 'off' ? 'auto' : 'none',
+            cursor: annotateMode === 'laser' ? 'none' : annotateMode === 'draw' ? 'crosshair' : 'default',
+            touchAction: annotateMode !== 'off' ? 'none' : 'auto',
+          }}
+          onPointerDown={(e) => {
+            if (annotateMode === 'off') return;
+            const [x, y] = getScaledCoords(e);
+            if (annotateMode === 'laser') {
+              setLaserTrail([{ x, y, ts: Date.now() }]);
+              return;
+            }
+            setActiveStroke({
+              id: `strk_${Date.now()}`,
+              color: penColor,
+              width: penColor === '#facc15' ? 14 : 3.2,
+              opacity: penColor === '#facc15' ? 0.38 : 0.88,
+              pts: [[x, y]],
+            });
+          }}
+          onPointerMove={(e) => {
+            if (annotateMode === 'off') return;
+            const [x, y] = getScaledCoords(e);
+            if (annotateMode === 'laser') {
+              const nowTs = Date.now();
+              setLaserTrail((prev) => [...prev.filter((p) => nowTs - p.ts < 650), { x, y, ts: nowTs }]);
+              return;
+            }
+            if (!activeStroke) return;
+            setActiveStroke((prev) => (prev ? { ...prev, pts: [...prev.pts, [x, y]] } : null));
+          }}
+          onPointerUp={() => {
+            if (annotateMode === 'laser' || !activeStroke) return;
+            if (activeStroke.pts.length >= 2) {
+              const d = activeStroke.pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+              setStrokesByPage((prev) => ({
+                ...prev,
+                [pageStrokeKey]: [
+                  ...(prev[pageStrokeKey] || []),
+                  {
+                    id: activeStroke.id,
+                    color: activeStroke.color,
+                    width: activeStroke.width,
+                    opacity: activeStroke.opacity,
+                    d,
+                  },
+                ],
+              }));
+            }
+            setActiveStroke(null);
+          }}
+          onPointerLeave={() => {
+            if (annotateMode === 'laser') setLaserTrail([]);
+          }}
+        >
+          {currentStrokes.map((st) => (
+            <path
+              key={st.id}
+              d={st.d}
+              fill="none"
+              stroke={st.color}
+              strokeWidth={st.width}
+              strokeOpacity={st.opacity}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+          {activeStroke && activeStroke.pts.length >= 2 && (
+            <path
+              d={activeStroke.pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ')}
+              fill="none"
+              stroke={activeStroke.color}
+              strokeWidth={activeStroke.width}
+              strokeOpacity={activeStroke.opacity}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          {laserTrail.length >= 2 && (
+            <polyline
+              points={laserTrail.map((p) => `${p.x},${p.y}`).join(' ')}
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth={4}
+              strokeOpacity={0.45}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          {laserTrail.length > 0 && (
+            <g>
+              <circle
+                cx={laserTrail[laserTrail.length - 1].x}
+                cy={laserTrail[laserTrail.length - 1].y}
+                r={11}
+                fill="#ef4444"
+                fillOpacity={0.22}
+              />
+              <circle
+                cx={laserTrail[laserTrail.length - 1].x}
+                cy={laserTrail[laserTrail.length - 1].y}
+                r={4.5}
+                fill="#dc2626"
+              />
+            </g>
+          )}
+        </svg>
+      </div>
+    );
+  };
 
   return (
     <div className="hk-whiteboard-shell">
@@ -887,7 +1488,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
           </div>
 
           <div className="hk-wb-pill-bar" style={{ flexWrap: 'wrap' }}>
-            {boardMode === 'board' && (
+            {isBoardStage && (
               <>
                 <button
                   type="button"
@@ -948,6 +1549,15 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
             </button>
             <button
               type="button"
+              className={`seg-switch-btn ${boardMode === 'split' ? 'active' : ''}`}
+              style={{ padding: '4px 9px', fontSize: 12 }}
+              onClick={() => setBoardMode('split')}
+              data-testid="wb-mode-split"
+            >
+              板书+画图
+            </button>
+            <button
+              type="button"
               className={`seg-switch-btn ${boardMode === 'visual' ? 'active' : ''}`}
               style={{ padding: '4px 9px', fontSize: 12 }}
               onClick={() => setBoardMode('visual')}
@@ -980,7 +1590,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
               速查表
             </button>
 
-            {boardMode === 'board' && (
+            {isBoardStage && (
               <>
                 <button
                   type="button"
@@ -1022,6 +1632,35 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
               </>
             )}
 
+            {focusMode && (
+              <button
+                type="button"
+                className="seg-switch-btn active"
+                style={{ padding: '4px 9px', fontSize: 12 }}
+                onClick={() => setFocusMode(false)}
+                data-testid="wb-exit-focus-top"
+              >
+                展开互动栏
+              </button>
+            )}
+
+            <button
+              type="button"
+              className={`seg-switch-btn hk-wb-mobile-drawer-btn${mobileDrawerOpen && !focusMode ? ' active' : ''}`}
+              style={{ fontSize: 12 }}
+              onClick={() => {
+                if (focusMode) {
+                  setFocusMode(false);
+                  setMobileDrawerOpen(true);
+                } else {
+                  setMobileDrawerOpen((v) => !v);
+                }
+              }}
+              data-testid="wb-mobile-drawer-toggle"
+            >
+              💬 互动/大纲
+            </button>
+
             <div style={{ position: 'relative' }}>
               <button
                 type="button"
@@ -1038,27 +1677,27 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
                   className="hk-dark-tooltip"
                   style={{ left: 'auto', right: 0, top: 'calc(100% + 8px)', width: 225 }}
                 >
-                  设置：字体/语音/语速/快捷键 (Space/←/→/L/F)
+                  设置：字体/语音/语速/快捷键 (Space/←/→/L/F/Esc)
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Floating Highlighter & Laser Sub-bar when Annotate Mode Active */}
-        {boardMode === 'board' && annotateMode !== 'off' && (
+        {/* Highlighter & Laser Sub-bar in normal flex flow directly below .hk-wb-float-top */}
+        {isBoardStage && annotateMode !== 'off' && (
           <div
             style={{
-              position: 'absolute',
-              top: 64,
-              right: 20,
-              zIndex: 16,
+              margin: '0 16px 6px',
+              alignSelf: 'flex-end',
+              zIndex: 14,
               background: '#ffffff',
               border: '1px solid #e5e7eb',
               borderRadius: 999,
               padding: '5px 10px',
               display: 'flex',
               alignItems: 'center',
+              flexWrap: 'wrap',
               gap: 6,
               boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
               fontSize: 12,
@@ -1127,383 +1766,32 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
 
         {/* Whiteboard Main Body */}
         <div className="hk-wb-canvas-scroll">
-          {boardMode === 'board' && currentPage && (
-            <div
-              style={{
-                position: 'relative',
-                maxWidth: 780,
-                margin: '0 auto',
-                transform: `scale(${zoomPct / 100})`,
-                transformOrigin: 'top center',
-                transition: 'transform 0.16s ease',
-              }}
-            >
-              <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                <h2
-                  className={`hk-marker-yellow ${handwritingFont ? '' : 'serif-heading'}`}
-                  style={{
-                    margin: 0,
-                    fontSize: 27,
-                    fontFamily: handwritingFont ? 'var(--font-hand)' : 'var(--font-sans)',
-                    color: '#2c4370',
-                  }}
-                >
-                  {currentPage.roadmap_title}
-                </h2>
+          {boardMode === 'board' && currentPage && renderBoardPageContent(false)}
+
+          {boardMode === 'split' && (
+            <div className="hk-wb-split-grid">
+              <div>{currentPage ? renderBoardPageContent(true) : null}</div>
+              <div style={{ position: 'sticky', top: 8 }}>
+                <Suspense fallback={<div style={{ padding: 24, color: '#6b7280' }}>正在加载函数画板…</div>}>
+                  <FunctionPlotCard
+                    initialExpr={resolvedPlotExpr}
+                    activePreset={activePlotPreset}
+                    subject={course.subject}
+                  />
+                </Suspense>
               </div>
-
-              {(currentPage.blocks || []).map((blk, blkIdxInPage) => {
-                const stepEntry = lectureSteps.find((s) => s.block.id === blk.id);
-                const blkStepIdx = stepEntry ? stepEntry.stepIndex : 0;
-                const isActiveStep = currentStep?.block.id === blk.id;
-                const isFutureStep = stepByStepReveal && blkStepIdx > safeActiveStepIdx;
-                const typeMeta = BLOCK_TYPE_BADGES[blk.block_type || 'concept'] || BLOCK_TYPE_BADGES.concept;
-                const plotExpr = extractPlottableFromBlock(blk);
-                const pageBlocks = currentPage.blocks || [];
-
-                return (
-                  <div
-                    key={blk.id}
-                    ref={(el) => {
-                      blockRefs.current[blk.id] = el;
-                    }}
-                    className={`hk-wb-block ${handwritingFont ? 'handwriting' : ''} ${
-                      isActiveStep ? 'active-step' : ''
-                    } ${pulsedBlockId === blk.id ? 'pulsed' : ''} ${isFutureStep ? 'dim-future' : ''}`}
-                    style={{
-                      borderLeft: `3px solid ${isActiveStep ? '#3b4f7d' : '#c8dcfa'}`,
-                      background: isActiveStep ? 'rgba(244, 248, 255, 0.96)' : 'rgba(255, 255, 255, 0.78)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 8,
-                        flexWrap: 'wrap',
-                        marginBottom: 10,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span className={`hk-wb-type-badge ${typeMeta.cls}`}>{typeMeta.label}</span>
-                        <div
-                          style={{
-                            fontSize: handwritingFont ? 21 : 17.5,
-                            fontWeight: 700,
-                            color: '#181a1f',
-                          }}
-                        >
-                          <MathText text={blk.heading} />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        {isActiveStep && speaking && (
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 5,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              color: '#1d4ed8',
-                              background: '#e0e7ff',
-                              padding: '2px 8px',
-                              borderRadius: 999,
-                              fontFamily: 'var(--font-sans)',
-                            }}
-                          >
-                            <span className="hk-wb-wave">
-                              <span />
-                              <span />
-                              <span />
-                            </span>
-                            正在讲解
-                          </span>
-                        )}
-                        {blk.verified_badge && (
-                          <span
-                            className="badge badge-verified"
-                            style={{
-                              fontSize: 11,
-                              padding: '2px 8px',
-                              background: '#ecfdf5',
-                              color: '#166534',
-                              border: '1px solid #a7f3d0',
-                              borderRadius: 999,
-                              fontFamily: 'var(--font-sans)',
-                            }}
-                          >
-                            ✓ {blk.verified_badge}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: handwritingFont ? 18 : 15 }}>
-                      {blk.lines.map((line, i) => (
-                        <div key={i} style={{ paddingLeft: 12 }}>
-                          <MathText text={line} />
-                        </div>
-                      ))}
-                    </div>
-
-                    {blk.highlight_note && (
-                      <div
-                        style={{
-                          marginTop: 10,
-                          padding: '6px 12px',
-                          borderRadius: 8,
-                          background: '#fef9c3',
-                          color: '#713f12',
-                          fontSize: 13.5,
-                          fontWeight: 600,
-                        }}
-                      >
-                        重点：<MathText text={blk.highlight_note} />
-                      </div>
-                    )}
-
-                    {classroomRole === 'teaching' && blk.teaching_tip && (
-                      <div className="hk-wb-tip-box">
-                        <strong>授课提示：</strong>
-                        {blk.teaching_tip}
-                      </div>
-                    )}
-
-                    {/* Per-Block Interactive Micro-Actions */}
-                    <div className="hk-wb-micro-actions">
-                      <button
-                        type="button"
-                        className="hk-wb-micro-btn"
-                        onClick={() => playStep(blkStepIdx, false)}
-                        data-testid={`wb-speak-blk-${blk.id}`}
-                      >
-                        {isActiveStep && speaking ? '🔊 讲授中' : '▶ 精讲此段'}
-                      </button>
-                      <button
-                        type="button"
-                        className="hk-wb-micro-btn"
-                        disabled={sending}
-                        onClick={() => handleTeachAction('reexplain_analogy', blk, `请为「${blk.heading}」换个通俗类比`)}
-                      >
-                        💡 换个比喻
-                      </button>
-                      <button
-                        type="button"
-                        className="hk-wb-micro-btn"
-                        disabled={sending}
-                        onClick={() => handleTeachAction('worked_example', blk, `围绕「${blk.heading}」补一道分步例题`)}
-                      >
-                        📝 看个例题
-                      </button>
-                      {plotExpr && (
-                        <button
-                          type="button"
-                          className="hk-wb-micro-btn"
-                          style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
-                          onClick={() => {
-                            setVisualExprOverride(plotExpr);
-                            setBoardMode('visual');
-                          }}
-                          data-testid={`wb-plot-blk-${blk.id}`}
-                        >
-                          📈 画图
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="hk-wb-micro-btn"
-                        onClick={() => {
-                          setFocusedBlockId(blk.id);
-                          setDrawerTab('chat');
-                          if (focusMode) setFocusMode(false);
-                        }}
-                      >
-                        💬 追问此块
-                      </button>
-
-                      {classroomRole === 'teaching' && (
-                        <>
-                          <button
-                            type="button"
-                            className="hk-wb-micro-btn"
-                            style={{ marginLeft: 'auto' }}
-                            disabled={mutatingBoard}
-                            onClick={() => setBoardEditorState({ open: true, mode: 'edit_block', initialBlock: blk })}
-                          >
-                            ✎ 编辑
-                          </button>
-                          {blkIdxInPage > 0 && (
-                            <button
-                              type="button"
-                              className="hk-wb-micro-btn"
-                              disabled={mutatingBoard}
-                              title="上移"
-                              onClick={() => handleMoveOrDeleteBlock('move_block', blk.id, 'up')}
-                            >
-                              ↑
-                            </button>
-                          )}
-                          {blkIdxInPage + 1 < pageBlocks.length && (
-                            <button
-                              type="button"
-                              className="hk-wb-micro-btn"
-                              disabled={mutatingBoard}
-                              title="下移"
-                              onClick={() => handleMoveOrDeleteBlock('move_block', blk.id, 'down')}
-                            >
-                              ↓
-                            </button>
-                          )}
-                          {lectureSteps.length > 1 && (
-                            <button
-                              type="button"
-                              className="hk-wb-micro-btn"
-                              style={{ color: '#b91c1c' }}
-                              disabled={mutatingBoard}
-                              onClick={() => handleMoveOrDeleteBlock('delete_block', blk.id)}
-                            >
-                              删
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Freehand Annotation & Ephemeral Laser Overlay */}
-              <svg
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  zIndex: 8,
-                  pointerEvents: annotateMode !== 'off' ? 'auto' : 'none',
-                  cursor: annotateMode === 'laser' ? 'none' : annotateMode === 'draw' ? 'crosshair' : 'default',
-                  touchAction: annotateMode !== 'off' ? 'none' : 'auto',
-                }}
-                onPointerDown={(e) => {
-                  if (annotateMode === 'off') return;
-                  const [x, y] = getScaledCoords(e);
-                  if (annotateMode === 'laser') {
-                    setLaserTrail([{ x, y, ts: Date.now() }]);
-                    return;
-                  }
-                  setActiveStroke({
-                    id: `strk_${Date.now()}`,
-                    color: penColor,
-                    width: penColor === '#facc15' ? 14 : 3.2,
-                    opacity: penColor === '#facc15' ? 0.38 : 0.88,
-                    pts: [[x, y]],
-                  });
-                }}
-                onPointerMove={(e) => {
-                  if (annotateMode === 'off') return;
-                  const [x, y] = getScaledCoords(e);
-                  if (annotateMode === 'laser') {
-                    const nowTs = Date.now();
-                    setLaserTrail((prev) => [...prev.filter((p) => nowTs - p.ts < 650), { x, y, ts: nowTs }]);
-                    return;
-                  }
-                  if (!activeStroke) return;
-                  setActiveStroke((prev) => (prev ? { ...prev, pts: [...prev.pts, [x, y]] } : null));
-                }}
-                onPointerUp={() => {
-                  if (annotateMode === 'laser' || !activeStroke) return;
-                  if (activeStroke.pts.length >= 2) {
-                    const d = activeStroke.pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
-                    setStrokesByPage((prev) => ({
-                      ...prev,
-                      [pageStrokeKey]: [
-                        ...(prev[pageStrokeKey] || []),
-                        {
-                          id: activeStroke.id,
-                          color: activeStroke.color,
-                          width: activeStroke.width,
-                          opacity: activeStroke.opacity,
-                          d,
-                        },
-                      ],
-                    }));
-                  }
-                  setActiveStroke(null);
-                }}
-                onPointerLeave={() => {
-                  if (annotateMode === 'laser') setLaserTrail([]);
-                }}
-              >
-                {currentStrokes.map((st) => (
-                  <path
-                    key={st.id}
-                    d={st.d}
-                    fill="none"
-                    stroke={st.color}
-                    strokeWidth={st.width}
-                    strokeOpacity={st.opacity}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                ))}
-                {activeStroke && activeStroke.pts.length >= 2 && (
-                  <path
-                    d={activeStroke.pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ')}
-                    fill="none"
-                    stroke={activeStroke.color}
-                    strokeWidth={activeStroke.width}
-                    strokeOpacity={activeStroke.opacity}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
-                {laserTrail.length >= 2 && (
-                  <polyline
-                    points={laserTrail.map((p) => `${p.x},${p.y}`).join(' ')}
-                    fill="none"
-                    stroke="#ef4444"
-                    strokeWidth={4}
-                    strokeOpacity={0.45}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
-                {laserTrail.length > 0 && (
-                  <g>
-                    <circle
-                      cx={laserTrail[laserTrail.length - 1].x}
-                      cy={laserTrail[laserTrail.length - 1].y}
-                      r={11}
-                      fill="#ef4444"
-                      fillOpacity={0.22}
-                    />
-                    <circle
-                      cx={laserTrail[laserTrail.length - 1].x}
-                      cy={laserTrail[laserTrail.length - 1].y}
-                      r={4.5}
-                      fill="#dc2626"
-                    />
-                  </g>
-                )}
-              </svg>
             </div>
           )}
 
           {boardMode === 'visual' && (
             <div style={{ maxWidth: 820, margin: '0 auto' }}>
-              <FunctionPlotCard
-                initialExpr={visualExprOverride || defaultVisualExpr}
-                activePreset={
-                  foundLecture.visualizer_preset === 'group_z6'
-                    ? { preset_id: 'cyclic_group', dimension: '2d' }
-                    : foundLecture.visualizer_preset === 'riemann'
-                    ? { preset_id: 'complex_surface', dimension: '3d' }
-                    : null
-                }
-              />
+              <Suspense fallback={<div style={{ padding: 24, color: '#6b7280' }}>正在加载函数画板…</div>}>
+                <FunctionPlotCard
+                  initialExpr={resolvedPlotExpr}
+                  activePreset={activePlotPreset}
+                  subject={course.subject}
+                />
+              </Suspense>
             </div>
           )}
 
@@ -1520,6 +1808,8 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
               <WhiteboardQuizPane
                 courseId={course.id}
                 lecture={foundLecture}
+                subject={course.subject}
+                gradeLevel={course.grade_level}
                 generatingQuiz={sending}
                 onCourseUpdated={onCourseUpdated}
                 onGenerateQuiz={() =>
@@ -1533,7 +1823,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
         </div>
 
         {/* Bottom Flex Footer Tray (Subtitle Bar + Lecture Player Dock) */}
-        {boardMode === 'board' && lectureSteps.length > 0 && (
+        {isBoardStage && lectureSteps.length > 0 && (
           <div className="hk-wb-footer-tray">
             {showCaptions && currentStep && (
               <div className="hk-wb-caption-bar" data-testid="wb-caption-bar">
@@ -1619,7 +1909,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
                       key={st.block.id}
                       type="button"
                       title={`${st.stepIndex + 1}. ${st.block.heading}`}
-                      onClick={() => (lecturePlaying ? playStep(st.stepIndex, true) : playStep(st.stepIndex, false))}
+                      onClick={() => (lecturePlaying ? playStep(st.stepIndex, true) : jumpToStepSilently(st.stepIndex))}
                       style={{
                         width: isCur ? 22 : 16,
                         height: 16,
@@ -1723,8 +2013,16 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
       )}
 
       {/* RIGHT CONVERSATION & OUTLINE DRAWER */}
+      {mobileDrawerOpen && !focusMode && (
+        <div
+          className="hk-wb-mobile-backdrop"
+          onClick={() => setMobileDrawerOpen(false)}
+          data-testid="wb-mobile-drawer-backdrop"
+        />
+      )}
+
       {!focusMode && (
-        <aside className="hk-wb-drawer" style={{ width: drawerWidth }}>
+        <aside className={`hk-wb-drawer ${mobileDrawerOpen ? 'mobile-open' : ''}`} style={{ width: drawerWidth }}>
           <div
             style={{
               padding: '12px 14px',
@@ -1755,21 +2053,31 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
                 本讲大纲 ({lectureSteps.length})
               </button>
             </div>
-            <select
-              className="select"
-              style={{ width: 'auto', maxWidth: 132, padding: '4px 6px', fontSize: 11.5 }}
-              value={foundLecture.id}
-              onChange={(e) => onSelectLecture(e.target.value)}
-              aria-label="切换讲次"
-            >
-              {course.units.flatMap((u) =>
-                u.lectures.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    单元{u.unit_index}: {l.title}
-                  </option>
-                ))
-              )}
-            </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <select
+                className="select"
+                style={{ width: 'auto', maxWidth: 132, padding: '4px 6px', fontSize: 11.5 }}
+                value={foundLecture.id}
+                onChange={(e) => onSelectLecture(e.target.value)}
+                aria-label="切换讲次"
+              >
+                {course.units.flatMap((u) =>
+                  u.lectures.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      单元{u.unit_index}: {l.title}
+                    </option>
+                  ))
+                )}
+              </select>
+              <button
+                type="button"
+                className="hk-wb-mobile-drawer-close"
+                onClick={() => setMobileDrawerOpen(false)}
+                data-testid="wb-mobile-drawer-close"
+              >
+                ✕ 收起
+              </button>
+            </div>
           </div>
 
           {drawerTab === 'outline' ? (
@@ -2030,6 +2338,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => {
+                      if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleSendChat();
@@ -2069,15 +2378,64 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
         </aside>
       )}
 
+      {/* BOARD MUTATION ERROR TOAST */}
+      {boardMutationError && (
+        <div
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 90,
+            background: '#fef2f2',
+            border: '1px solid #fca5a5',
+            color: '#991b1b',
+            borderRadius: 12,
+            padding: '8px 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            boxShadow: '0 10px 28px rgba(15, 23, 42, 0.16)',
+            maxWidth: '92vw',
+          }}
+        >
+          <span>{boardMutationError}</span>
+          <button
+            type="button"
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: '#991b1b',
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: '0 2px',
+            }}
+            onClick={() => setBoardMutationError('')}
+            aria-label="关闭错误提示"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* BOARD BLOCK EDITOR MODAL */}
       <Suspense fallback={null}>
         <WhiteboardBlockEditorModal
           open={boardEditorState.open}
           mode={boardEditorState.mode}
           pageIndex={safePageIdx + 1}
+          totalPages={pages.length}
           initialBlock={boardEditorState.initialBlock}
           saving={mutatingBoard}
-          onClose={() => setBoardEditorState((prev) => ({ ...prev, open: false }))}
+          onClose={() => {
+            if (!mutatingBoard) {
+              setBoardMutationError('');
+              setBoardEditorState((prev) => ({ ...prev, open: false }));
+            }
+          }}
           onSubmit={handleBoardModalSubmit}
         />
       </Suspense>
@@ -2116,7 +2474,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>白板语音选择</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="hk-wb-grid-2">
                   {VOICE_OPTIONS.map((v) => (
                     <button
                       key={v.id}
@@ -2181,7 +2539,7 @@ export const HkWhiteboardView: React.FC<HkWhiteboardViewProps> = ({
 
               <div style={{ paddingTop: 10, borderTop: '1px solid #eef0f3', fontSize: 12, color: '#6b7280', lineHeight: 1.7 }}>
                 <div style={{ fontWeight: 700, color: '#374151', marginBottom: 4 }}>键盘快捷键</div>
-                <div>`Space` 播放/暂停讲课 · `← / →` 上一步/下一步 · `L` 激光笔 · `A` 荧光笔 · `F` 沉浸全屏</div>
+                <div>`Space` 播放/暂停讲课 · `← / →` 上一步/下一步 · `L` 激光笔 · `A` 荧光笔 · `F` 沉浸全屏 · `Esc` 关闭弹层/退出批注或沉浸</div>
               </div>
             </div>
           </div>

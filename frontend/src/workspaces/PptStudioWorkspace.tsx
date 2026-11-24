@@ -3,6 +3,7 @@ import { apiJson, handleSafeDownload, isStaticDemoMode, postSseStream, resolveAp
 import { ArtifactItem, PptDeck, PptTheme, TeachingTransferPayload } from '../types';
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import { DisciplineCascadePicker } from '../components/DisciplineCascadePicker';
+import { MathText } from '../components/MathText';
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -132,13 +133,16 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
         setSelectedTheme(dkRes.decks[0].theme_id || 'porcelain_daylight');
         setActiveSlideIdx(0);
       }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加载课件工作台数据失败');
     } finally {
       setLoadingDecks(false);
     }
   };
 
   useEffect(() => {
-    loadInitial().catch(() => {});
+    void loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -151,9 +155,14 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
           setActiveDeck(found);
           setSelectedTheme(found.theme_id || 'porcelain_daylight');
           setActiveSlideIdx(0);
+          setAudioArtifact(null);
+          setToastMsg('');
+          setErrorMsg('');
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        setErrorMsg(err instanceof Error ? err.message : '加载指定课件失败');
+      })
       .finally(() => onConsumeExternalDeck?.());
   }, [externalDeckId, onConsumeExternalDeck]);
 
@@ -162,7 +171,11 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       setTitle(transferPayload.title);
       setSubject(transferPayload.subject);
       setGradeLevel(transferPayload.grade_level);
+      if (transferPayload.domain) setDomainId(transferPayload.domain);
+      if (transferPayload.branch) setBranch(transferPayload.branch);
       setSourceMaterial(transferPayload.context_summary);
+      setErrorMsg('');
+      setToastMsg('');
       onConsumeTransfer();
     }
   }, [transferPayload, onConsumeTransfer]);
@@ -181,7 +194,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       setEditTextValue('');
     }
     setFontScale(1.0);
-  }, [activeDeck?.id, activeSlideIdx]);
+  }, [activeDeck?.id, activeSlideIdx, currentSlide]);
 
   useEffect(() => {
     if (!presenterMode || !activeDeck) return;
@@ -189,13 +202,46 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       if (!timerPaused) setElapsedSec((s) => s + 1);
     }, 1000);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase() || '';
+      const isTypingField =
+        tag === 'input' ||
+        tag === 'textarea' ||
+        tag === 'select' ||
+        Boolean(target?.isContentEditable);
+      const isInteractiveButton =
+        tag === 'button' || tag === 'a' || Boolean(target?.closest('button, a'));
+
+      if (isTypingField) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setPresenterMode(false);
+        }
+        return;
+      }
+
+      if (
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'PageDown' ||
+        (e.key === ' ' && !isInteractiveButton)
+      ) {
         e.preventDefault();
         setActiveSlideIdx((i) => Math.min(activeDeck.slides.length - 1, i + 1));
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
         e.preventDefault();
         setActiveSlideIdx((i) => Math.max(0, i - 1));
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        setActiveSlideIdx(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setActiveSlideIdx(Math.max(0, activeDeck.slides.length - 1));
+      } else if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        setTimerPaused((p) => !p);
       } else if (e.key === 'Escape') {
+        e.preventDefault();
         setPresenterMode(false);
       }
     };
@@ -206,9 +252,50 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
     };
   }, [presenterMode, activeDeck, timerPaused]);
 
+  useEffect(() => {
+    if (presenterMode || !activeDeck) return;
+    const onStageKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase() || '';
+      if (
+        tag === 'input' ||
+        tag === 'textarea' ||
+        tag === 'select' ||
+        Boolean(target?.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setActiveSlideIdx((i) => Math.min(activeDeck.slides.length - 1, i + 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setActiveSlideIdx((i) => Math.max(0, i - 1));
+      }
+    };
+    window.addEventListener('keydown', onStageKey);
+    return () => window.removeEventListener('keydown', onStageKey);
+  }, [presenterMode, activeDeck]);
+
+  const handleBrowserSpeak = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(
+        editNotesValue ||
+          activeDeck?.slides[activeSlideIdx]?.speaker_notes ||
+          activeDeck?.title ||
+          '试讲示范文稿'
+      );
+      utter.lang = 'zh-CN';
+      window.speechSynthesis.speak(utter);
+    }
+  };
+
   const handleUploadSource = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setErrorMsg('');
     try {
       const res = await uploadSourceFile(file);
       setUploadedName(res.filename);
@@ -280,6 +367,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
     if (!activeDeck || !currentSlide) return;
     setSavingSlide(true);
     setToastMsg('');
+    setErrorMsg('');
     try {
       const edits: Record<string, string> = {};
       if (selectedTextId) {
@@ -301,6 +389,8 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       setDecks((prev) => prev.map((d) => (d.id === updatedDeck.id ? updatedDeck : d)));
       setToastMsg(`第 ${currentSlide.slide_number} 页修改已保存。`);
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '保存本页修改失败');
     } finally {
       setSavingSlide(false);
     }
@@ -310,6 +400,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
     if (!activeDeck || switchingTheme) return;
     setSwitchingTheme(true);
     setToastMsg('');
+    setErrorMsg('');
     try {
       const res = await apiJson<{ theme_id: string; slides: PptDeck['slides']; pptx_audit: PptDeck['pptx_audit'] }>(
         `/api/ppt/decks/${activeDeck.id}/theme`,
@@ -321,6 +412,8 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       setDecks((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
       setToastMsg('主题已切换并更新课件文件。');
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '切换主题失败');
     } finally {
       setSwitchingTheme(false);
     }
@@ -329,6 +422,8 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
   const handleRegenerateSlide = async () => {
     if (!activeDeck || !currentSlide || !regenInstruction.trim()) return;
     setRegenerating(true);
+    setToastMsg('');
+    setErrorMsg('');
     try {
       const res = await apiJson<{ slides: PptDeck['slides']; pptx_audit: PptDeck['pptx_audit'] }>(
         `/api/ppt/decks/${activeDeck.id}/slides/${currentSlide.slide_number}/regenerate`,
@@ -339,6 +434,8 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
       setDecks((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
       setToastMsg(`第 ${currentSlide.slide_number} 页已更新。`);
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '单页重构失败');
     } finally {
       setRegenerating(false);
     }
@@ -348,6 +445,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
     if (!activeDeck || narrating) return;
     setNarrating(true);
     setToastMsg('');
+    setErrorMsg('');
     try {
       const res = await apiJson<{ audio_artifact: ArtifactItem }>(
         `/api/ppt/decks/${activeDeck.id}/narrate`,
@@ -455,12 +553,14 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                   style={{ padding: '7px 10px' }}
                   onClick={() => {
                     setActiveDeck(d);
+                    setSelectedTheme(d.theme_id || 'porcelain_daylight');
                     setActiveSlideIdx(0);
                     setAudioArtifact(null);
                     setToastMsg('');
+                    setErrorMsg('');
                   }}
                 >
-                  <span className="spine-item-text" style={{ fontSize: 12.5 }}>{d.title}</span>
+                  <span className="spine-item-text" style={{ fontSize: 12.5 }}>{d.title}</span>{' '}
                   <span className="spine-count">{d.slides.length} 页</span>
                 </button>
               ))}
@@ -503,7 +603,9 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
               <div className="folio-strip" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div className="serif-heading" style={{ fontWeight: 600, fontSize: 18.5 }}>{activeDeck.title}</div>
+                    <div className="serif-heading" style={{ fontWeight: 600, fontSize: 18.5 }}>
+                      <MathText inline text={activeDeck.title} />
+                    </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 4, fontSize: 12, color: 'var(--ink-muted)' }}>
                       <span className="stamp-badge stamp-verified">
                         <IconShieldLock size={12} /> 版式已核对
@@ -612,7 +714,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                     >
                       <div className="slide-thumb-svg" dangerouslySetInnerHTML={{ __html: sl.svg_code }} />
                       <div className="slide-thumb-label">
-                        <span className="mono-num">{sl.slide_number}.</span> {sl.title}
+                        <span className="mono-num">{sl.slide_number}.</span> <MathText inline text={sl.title} />
                       </div>
                     </button>
                   ))}
@@ -713,6 +815,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                           setSelectedTextId(tid);
                           const f = currentSlide.editable_texts.find((x) => x.id === tid);
                           setEditTextValue(f?.text || '');
+                          setFontScale(1.0);
                         }}
                       >
                         {currentSlide.editable_texts.map((item) => (
@@ -773,36 +876,32 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                         <IconVoiceWave size={14} color="var(--accent)" />
                         {narrating ? '合成中…' : '生成试讲配音'}
                       </button>
+                      {isStaticDemoMode() && (
+                        <button
+                          type="button"
+                          className="btn btn-surface btn-sm"
+                          onClick={handleBrowserSpeak}
+                          data-testid="btn-browser-tts-preview"
+                        >
+                          试听浏览器朗读
+                        </button>
+                      )}
                     </div>
                     {audioUrl && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 8 }}>
-                        {isStaticDemoMode() ? (
-                          <button
-                            type="button"
-                            className="btn btn-surface btn-sm"
-                            onClick={() => {
-                              if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                                window.speechSynthesis.cancel();
-                                const utter = new SpeechSynthesisUtterance(
-                                  editNotesValue ||
-                                    activeDeck?.slides[activeSlideIdx]?.speaker_notes ||
-                                    activeDeck?.title ||
-                                    '试讲示范文稿'
-                                );
-                                utter.lang = 'zh-CN';
-                                window.speechSynthesis.speak(utter);
-                              }
-                            }}
-                          >
-                            试听浏览器朗读
-                          </button>
-                        ) : (
+                        {!isStaticDemoMode() && (
                           <audio key={audioUrl} controls preload="metadata" src={resolveApiUrl(audioUrl)} style={{ flex: 1, height: 34 }} />
                         )}
                         <a
                           href={resolveApiUrl(audioUrl)}
                           download
-                          onClick={(e) => handleSafeDownload(e, audioUrl, `${activeDeck?.title || '试讲配音'}.txt`)}
+                          onClick={(e) =>
+                            handleSafeDownload(
+                              e,
+                              audioUrl,
+                              audioArtifact?.filename || `${activeDeck?.title || '试讲配音'}.mp3`
+                            )
+                          }
                           className="btn btn-surface btn-sm"
                           style={{ textDecoration: 'none' }}
                         >
@@ -872,7 +971,7 @@ export const PptStudioWorkspace: React.FC<PptStudioWorkspaceProps> = ({
                 <div>
                   <div style={{ fontSize: 11.5, color: '#8FD3B8', marginBottom: 8, fontWeight: 700 }}>试讲提词器 / 演讲者备注</div>
                   <div style={{ fontSize: 15.5, lineHeight: 1.82, color: '#F4F1EA', whiteSpace: 'pre-wrap' }}>
-                    {currentSlide.speaker_notes}
+                    <MathText text={currentSlide.speaker_notes} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>

@@ -580,6 +580,8 @@ export interface TeachingTransferPayload {
   title: string;
   subject: string;
   grade_level: string;
+  domain?: string;
+  branch?: string;
   context_summary: string;
   target_tab: TeachTab;
 }

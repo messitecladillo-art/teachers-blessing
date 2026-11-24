@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { isStaticDemoMode } from '../services/api';
 import { HkRoute, HomeTab, LLMStatusSummary } from '../types';
 import { UI_LABELS } from '../utils/i18n';
@@ -19,6 +19,7 @@ interface HkTopBarProps {
   onOpenPedagogy: () => void;
   onOpenInsights: () => void;
   onBackFromTool?: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const HkTopBar: React.FC<HkTopBarProps> = ({
@@ -36,10 +37,20 @@ export const HkTopBar: React.FC<HkTopBarProps> = ({
   onOpenPedagogy,
   onOpenInsights,
   onBackFromTool,
+  onOpenCommandPalette,
 }) => {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const t = UI_LABELS.zh;
   const isToolRoute = route.startsWith('tool_');
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setAvatarMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [avatarMenuOpen]);
 
   return (
     <header className="hk-topbar">
@@ -104,6 +115,33 @@ export const HkTopBar: React.FC<HkTopBarProps> = ({
       </div>
 
       <div className="hk-topbar-right">
+        {onOpenCommandPalette && (
+          <button
+            type="button"
+            className="hk-pill-control"
+            data-testid="topbar-cmdk-btn"
+            title="全局搜索与快速跳转 (Ctrl+K)"
+            aria-label="快速跳转 Ctrl+K"
+            onClick={onOpenCommandPalette}
+          >
+            <span aria-hidden="true">🔍</span>
+            <span>快速跳转</span>
+            <kbd
+              className="mono-num"
+              style={{
+                background: '#f1f3f6',
+                border: '1px solid #e2e6ee',
+                padding: '1px 6px',
+                borderRadius: 6,
+                fontSize: 11,
+                color: '#6b7280',
+              }}
+            >
+              Ctrl+K
+            </kbd>
+          </button>
+        )}
+
         <button
           type="button"
           className="hk-pill-control hk-hide-mobile"

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { apiJson, handleSafeDownload, resolveApiUrl } from '../services/api';
 import { CourseRecord, WeeklyTracker } from '../types';
 import { HkIcon } from '../components/HkAssets';
@@ -36,6 +36,28 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!menuId) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMenuId(null);
+        setConfirmDeleteId(null);
+      }
+    };
+    const onPointerDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-course-menu-root="true"]')) return;
+      setMenuId(null);
+      setConfirmDeleteId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [menuId]);
+
   const handleConfirmDelete = async (courseId: string) => {
     setDeletingId(courseId);
     try {
@@ -50,11 +72,24 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
     }
   };
 
+  const tabCounts = useMemo(() => {
+    let inProgress = 0;
+    let completed = 0;
+    for (const c of courses) {
+      if (c.status === 'completed' || c.progress_pct >= 100) completed += 1;
+      else inProgress += 1;
+    }
+    return { all: courses.length, in_progress: inProgress, completed };
+  }, [courses]);
+
+  const hasActiveFilter = filter !== 'all' || Boolean(query.trim());
+
   const visibleCourses = useMemo(() => {
     const qLow = query.trim().toLowerCase();
     return courses.filter((c) => {
-      if (filter === 'in_progress' && c.status !== 'in_progress') return false;
-      if (filter === 'completed' && c.status !== 'completed') return false;
+      const isDone = c.status === 'completed' || c.progress_pct >= 100;
+      if (filter === 'in_progress' && isDone) return false;
+      if (filter === 'completed' && !isDone) return false;
       if (qLow) {
         const hay = `${c.title} ${c.subject} ${c.curator} ${c.description}`.toLowerCase();
         if (!hay.includes(qLow)) return false;
@@ -75,21 +110,21 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
             className={`hk-chip-btn ${filter === 'all' ? 'active' : ''}`}
             onClick={() => setFilter('all')}
           >
-            全部
+            全部 ({tabCounts.all})
           </button>
           <button
             type="button"
             className={`hk-chip-btn ${filter === 'in_progress' ? 'active' : ''}`}
             onClick={() => setFilter('in_progress')}
           >
-            进行中
+            进行中 ({tabCounts.in_progress})
           </button>
           <button
             type="button"
             className={`hk-chip-btn ${filter === 'completed' ? 'active' : ''}`}
             onClick={() => setFilter('completed')}
           >
-            已完成
+            已完成 ({tabCounts.completed})
           </button>
         </div>
 
@@ -109,10 +144,32 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {visibleCourses.length === 0 ? (
             <div className="paper-folio" style={{ textAlign: 'center', padding: '42px 24px' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>暂无匹配课程</div>
-              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>可以从课程集市加入精品专题，或在首页输入目标创建新课程</div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-                <button type="button" className="btn btn-primary" onClick={onGoCreateCourse}>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                {hasActiveFilter ? '没有符合当前筛选条件的课程' : '暂无已加入课程'}
+              </div>
+              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+                {hasActiveFilter
+                  ? '可一键重置筛选与搜索词查看全部课程，或前往集市加入新专题'
+                  : '可以从课程集市加入精品专题，或在首页输入目标创建新课程'}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+                {hasActiveFilter && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setFilter('all');
+                      setQuery('');
+                    }}
+                  >
+                    重置筛选条件
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={`btn ${hasActiveFilter ? 'btn-surface' : 'btn-primary'}`}
+                  onClick={onGoCreateCourse}
+                >
                   前往打造课程
                 </button>
                 <button type="button" className="btn btn-surface" onClick={onOpenMarketplace}>
@@ -122,6 +179,7 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
             </div>
           ) : (
             visibleCourses.map((c) => {
+              const isCompleted = c.status === 'completed' || c.progress_pct >= 100;
               const targetLectureId = c.next_lecture?.id || c.last_lecture_id || c.units?.[0]?.lectures?.[0]?.id || '';
               return (
                 <div key={c.id} className="hk-ticket-card">
@@ -132,13 +190,20 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
                         <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>课程名称</div>
                         <div style={{ fontSize: 18, fontWeight: 700, color: '#181a1f', lineHeight: 1.3 }}>{c.title}</div>
                       </div>
-                      <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+                      <div
+                        style={{ position: 'relative' }}
+                        data-course-menu-root="true"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           type="button"
                           className="hk-circle-btn"
                           style={{ width: 28, height: 28, fontSize: 13 }}
                           aria-label="更多操作"
-                          onClick={() => setMenuId((id) => (id === c.id ? null : c.id))}
+                          onClick={() => {
+                            setConfirmDeleteId(null);
+                            setMenuId((id) => (id === c.id ? null : c.id));
+                          }}
                         >
                           ···
                         </button>
@@ -247,16 +312,30 @@ export const HkMyCoursesView: React.FC<HkMyCoursesViewProps> = ({
                       else onOpenCourseSpace(c.id);
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>接下来</div>
-                      <span className="hk-badge-lecture">
-                        {c.next_lecture?.kind === 'quiz' ? '测验' : '讲座'}
-                      </span>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: '#181a1f', marginTop: 8, lineHeight: 1.4 }}>
-                        {c.next_lecture?.title || '进入课程大纲'}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 12, color: '#3b4f7d', fontWeight: 600 }}>进入白板课堂 →</div>
+                    {isCompleted ? (
+                      <>
+                        <div>
+                          <span className="badge badge-verified">已完成全部讲次</span>
+                          <div style={{ fontSize: 14.5, fontWeight: 700, color: '#181a1f', marginTop: 8, lineHeight: 1.4 }}>
+                            课程已全数掌握，可复盘板书或打印速查表
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>复盘白板课堂 →</div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>接下来</div>
+                          <span className="hk-badge-lecture">
+                            {c.next_lecture?.kind === 'quiz' ? '测验' : '讲座'}
+                          </span>
+                          <div style={{ fontSize: 14.5, fontWeight: 700, color: '#181a1f', marginTop: 8, lineHeight: 1.4 }}>
+                            {c.next_lecture?.title || '进入课程大纲'}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12, color: '#3b4f7d', fontWeight: 600 }}>进入白板课堂 →</div>
+                      </>
+                    )}
                   </div>
                 </div>
               );

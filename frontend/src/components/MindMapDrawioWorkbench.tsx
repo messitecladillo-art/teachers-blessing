@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { apiJson, postSseStream } from '../services/api';
 import {
   MindMapCategory,
@@ -142,6 +142,18 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
   const [drawioReady, setDrawioReady] = useState(false);
   const [drawioOfflineWarn, setDrawioOfflineWarn] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const activeMapRef = useRef<MindMapRecord | null>(activeMap);
+  const drawioReadyRef = useRef<boolean>(drawioReady);
+  const loadedDrawioMapIdRef = useRef<string>('');
+  const onArtifactsChangedRef = useRef(onArtifactsChanged);
+  activeMapRef.current = activeMap;
+  drawioReadyRef.current = drawioReady;
+  onArtifactsChangedRef.current = onArtifactsChanged;
+
+  const rawSvgUid = useId();
+  const cleanSvgUid = rawSvgUid.replace(/:/g, '');
+  const gridPatternId = `edu-grid-dots-${cleanSvgUid}`;
+  const arrowMarkerId = `arrow-vermilion-${cleanSvgUid}`;
 
   // Interactive viewport & drag state
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -181,15 +193,19 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
     setToast(`已载入导图《${externalMap.title}》`);
   }, [externalMap]);
 
-  // External diagram iframe postMessage bridge
+  // External diagram iframe postMessage bridge (stabilized via refs so autosave doesn't reset listener)
   useEffect(() => {
     if (engineMode !== 'drawio') {
+      drawioReadyRef.current = false;
+      loadedDrawioMapIdRef.current = '';
       setDrawioReady(false);
       setDrawioOfflineWarn(false);
       return;
     }
     const timer = window.setTimeout(() => {
-      setDrawioOfflineWarn((prev) => (drawioReady ? prev : true));
+      if (!drawioReadyRef.current) {
+        setDrawioOfflineWarn(true);
+      }
     }, 6500);
 
     const onMsg = async (evt: MessageEvent) => {
@@ -202,29 +218,37 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
       }
       if (!msg?.event) return;
 
+      const curMap = activeMapRef.current;
       if (msg.event === 'init') {
+        drawioReadyRef.current = true;
         setDrawioReady(true);
         setDrawioOfflineWarn(false);
+        loadedDrawioMapIdRef.current = curMap?.id || '';
         iframeRef.current.contentWindow?.postMessage(
           JSON.stringify({
             action: 'load',
             autosave: 1,
-            xml: activeMap?.drawio_xml || '',
+            xml: curMap?.drawio_xml || '',
           }),
           '*'
         );
-      } else if ((msg.event === 'save' || msg.event === 'autosave') && msg.xml && activeMap) {
+      } else if ((msg.event === 'save' || msg.event === 'autosave') && msg.xml && curMap) {
         try {
-          const res = await apiJson<{ mindmap: MindMapRecord }>(`/api/mindmap/${activeMap.id}`, {
+          const res = await apiJson<{ mindmap: MindMapRecord }>(`/api/mindmap/${curMap.id}`, {
             method: 'PUT',
             body: JSON.stringify({ drawio_xml: msg.xml }),
           });
+          activeMapRef.current = res.mindmap;
+          loadedDrawioMapIdRef.current = res.mindmap.id;
           setActiveMap(res.mindmap);
+          setMaps((prev) => prev.map((m) => (m.id === res.mindmap.id ? res.mindmap : m)));
           setDraftGraph(computeClientLayout(res.mindmap.graph));
           setToast('画布修改已同步保存');
-          onArtifactsChanged?.();
-        } catch {
-          /* ignore transient autosave error */
+          onArtifactsChangedRef.current?.();
+        } catch (err) {
+          if (msg.event === 'save') {
+            setErrMsg(err instanceof Error ? err.message : '保存画布失败');
+          }
         }
         if (msg.exit) setEngineMode('local');
       } else if (msg.event === 'exit') {
@@ -236,7 +260,21 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
       window.clearTimeout(timer);
       window.removeEventListener('message', onMsg);
     };
-  }, [engineMode, activeMap?.id, activeMap?.drawio_xml, drawioReady]);
+  }, [engineMode]);
+
+  useEffect(() => {
+    if (engineMode !== 'drawio' || !drawioReadyRef.current || !activeMap) return;
+    if (loadedDrawioMapIdRef.current === activeMap.id) return;
+    loadedDrawioMapIdRef.current = activeMap.id;
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({
+        action: 'load',
+        autosave: 1,
+        xml: activeMap.drawio_xml || '',
+      }),
+      '*'
+    );
+  }, [engineMode, activeMap]);
 
   const hiddenIds = useMemo(() => {
     const hidden = new Set<string>();
@@ -458,6 +496,8 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
                 setActiveMap(found);
                 setDraftGraph(computeClientLayout(found.graph));
                 setSelectedId(found.graph.nodes[0]?.id || 'n_root');
+                setErrMsg('');
+                setToast('');
               }
             }}
             data-testid="mindmap-selector"
@@ -652,14 +692,14 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
               onMouseLeave={() => setDragState(null)}
             >
               <defs>
-                <pattern id="edu-grid-dots" width="24" height="24" patternUnits="userSpaceOnUse">
+                <pattern id={gridPatternId} width="24" height="24" patternUnits="userSpaceOnUse">
                   <circle cx="12" cy="12" r="0.9" fill="#D5CEC0" />
                 </pattern>
-                <marker id="arrow-vermilion" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <marker id={arrowMarkerId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 1 L 10 5 L 0 9 z" fill="#B43B2A" />
                 </marker>
               </defs>
-              <rect data-bg="1" x="0" y="0" width="1120" height="620" fill="url(#edu-grid-dots)" />
+              <rect data-bg="1" x="0" y="0" width="1120" height="620" fill={`url(#${gridPatternId})`} />
 
               <g transform={`translate(${560 + pan.x}, ${310 + pan.y}) scale(${zoom}) translate(-540, -290)`}>
                 {/* Hierarchical Bezier Connectors */}
@@ -705,7 +745,7 @@ export const MindMapDrawioWorkbench: React.FC<MindMapDrawioWorkbenchProps> = ({
                         stroke="#B43B2A"
                         strokeWidth="1.6"
                         strokeDasharray="5,4"
-                        markerEnd="url(#arrow-vermilion)"
+                        markerEnd={`url(#${arrowMarkerId})`}
                       />
                       {lk.label && (
                         <g transform={`translate(${mx}, ${(sy + ty) / 4 + my / 2})`}>

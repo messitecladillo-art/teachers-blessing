@@ -91,6 +91,7 @@ def latex_to_spoken_zh(text: str) -> str:
         return ""
     s = str(text)
     s = re.sub(r"```[\s\S]*?```", " ", s)
+    s = re.sub(r"(?m)^\s*>\s?", " ", s)
     s = re.sub(r"\$\$?", " ", s)
 
     # Unwrap common text wrappers
@@ -105,9 +106,12 @@ def latex_to_spoken_zh(text: str) -> str:
     s = re.sub(r"\\mathbb\{C\}", " 复数集 ", s)
     s = re.sub(r"\\mathbb\{([A-Za-z]+)\}", r" \1 ", s)
 
+    # Strip sizing wrappers & thin-space commands before operator replacements
+    s = re.sub(r"\\(?:left|right)\b|\\[,;:!]", " ", s)
+
     # Fractions & roots (nested-safe)
     for _ in range(3):
-        s, n = re.subn(r"\\d?frac\{([^{}]+)\}\{([^{}]+)\}", r" \2 分之 \1 ", s)
+        s, n = re.subn(r"\\(?:d|t)?frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}", r" \2 分之 \1 ", s)
         if n == 0:
             break
 
@@ -115,56 +119,58 @@ def latex_to_spoken_zh(text: str) -> str:
     for _ in range(2):
         s = re.sub(r"\\sqrt\{([^{}]+)\}", r" 根号下 \1 ", s)
 
-    s = re.sub(r"-\s*\\infty", " 负无穷大 ", s)
-    s = re.sub(r"\+\s*\\infty", " 正无穷大 ", s)
+    s = re.sub(r"-\s*\\infty(?![A-Za-z])", " 负无穷大 ", s)
+    s = re.sub(r"\+\s*\\infty(?![A-Za-z])", " 正无穷大 ", s)
 
     replacements = [
-        (r"\\Rightarrow", " 推出 "),
-        (r"\\Leftarrow", " 反推得到 "),
-        (r"\\iff", " 当且仅当 "),
-        (r"\\leftrightarrow", " 等价于 "),
-        (r"\\rightarrow|\\to", " 趋近于 "),
-        (r"\\mapsto", " 映射到 "),
-        (r"\\ge(?:q)?", " 大于等于 "),
-        (r"\\le(?:q)?", " 小于等于 "),
-        (r"\\ne(?:q)?", " 不等于 "),
-        (r"\\approx", " 约等于 "),
-        (r"\\equiv|\\cong", " 同构于 "),
-        (r"\\propto", " 正比于 "),
-        (r"\\infty", " 无穷大 "),
-        (r"\\cup", " 并 "),
-        (r"\\cap", " 交 "),
+        (r"\\Rightarrow(?![A-Za-z])", " 推出 "),
+        (r"\\Leftarrow(?![A-Za-z])", " 反推得到 "),
+        (r"\\iff(?![A-Za-z])", " 当且仅当 "),
+        (r"\\leftrightarrow(?![A-Za-z])", " 等价于 "),
+        (r"\\rightarrow\b|\\to\b", " 趋近于 "),
+        (r"\\mapsto(?![A-Za-z])", " 映射到 "),
+        (r"\\ge(?:q)?\b", " 大于等于 "),
+        (r"\\le(?:q)?\b", " 小于等于 "),
+        (r"\\ne(?:q)?\b", " 不等于 "),
+        (r"\\approx(?![A-Za-z])", " 约等于 "),
+        (r"\\equiv(?![A-Za-z])|\\cong(?![A-Za-z])", " 同构于 "),
+        (r"\\propto(?![A-Za-z])", " 正比于 "),
+        (r"\\infty(?![A-Za-z])", " 无穷大 "),
+        (r"\\emptyset\b|\\varnothing\b", " 空集 "),
+        (r"\\sum(?![A-Za-z])", " 求和 "),
+        (r"\\int(?![A-Za-z])", " 积分 "),
+        (r"\\cup(?![A-Za-z])", " 并 "),
+        (r"\\cap(?![A-Za-z])", " 交 "),
         (r"\\in\b", " 属于 "),
         (r"\\notin\b", " 不属于 "),
         (r"\\subset(?:eq)?\b", " 包含于 "),
         (r"\\mid\b", " 整除 "),
-        (r"\\cdot", " 乘 "),
-        (r"\\times", " 乘以 "),
-        (r"\\div", " 除以 "),
-        (r"\\pm", " 加减 "),
+        (r"\\cdot(?![A-Za-z])", " 乘 "),
+        (r"\\times(?![A-Za-z])", " 乘以 "),
+        (r"\\div(?![A-Za-z])", " 除以 "),
+        (r"\\pm(?![A-Za-z])", " 加减 "),
         (r"\\ln\b", " 自然对数 "),
         (r"\\log\b", " 对数 "),
         (r"\\sin\b", " 正弦 "),
         (r"\\cos\b", " 余弦 "),
         (r"\\tan\b", " 正切 "),
-        (r"\\lim\b", " 极限 "),
-        (r"\\max\b", " 最大值 "),
-        (r"\\min\b", " 最小值 "),
-        (r"\\alpha\b", " 阿尔法 "),
-        (r"\\beta\b", " 贝塔 "),
-        (r"\\gamma\b", " 伽马 "),
-        (r"\\Delta\b", " 判别式德尔塔 "),
-        (r"\\delta\b", " 德尔塔 "),
-        (r"\\theta\b", " 西塔 "),
-        (r"\\varphi\b|\\phi\b", " 斐 "),
-        (r"\\lambda\b", " 拉姆达 "),
-        (r"\\pi\b", " 派 "),
-        (r"\\sigma\b", " 西格玛 "),
-        (r"\\omega\b", " 欧米伽 "),
-        (r"\\partial\b", " 偏 "),
-        (r"\\forall\b", " 对任意 "),
-        (r"\\exists\b", " 存在 "),
-        (r"\\left|\\right|\\,|\\;|\\:|\\!", " "),
+        (r"\\lim(?![A-Za-z])", " 极限 "),
+        (r"\\max(?![A-Za-z])", " 最大值 "),
+        (r"\\min(?![A-Za-z])", " 最小值 "),
+        (r"\\alpha(?![A-Za-z])", " 阿尔法 "),
+        (r"\\beta(?![A-Za-z])", " 贝塔 "),
+        (r"\\gamma(?![A-Za-z])", " 伽马 "),
+        (r"\\Delta(?![A-Za-z])", " 判别式德尔塔 "),
+        (r"\\delta(?![A-Za-z])", " 德尔塔 "),
+        (r"\\theta(?![A-Za-z])", " 西塔 "),
+        (r"\\varphi(?![A-Za-z])|\\phi(?![A-Za-z])", " 斐 "),
+        (r"\\lambda(?![A-Za-z])", " 拉姆达 "),
+        (r"\\pi(?![A-Za-z])", " 派 "),
+        (r"\\sigma(?![A-Za-z])", " 西格玛 "),
+        (r"\\omega(?![A-Za-z])", " 欧米伽 "),
+        (r"\\partial(?![A-Za-z])", " 偏 "),
+        (r"\\forall(?![A-Za-z])", " 对任意 "),
+        (r"\\exists(?![A-Za-z])", " 存在 "),
     ]
     for pat, rep in replacements:
         s = re.sub(pat, rep, s)
@@ -181,14 +187,33 @@ def latex_to_spoken_zh(text: str) -> str:
     s = re.sub(r"\^\{([^{}]+)\}", r" 的 \1 次方 ", s)
     s = re.sub(r"\^(-?\d+|[A-Za-z])", r" 的 \1 次方 ", s)
     s = re.sub(r"_\{([^{}]+)\}", r" 下标 \1 ", s)
+    s = re.sub(r"_([A-Za-z0-9]+)", r" 下标 \1 ", s)
 
-    # Unicode symbols
+    # Second fraction & root pass after inner \sqrt / ^ / _ braces have been unwrapped
+    for _ in range(3):
+        s, n = re.subn(r"\\(?:d|t)?frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}", r" \2 分之 \1 ", s)
+        if n == 0:
+            break
+    s = re.sub(r"\\sqrt\{([^{}]+)\}", r" 根号下 \1 ", s)
+
+    # Multi-char ASCII operators & Unicode symbols
     unicode_map = {
+        "<=>": " 当且仅当 ",
+        "<->": " 等价于 ",
+        "=>": " 推出 ",
+        "->": "，下一步 ",
+        ">=": " 大于等于 ",
+        "<=": " 小于等于 ",
+        "!=": " 不等于 ",
         "⇒": " 推出 ",
         "→": "，下一步 ",
         "≥": " 大于等于 ",
         "≤": " 小于等于 ",
         "≠": " 不等于 ",
+        ">": " 大于 ",
+        "<": " 小于 ",
+        "＞": " 大于 ",
+        "＜": " 小于 ",
         "∞": " 无穷大 ",
         "∈": " 属于 ",
         "∝": " 正比于 ",
@@ -200,7 +225,7 @@ def latex_to_spoken_zh(text: str) -> str:
         s = s.replace(k, v)
 
     s = re.sub(r"\\[A-Za-z]+", " ", s)
-    s = re.sub(r"[{}\\#*`>~|]", " ", s)
+    s = re.sub(r"[{}\\#*`>~|<]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s
 

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { apiJson } from '../services/api';
-import { CourseLecture, CourseRecord, LectureQuizSubmitResult } from '../types';
+import { CourseLecture, CourseRecord, LectureQuizItem, LectureQuizSubmitResult } from '../types';
 import { MathText } from './MathText';
 
 interface WhiteboardQuizPaneProps {
   courseId: string;
   lecture: CourseLecture;
+  subject?: string;
+  gradeLevel?: string;
   generatingQuiz: boolean;
   onCourseUpdated: (c: CourseRecord) => void;
   onGenerateQuiz: () => void;
@@ -21,31 +23,172 @@ const MASTERY_LABEL: Record<string, { text: string; bg: string; fg: string }> = 
   unstarted: { text: '未开始', bg: '#f8fafc', fg: '#6b7280' },
 };
 
+const getOptionLetter = (opt: string, oi: number) => {
+  const m = String(opt || '').trim().match(/^([A-F])(?=[.、:：\s)\uff09]|$)/i);
+  return m ? m[1].toUpperCase() : ['A', 'B', 'C', 'D', 'E', 'F'][oi] || 'A';
+};
+
 export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
   courseId,
   lecture,
+  subject,
+  gradeLevel,
   generatingQuiz,
   onCourseUpdated,
   onGenerateQuiz,
   onJumpToBlock,
   onBackToBoard,
 }) => {
-  const quizItems = lecture.quiz_items || [];
+  const quizItems = Array.isArray(lecture?.quiz_items) ? lecture.quiz_items : [];
+  const lectureTitle = lecture?.title || '当前讲次';
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<LectureQuizSubmitResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [savedErrIds, setSavedErrIds] = useState<Record<string, boolean>>({});
+  const [savingErrIds, setSavingErrIds] = useState<Record<string, boolean>>({});
+  const [batchSaving, setBatchSaving] = useState(false);
+
+  const inFlightErrRef = useRef<Set<string>>(new Set());
+  const batchInFlightRef = useRef(false);
+  const savedErrRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    inFlightErrRef.current.clear();
+    batchInFlightRef.current = false;
+    savedErrRef.current.clear();
     setAnswers({});
     setResult(null);
     setErrorMsg('');
-  }, [lecture.id]);
+    setSavedErrIds({});
+    setSavingErrIds({});
+    setBatchSaving(false);
+  }, [lecture?.id]);
 
-  const badge = MASTERY_LABEL[result?.mastery || lecture.mastery] || MASTERY_LABEL.unstarted;
+  useEffect(() => {
+    if (!result) return;
+    const gradedItems = Array.isArray(result.items) ? result.items : [];
+    const hasUngraded = quizItems.some((q) => !gradedItems.some((it) => it.id === q.id));
+    if (hasUngraded) {
+      setResult(null);
+      setSavedErrIds({});
+      savedErrRef.current.clear();
+    }
+  }, [quizItems, result]);
+
+  const badge = MASTERY_LABEL[result?.mastery || lecture?.mastery || 'unstarted'] || MASTERY_LABEL.unstarted;
+  const gradedItems = Array.isArray(result?.items) ? result.items : [];
+  const anySingleSaving = Object.values(savingErrIds).some(Boolean);
+
+  const wrongPairs = result
+    ? quizItems.flatMap((q) => {
+        const graded = gradedItems.find((it) => it.id === q.id);
+        return graded && !graded.correct ? [{ q, graded }] : [];
+      })
+    : [];
+  const unsavedWrongPairs = wrongPairs.filter(({ q }) => !savedErrIds[q.id]);
+
+  const postErrorBookItem = async (
+    q: LectureQuizItem,
+    graded: LectureQuizSubmitResult['items'][number]
+  ) => {
+    const selectedOpt = graded.selected
+      ? (q.options || []).find((o, oi) => getOptionLetter(o, oi) === graded.selected.toUpperCase())
+      : undefined;
+    const myMistake = graded.selected
+      ? `随堂检验误选 ${graded.selected}${selectedOpt ? `（${selectedOpt}）` : ''}，正确答案为 ${graded.expected}`
+      : `随堂检验未作答，正确答案为 ${graded.expected}`;
+    const explanationText = graded.explanation || q.explanation || '';
+    const safeTitle = (lecture?.title || '当前讲次').trim() || '当前讲次';
+    const keyTakeaway = (
+      explanationText || `复盘「${safeTitle}」对应板书要点，正确答案：${graded.expected}`
+    ).slice(0, 240);
+
+    await apiJson('/api/tutor/error-book', {
+      method: 'POST',
+      body: JSON.stringify({
+        subject: subject?.trim() || '综合学科',
+        grade_level: gradeLevel?.trim() || '通用年级',
+        topic_tag: safeTitle.slice(0, 48),
+        question_text: String(q.question || '随堂诊断题'),
+        my_mistake: myMistake,
+        key_takeaway: keyTakeaway,
+        solution_json: {
+          source: 'whiteboard_quiz',
+          course_id: courseId,
+          lecture_id: lecture?.id || '',
+          options: q.options || [],
+          selected: graded.selected,
+          final_answer: graded.expected,
+          explanation: explanationText,
+          related_block_id: graded.related_block_id || q.related_block_id || '',
+        },
+      }),
+    });
+  };
+
+  const handleSaveSingleWrong = async (
+    q: LectureQuizItem,
+    graded: LectureQuizSubmitResult['items'][number]
+  ) => {
+    if (
+      batchInFlightRef.current ||
+      inFlightErrRef.current.has(q.id) ||
+      savedErrRef.current.has(q.id) ||
+      savedErrIds[q.id] ||
+      savingErrIds[q.id]
+    ) {
+      return;
+    }
+    inFlightErrRef.current.add(q.id);
+    setSavingErrIds((prev) => ({ ...prev, [q.id]: true }));
+    setErrorMsg('');
+    try {
+      await postErrorBookItem(q, graded);
+      savedErrRef.current.add(q.id);
+      setSavedErrIds((prev) => ({ ...prev, [q.id]: true }));
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加入错题本失败');
+    } finally {
+      inFlightErrRef.current.delete(q.id);
+      setSavingErrIds((prev) => ({ ...prev, [q.id]: false }));
+    }
+  };
+
+  const handleBatchSaveWrong = async () => {
+    if (
+      !unsavedWrongPairs.length ||
+      batchSaving ||
+      batchInFlightRef.current ||
+      inFlightErrRef.current.size > 0
+    ) {
+      return;
+    }
+    batchInFlightRef.current = true;
+    setBatchSaving(true);
+    setErrorMsg('');
+    try {
+      for (const { q, graded } of unsavedWrongPairs) {
+        if (savedErrRef.current.has(q.id) || inFlightErrRef.current.has(q.id)) continue;
+        inFlightErrRef.current.add(q.id);
+        try {
+          await postErrorBookItem(q, graded);
+          savedErrRef.current.add(q.id);
+          setSavedErrIds((prev) => ({ ...prev, [q.id]: true }));
+        } finally {
+          inFlightErrRef.current.delete(q.id);
+        }
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '批量收录错题失败');
+    } finally {
+      batchInFlightRef.current = false;
+      setBatchSaving(false);
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!quizItems.length || submitting) return;
+    if (!quizItems.length || submitting || !lecture?.id) return;
     setSubmitting(true);
     setErrorMsg('');
     try {
@@ -57,6 +200,8 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
         }
       );
       setResult(res);
+      savedErrRef.current.clear();
+      setSavedErrIds({});
       if (res.course) onCourseUpdated(res.course);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : '提交批改失败');
@@ -82,7 +227,7 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h3 style={{ margin: 0, fontSize: 18, color: '#181a1f' }}>随堂即时检验 · {lecture.title}</h3>
+            <h3 style={{ margin: 0, fontSize: 18, color: '#181a1f' }}>随堂即时检验 · {lectureTitle}</h3>
             <span
               style={{
                 fontSize: 11.5,
@@ -140,9 +285,34 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
               本讲掌握度已更新为「{badge.text}」，错题建议点击下方“回看对应板书”复盘。
             </div>
           </div>
-          <button type="button" className="btn btn-surface btn-sm" onClick={() => setResult(null)}>
-            重新作答
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {wrongPairs.length > 0 && (
+              <button
+                type="button"
+                className={`btn btn-sm ${unsavedWrongPairs.length === 0 ? 'btn-surface' : 'btn-primary'}`}
+                disabled={batchSaving || anySingleSaving || unsavedWrongPairs.length === 0}
+                onClick={handleBatchSaveWrong}
+                data-testid="wb-save-all-err-btn"
+              >
+                {unsavedWrongPairs.length === 0
+                  ? '✓ 已入错题本'
+                  : batchSaving
+                  ? '正在收录错题…'
+                  : '一键收录错题'}
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-surface btn-sm"
+              onClick={() => {
+                savedErrRef.current.clear();
+                setResult(null);
+                setSavedErrIds({});
+              }}
+            >
+              重新作答
+            </button>
+          </div>
         </div>
       )}
 
@@ -184,7 +354,7 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
         <>
           {quizItems.map((q, qi) => {
             const chosen = answers[q.id] || '';
-            const graded = result?.items.find((it) => it.id === q.id);
+            const graded = gradedItems.find((it) => it.id === q.id);
             return (
               <div
                 key={q.id}
@@ -203,7 +373,7 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
                     <span className="mono-num" style={{ color: '#3b4f7d', marginRight: 6 }}>
                       Q{qi + 1}.
                     </span>
-                    <MathText text={q.question} />
+                    <MathText text={q.question || ''} />
                   </div>
                   {(q.related_block_id || graded?.related_block_id) && (
                     <button
@@ -219,7 +389,7 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
                   {(q.options || []).map((opt, oi) => {
-                    const letter = opt.trim().slice(0, 1).toUpperCase() || ['A', 'B', 'C', 'D'][oi] || 'A';
+                    const letter = getOptionLetter(opt, oi);
                     const isSelected = chosen === letter;
                     const isExpected = graded && graded.expected === letter;
                     const isWrongSelected = graded && isSelected && !graded.correct;
@@ -250,7 +420,7 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
                           fontFamily: 'inherit',
                         }}
                       >
-                        <MathText text={opt} />
+                        <MathText text={String(opt ?? '')} />
                       </button>
                     );
                   })}
@@ -266,12 +436,37 @@ export const WhiteboardQuizPane: React.FC<WhiteboardQuizPaneProps> = ({
                       fontSize: 13,
                       color: '#374151',
                       lineHeight: 1.55,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 6,
                     }}
                   >
-                    <strong style={{ color: graded.correct ? '#15803d' : '#b91c1c', marginRight: 6 }}>
-                      {graded.correct ? '✓ 回答正确' : `✗ 正确答案 ${graded.expected}`}
-                    </strong>
-                    <MathText text={graded.explanation || q.explanation || ''} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                      <strong style={{ color: graded.correct ? '#15803d' : '#b91c1c' }}>
+                        {graded.correct ? '✓ 回答正确' : `✗ 正确答案 ${graded.expected}`}
+                      </strong>
+                      {!graded.correct && (
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${savedErrIds[q.id] ? 'btn-surface' : 'btn-ghost'}`}
+                          style={{
+                            padding: '2px 10px',
+                            fontSize: 12,
+                            color: savedErrIds[q.id] ? '#15803d' : '#b91c1c',
+                            borderColor: savedErrIds[q.id] ? '#86efac' : '#fca5a5',
+                            background: '#ffffff',
+                          }}
+                          disabled={Boolean(savedErrIds[q.id] || savingErrIds[q.id] || batchSaving)}
+                          onClick={() => handleSaveSingleWrong(q, graded)}
+                          data-testid={`wb-save-err-${q.id}`}
+                        >
+                          {savedErrIds[q.id] ? '✓ 已入错题本' : savingErrIds[q.id] ? '收录中…' : '+ 加入错题本'}
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <MathText text={graded.explanation || q.explanation || ''} />
+                    </div>
                   </div>
                 )}
               </div>

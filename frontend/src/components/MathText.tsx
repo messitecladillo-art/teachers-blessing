@@ -5,10 +5,12 @@ import 'katex/dist/katex.min.css';
 interface MathTextProps {
   text: string;
   className?: string;
+  inline?: boolean;
 }
 
 function formatPlainSegment(raw: string): string {
   const escaped = raw
+    .replace(/\\\$/g, '$')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
@@ -18,14 +20,15 @@ function formatPlainSegment(raw: string): string {
 }
 
 /**
- * Splits text into math tokens ($$...$$ / $...$) and plain text tokens so HTML line breaks
- * and bold rules never corrupt KaTeX inline <svg><path d="..."/></svg> geometry.
+ * Splits text into math tokens ($$...$$, \[...\], \(...\), and unescaped $...$) and plain text tokens
+ * so HTML line breaks and bold rules never corrupt KaTeX inline <svg><path d="..."/></svg> geometry.
  */
-export const MathText: React.FC<MathTextProps> = ({ text, className = '' }) => {
+export const MathText: React.FC<MathTextProps> = ({ text, className = '', inline = false }) => {
   const html = useMemo(() => {
     if (!text) return '';
     const input = String(text);
-    const tokenRe = /(\$\$[\s\S]+?\$\$|\$[^\n$]+?\$)/g;
+    const tokenRe =
+      /((?<!\\)\$\$[\s\S]+?(?<!\\)\$\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|(?<!\\)\$(?:\\.|[^\\\n$])+?(?<!\\)\$)/g;
     const out: string[] = [];
     let lastIdx = 0;
     let m: RegExpExecArray | null;
@@ -35,15 +38,17 @@ export const MathText: React.FC<MathTextProps> = ({ text, className = '' }) => {
         out.push(formatPlainSegment(input.slice(lastIdx, m.index)));
       }
       const rawTok = m[0];
-      const isDisplay = rawTok.startsWith('$$');
-      const tex = isDisplay ? rawTok.slice(2, -2) : rawTok.slice(1, -1);
+      const isDisplay = rawTok.startsWith('$$') || rawTok.startsWith('\\[');
+      const isParenOrBracket =
+        rawTok.startsWith('$$') || rawTok.startsWith('\\[') || rawTok.startsWith('\\(');
+      const tex = isParenOrBracket ? rawTok.slice(2, -2) : rawTok.slice(1, -1);
       try {
         const rendered = katex.renderToString(tex, {
-          displayMode: isDisplay,
+          displayMode: isDisplay && !inline,
           throwOnError: false,
         });
         out.push(
-          isDisplay
+          isDisplay && !inline
             ? `<div class="katex-block-wrap" style="margin:6px 0;overflow-x:auto;">${rendered}</div>`
             : rendered
         );
@@ -57,7 +62,14 @@ export const MathText: React.FC<MathTextProps> = ({ text, className = '' }) => {
       out.push(formatPlainSegment(input.slice(lastIdx)));
     }
     return out.join('');
-  }, [text]);
+  }, [text, inline]);
 
-  return <div className={`math-text ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
+  const Tag = inline ? 'span' : 'div';
+  return (
+    <Tag
+      className={`math-text ${className}`.trim()}
+      style={inline ? { color: 'inherit' } : undefined}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 };

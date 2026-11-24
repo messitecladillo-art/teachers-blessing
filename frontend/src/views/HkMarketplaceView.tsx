@@ -14,10 +14,31 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
   const [bento, setBento] = useState<MarketplaceCourse[]>([]);
   const [items, setItems] = useState<MarketplaceCourse[]>([]);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [enrollingId, setEnrollingId] = useState('');
   const [previewItem, setPreviewItem] = useState<MarketplaceCourse | null>(null);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 220);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    if (!previewItem) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewItem(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [previewItem]);
+
   const loadMarketplace = async (cat: string, qText: string, mode: 'curated' | 'teaching') => {
+    setLoading(true);
+    setErrorMsg('');
     try {
       const qs = new URLSearchParams({ category: cat, q: qText, tab: mode }).toString();
       const res = await apiJson<{
@@ -28,17 +49,20 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
       setCategories(res.categories || ['全部']);
       setBento(res.featured_bento || []);
       setItems(res.items || []);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加载课程集市失败，请稍后重试');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadMarketplace(category, query, tabMode);
-  }, [category, query, tabMode]);
+    void loadMarketplace(category, debouncedQuery, tabMode);
+  }, [category, debouncedQuery, tabMode]);
 
   const handleEnroll = async (marketId: string) => {
     setEnrollingId(marketId);
+    setErrorMsg('');
     try {
       const res = await apiJson<{ course: CourseRecord }>('/api/courses/enroll', {
         method: 'POST',
@@ -48,6 +72,8 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
         setPreviewItem(null);
         onCourseEnrolled(res.course);
       }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加入课程失败，请稍后重试');
     } finally {
       setEnrollingId('');
     }
@@ -92,6 +118,12 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
           />
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="callout-danger" style={{ marginBottom: 18, fontSize: 13 }}>
+          {errorMsg}
+        </div>
+      )}
 
       {/* Bento Featured Grid */}
       {bento.length > 0 && !query.trim() && category === '全部' && (
@@ -169,71 +201,104 @@ export const HkMarketplaceView: React.FC<HkMarketplaceViewProps> = ({ onCourseEn
       </div>
 
       {/* Course Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 18 }}>
-        {items.slice(0, 24).map((it) => (
-          <div
-            key={it.market_id}
-            style={{
-              background: '#ffffff',
-              border: '1px solid #e6e8ec',
-              borderRadius: 16,
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-paper)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
+      {!loading && items.length === 0 ? (
+        <div className="paper-folio" style={{ textAlign: 'center', padding: '44px 24px' }}>
+          <div style={{ fontSize: 15.5, fontWeight: 700, color: '#181a1f', marginBottom: 6 }}>
+            未找到符合条件的集市课程
+          </div>
+          <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+            当前分类「{category}」{query.trim() ? `与关键词「${query.trim()}」` : ''}下暂无匹配结果，可重置筛选查看全部专题。
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              setCategory('全部');
+              setQuery('');
+              setDebouncedQuery('');
             }}
           >
-            <div>
-              <div style={{ height: 148, overflow: 'hidden', background: '#f3f4f6' }}>
-                <img
-                  src={assetUrl(it.cover_image)}
-                  alt={it.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-              <div style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: '#3b4f7d', fontWeight: 600 }}>
-                  <span>{it.subject}</span>
-                  <span>
-                    {it.level} · {it.hours}
-                  </span>
-                </div>
-                <div className="serif-heading" style={{ fontSize: 17, fontWeight: 700, marginTop: 6 }}>
-                  {it.title}
-                </div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.5 }}>
-                  {it.description}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ padding: '0 16px 14px', display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                style={{ flex: 1 }}
-                disabled={enrollingId === it.market_id}
-                onClick={() => handleEnroll(it.market_id)}
+            重置筛选条件
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 18 }}>
+          {items.slice(0, 24).map((it) => {
+            const isCompleted = (it as unknown as { status?: string; progress_pct?: number }).status === 'completed' || ((it as unknown as { progress_pct?: number }).progress_pct ?? 0) >= 100;
+            return (
+              <div
+                key={it.market_id}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #e6e8ec',
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-paper)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
               >
-                {enrollingId === it.market_id
-                  ? '加入中…'
-                  : tabMode === 'teaching'
-                  ? '采用此模板备课'
-                  : '加入我的课程'}
-              </button>
-              <button type="button" className="btn btn-surface btn-sm" onClick={() => setPreviewItem(it)}>
-                预览
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+                <div>
+                  <div style={{ height: 148, overflow: 'hidden', background: '#f3f4f6' }}>
+                    <img
+                      src={assetUrl(it.cover_image)}
+                      alt={it.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                  <div style={{ padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: '#3b4f7d', fontWeight: 600 }}>
+                      <span>{it.subject}</span>
+                      <span>
+                        {isCompleted ? '已完成 · ' : ''}
+                        {it.level} · {it.hours}
+                      </span>
+                    </div>
+                    <div className="serif-heading" style={{ fontSize: 17, fontWeight: 700, marginTop: 6 }}>
+                      {it.title}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.5 }}>
+                      {it.description}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: '0 16px 14px', display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    style={{ flex: 1 }}
+                    disabled={enrollingId === it.market_id}
+                    onClick={() => handleEnroll(it.market_id)}
+                  >
+                    {enrollingId === it.market_id
+                      ? '加入中…'
+                      : tabMode === 'teaching'
+                      ? '采用此模板备课'
+                      : '加入我的课程'}
+                  </button>
+                  <button type="button" className="btn btn-surface btn-sm" onClick={() => setPreviewItem(it)}>
+                    预览
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Course Preview Modal */}
       {previewItem && (
         <div className="modal-backdrop" onClick={() => setPreviewItem(null)}>
-          <div className="modal-panel" style={{ maxWidth: 580 }} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={previewItem.title}
+            style={{ maxWidth: 580 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={{ height: 190, borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
               <img
                 src={assetUrl(previewItem.cover_image)}

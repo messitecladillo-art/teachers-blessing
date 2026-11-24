@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { apiJson } from '../services/api';
 import { AgentThread, AnalyticsReport, CourseRecord, ErrorBookEntry, ExamRecord, HkRoute, LessonRecord, PptDeck } from '../types';
+import { MathText } from '../components/MathText';
 
 interface HkHistoryViewProps {
   threads: AgentThread[];
@@ -47,6 +48,86 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
 
   const qLow = q.trim().toLowerCase();
 
+  const filteredThreads = useMemo(
+    () => threads.filter((t) => !qLow || t.title.toLowerCase().includes(qLow)),
+    [threads, qLow]
+  );
+  const filteredCourses = useMemo(
+    () =>
+      courses.filter(
+        (c) => !qLow || c.title.toLowerCase().includes(qLow) || c.subject.toLowerCase().includes(qLow)
+      ),
+    [courses, qLow]
+  );
+  const filteredDecks = useMemo(
+    () =>
+      decks.filter(
+        (d) => !qLow || d.title.toLowerCase().includes(qLow) || d.subject.toLowerCase().includes(qLow)
+      ),
+    [decks, qLow]
+  );
+  const filteredLessons = useMemo(
+    () =>
+      lessons.filter(
+        (l) => !qLow || l.title.toLowerCase().includes(qLow) || l.subject.toLowerCase().includes(qLow)
+      ),
+    [lessons, qLow]
+  );
+  const filteredExams = useMemo(
+    () =>
+      exams.filter(
+        (ex) => !qLow || ex.title.toLowerCase().includes(qLow) || ex.subject.toLowerCase().includes(qLow)
+      ),
+    [exams, qLow]
+  );
+  const filteredReports = useMemo(
+    () =>
+      reports.filter(
+        (rp) =>
+          !qLow ||
+          rp.title.toLowerCase().includes(qLow) ||
+          (rp.dataset_name || '').toLowerCase().includes(qLow)
+      ),
+    [reports, qLow]
+  );
+  const filteredErrors = useMemo(
+    () =>
+      errors.filter(
+        (er) =>
+          !qLow ||
+          er.topic_tag.toLowerCase().includes(qLow) ||
+          er.question_text.toLowerCase().includes(qLow) ||
+          er.subject.toLowerCase().includes(qLow) ||
+          (er.my_mistake || '').toLowerCase().includes(qLow)
+      ),
+    [errors, qLow]
+  );
+
+  const renderEmptyState = (emptyTitle: string) => (
+    <div
+      style={{
+        border: '1.5px dashed #e2e6ee',
+        borderRadius: 16,
+        padding: '44px 24px',
+        textAlign: 'center',
+        color: '#6b7280',
+        background: '#ffffff',
+      }}
+    >
+      <div style={{ fontSize: 15, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+        {qLow ? `未找到与「${q.trim()}」匹配的记录` : emptyTitle}
+      </div>
+      <div style={{ fontSize: 12.5, color: '#9ca3af', marginBottom: qLow ? 14 : 0 }}>
+        {qLow ? '请尝试更换搜索词或清空筛选条件' : '发起新的会话、课程或练习后将自动归档在此'}
+      </div>
+      {qLow && (
+        <button type="button" className="btn btn-surface btn-sm" onClick={() => setQ('')}>
+          清空搜索词
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div className="hk-page-wrap">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
@@ -68,53 +149,48 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         <button type="button" className={`hk-chip-btn ${subTab === 'chat' ? 'active' : ''}`} onClick={() => setSubTab('chat')}>
-          对话 ({threads.length})
+          对话 ({filteredThreads.length})
         </button>
         <button type="button" className={`hk-chip-btn ${subTab === 'courses' ? 'active' : ''}`} onClick={() => setSubTab('courses')}>
-          白板课堂 ({courses.length})
+          白板课堂 ({filteredCourses.length})
         </button>
         <button type="button" className={`hk-chip-btn ${subTab === 'teach' ? 'active' : ''}`} onClick={() => setSubTab('teach')}>
-          教案与课件 ({lessons.length + decks.length})
+          教案与课件 ({filteredLessons.length + filteredDecks.length})
         </button>
         <button type="button" className={`hk-chip-btn ${subTab === 'exams' ? 'active' : ''}`} onClick={() => setSubTab('exams')}>
-          试卷与学情 ({exams.length + errors.length + reports.length})
+          试卷与学情 ({filteredExams.length + filteredErrors.length + filteredReports.length})
         </button>
       </div>
 
       {subTab === 'chat' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {threads
-            .filter((t) => !qLow || t.title.toLowerCase().includes(qLow))
-            .map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className="paper-folio"
-                style={{ padding: '16px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                onClick={() => onOpenThread(t.id)}
-              >
-                <div>
-                  <div style={{ fontSize: 15.5, fontWeight: 700, color: '#181a1f' }}>{t.title}</div>
-                  <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 3 }}>
-                    状态：{t.status === 'completed' ? '已完成' : '可继续追问'}
-                  </div>
+          {filteredThreads.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className="paper-folio"
+              style={{ padding: '16px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              onClick={() => onOpenThread(t.id)}
+            >
+              <div>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: '#181a1f' }}>{t.title}</div>
+                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 3 }}>
+                  状态：{t.status === 'completed' ? '已完成' : '可继续追问'}
                 </div>
-                <span className="btn btn-surface btn-sm">打开会话 →</span>
-              </button>
-            ))}
-          {threads.length === 0 && (
-            <div style={{ border: '1.5px dashed #e2e6ee', borderRadius: 16, padding: 48, textAlign: 'center', color: '#9ca3af' }}>
-              没有符合条件的对话。
-            </div>
-          )}
+              </div>
+              <span className="btn btn-surface btn-sm">打开会话 →</span>
+            </button>
+          ))}
+          {filteredThreads.length === 0 && renderEmptyState('暂无历史对话记录')}
         </div>
       )}
 
-      {subTab === 'courses' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
-          {courses
-            .filter((c) => !qLow || c.title.toLowerCase().includes(qLow))
-            .map((c) => {
+      {subTab === 'courses' &&
+        (filteredCourses.length === 0 ? (
+          renderEmptyState('暂无白板课堂学习记录')
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+            {filteredCourses.map((c) => {
               const lid = c.last_lecture_id || c.units?.[0]?.lectures?.[0]?.id || '';
               return (
                 <div key={c.id} className="paper-folio" style={{ padding: 16 }}>
@@ -133,14 +209,15 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
                 </div>
               );
             })}
-        </div>
-      )}
+          </div>
+        ))}
 
-      {subTab === 'teach' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
-          {decks
-            .filter((d) => !qLow || d.title.toLowerCase().includes(qLow))
-            .map((d) => (
+      {subTab === 'teach' &&
+        (filteredDecks.length + filteredLessons.length === 0 ? (
+          renderEmptyState('暂无教案与演示课件记录')
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
+            {filteredDecks.map((d) => (
               <div key={d.id} className="paper-folio" style={{ padding: 16 }}>
                 <span className="badge badge-info">演示课件 · {d.slides.length} 页</span>
                 <div style={{ fontSize: 15.5, fontWeight: 700, marginTop: 8 }}>{d.title}</div>
@@ -150,9 +227,7 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
                 </button>
               </div>
             ))}
-          {lessons
-            .filter((l) => !qLow || l.title.toLowerCase().includes(qLow))
-            .map((l) => (
+            {filteredLessons.map((l) => (
               <div key={l.id} className="paper-folio" style={{ padding: 16 }}>
                 <span className="badge badge-verified">教学教案 · {l.lesson_type}</span>
                 <div style={{ fontSize: 15.5, fontWeight: 700, marginTop: 8 }}>{l.title}</div>
@@ -162,14 +237,15 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
                 </button>
               </div>
             ))}
-        </div>
-      )}
+          </div>
+        ))}
 
-      {subTab === 'exams' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
-          {exams
-            .filter((ex) => !qLow || ex.title.toLowerCase().includes(qLow))
-            .map((ex) => (
+      {subTab === 'exams' &&
+        (filteredExams.length + filteredReports.length + filteredErrors.length === 0 ? (
+          renderEmptyState('暂无试卷、错题与学情诊断记录')
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
+            {filteredExams.map((ex) => (
               <div key={ex.id} className="paper-folio" style={{ padding: 16 }}>
                 <span className="badge badge-info">试卷 · {ex.exam.questions.length} 题</span>
                 <div style={{ fontSize: 15.5, fontWeight: 700, marginTop: 8 }}>{ex.title}</div>
@@ -179,20 +255,49 @@ export const HkHistoryView: React.FC<HkHistoryViewProps> = ({
                 </button>
               </div>
             ))}
-          {reports.map((rp) => (
-            <div key={rp.id} className="paper-folio" style={{ padding: 16 }}>
-              <span className="badge badge-verified">学情脱敏报告</span>
-              <div style={{ fontSize: 15.5, fontWeight: 700, marginTop: 8 }}>{rp.title}</div>
-              <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 4 }}>
-                样本 {rp.stats.student_count} 人 · 均分 {rp.stats.summary.mean}
+            {filteredReports.map((rp) => (
+              <div key={rp.id} className="paper-folio" style={{ padding: 16 }}>
+                <span className="badge badge-verified">学情脱敏报告</span>
+                <div style={{ fontSize: 15.5, fontWeight: 700, marginTop: 8 }}>{rp.title}</div>
+                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 4 }}>
+                  样本 {rp.stats.student_count} 人 · 均分 {rp.stats.summary.mean}
+                </div>
+                <button type="button" className="btn btn-surface btn-sm" style={{ marginTop: 12 }} onClick={() => onOpenSpecialist('tool_analytics', rp.id)}>
+                  查看学情看板
+                </button>
               </div>
-              <button type="button" className="btn btn-surface btn-sm" style={{ marginTop: 12 }} onClick={() => onOpenSpecialist('tool_analytics', rp.id)}>
-                查看学情看板
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+            {filteredErrors.map((er) => (
+              <div key={er.id} className="paper-folio" style={{ padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span className="badge badge-warn">错题本 · 熟练度 Lv.{er.mastery_level}</span>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginTop: 8, color: '#181a1f' }}>{er.topic_tag}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                    {er.subject} · {er.grade_level}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      color: '#374151',
+                      marginTop: 6,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <MathText text={er.question_text} inline />
+                  </div>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <button type="button" className="btn btn-surface btn-sm" onClick={() => onOpenSpecialist('tool_tutor', er.id)}>
+                    打开错题本复盘
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
     </div>
   );
 };

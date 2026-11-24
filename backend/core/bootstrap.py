@@ -20,7 +20,7 @@ from engines.ppt_bridge import compile_ppt_project
 from engines.question_bank_engine import assemble_from_bank
 from engines.source_ingestor import convert_uploaded_source_to_markdown
 
-SHOWCASE_VERSION = "v4.5"
+SHOWCASE_VERSION = "v5.0"
 
 
 def ensure_showcase_data() -> None:
@@ -29,6 +29,23 @@ def ensure_showcase_data() -> None:
     with get_conn() as conn:
         cnt = conn.execute("SELECT COUNT(*) FROM ppt_decks").fetchone()[0]
         if cnt > 0 and version_file.is_file() and version_file.read_text(encoding="utf-8").strip() == SHOWCASE_VERSION:
+            c_row = conn.execute("SELECT units_json FROM courses WHERE id = 'crs_showcase_01'").fetchone()
+            if c_row and c_row["units_json"]:
+                try:
+                    c_units_cur = json.loads(c_row["units_json"])
+                    changed = False
+                    for u in c_units_cur:
+                        for lec in u.get("lectures") or []:
+                            if lec.get("id") == "lec_crs1_1_1" and lec.get("annotations") != []:
+                                lec["annotations"] = []
+                                changed = True
+                    if changed:
+                        conn.execute(
+                            "UPDATE courses SET units_json = ? WHERE id = 'crs_showcase_01'",
+                            (json.dumps(c_units_cur, ensure_ascii=False),),
+                        )
+                except Exception:
+                    pass
             return
 
     now = time.time()
@@ -1257,6 +1274,7 @@ def ensure_showcase_data() -> None:
                     "mastery": "mastered",
                     "duration_min": 18,
                     "visualizer_preset": "cubic",
+                    "annotations": [],
                     "board_pages": [
                         {
                             "page_index": 1,

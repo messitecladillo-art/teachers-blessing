@@ -26,6 +26,8 @@ export const HkIcon: React.FC<{
   <img
     src={assetUrl(`/assets/hk/icon_${name}.png`)}
     alt={alt}
+    aria-hidden={alt ? undefined : true}
+    decoding="async"
     width={size}
     height={size}
     draggable={false}
@@ -45,6 +47,7 @@ export const HkBrandLogo: React.FC<{ size?: number }> = ({ size = 28 }) => (
   <img
     src={assetUrl('/assets/hk/brand_logo.png')}
     alt="知学工作台徽标"
+    decoding="async"
     width={size}
     height={size}
     draggable={false}
@@ -67,6 +70,7 @@ export const HkMascot: React.FC<{
   <img
     src={assetUrl(`/assets/hk/mascot_${state}.png`)}
     alt={state === 'thinking' ? '思考中的小知' : '小知学者'}
+    decoding="async"
     width={size}
     height={size}
     draggable={false}
@@ -87,6 +91,7 @@ export const HkUploadBadge: React.FC<{ size?: number }> = ({ size = 56 }) => (
   <img
     src={assetUrl('/assets/hk/upload_files_badge.png')}
     alt="课程资料卡片组"
+    decoding="async"
     width={size}
     height={size}
     draggable={false}
@@ -105,6 +110,7 @@ export const HkScholarAvatar: React.FC<{ size?: number }> = ({ size = 32 }) => (
   <img
     src={assetUrl('/assets/hk/avatar_scholar.png')}
     alt="个人头像"
+    decoding="async"
     width={size}
     height={size}
     draggable={false}

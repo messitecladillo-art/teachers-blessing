@@ -62,6 +62,18 @@ export const HkSettingsModal: React.FC<HkSettingsModalProps> = ({
     }
   }, [open, llmStatus]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const savePrefs = async (next: TeacherPreferences) => {
@@ -124,7 +136,13 @@ export const HkSettingsModal: React.FC<HkSettingsModalProps> = ({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="hk-settings-split" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-panel hk-settings-split"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="hk-settings-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="hk-settings-nav">
           <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6b7280', padding: '0 8px 4px' }}>账户</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px 14px', borderBottom: '1px solid #eef0f3', marginBottom: 8 }}>
@@ -161,7 +179,7 @@ export const HkSettingsModal: React.FC<HkSettingsModalProps> = ({
 
         <div className="hk-settings-body">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eef0f3', paddingBottom: 12, marginBottom: 18 }}>
-            <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>
+            <h2 id="hk-settings-modal-title" style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>
               {tab === 'general' ? '常规' : tab === 'memory' ? '学习记忆' : '服务连接'}
             </h2>
             <button type="button" className="hk-collapse-btn" onClick={onClose} aria-label="关闭设置">

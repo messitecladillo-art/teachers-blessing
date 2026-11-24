@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { apiJson, handleSafeDownload, postEventStream, resolveApiUrl, uploadSourceFile } from '../services/api';
 import {
   AgentLinkedItem,
@@ -15,8 +15,11 @@ import {
 } from '../types';
 import { HkIcon, HkMascot } from '../components/HkAssets';
 import { MathText } from '../components/MathText';
-import { FunctionPlotCard } from '../components/FunctionPlotCard';
 import { assetUrl } from '../utils/assets';
+
+const FunctionPlotCard = lazy(() =>
+  import('../components/FunctionPlotCard').then((m) => ({ default: m.FunctionPlotCard }))
+);
 
 interface HkHomeViewProps {
   homeTab: HomeTab;
@@ -112,6 +115,45 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const anyPopoverOpen =
+    craftModelMenu ||
+    craftPlusMenu ||
+    craftTipsOpen ||
+    instantToolsOpen ||
+    instantAddOpen ||
+    instantKbOpen ||
+    instantSpeedOpen;
+
+  useEffect(() => {
+    if (!anyPopoverOpen) return;
+    const closeAllPopovers = () => {
+      setCraftModelMenu(false);
+      setCraftPlusMenu(false);
+      setCraftTipsOpen(false);
+      setInstantToolsOpen(false);
+      setInstantAddOpen(false);
+      setInstantKbOpen(false);
+      setInstantSpeedOpen(false);
+      setHoveredSpeed(null);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeAllPopovers();
+      }
+    };
+    const onPointerDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-hk-popover-root="true"]')) return;
+      closeAllPopovers();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [anyPopoverOpen]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -272,11 +314,13 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
             }
           } else if (evt === 'error') {
             setErrorMsg(String(data.message || '执行遇到异常'));
+            setInstantPrompt((curr) => (curr.trim() ? curr : textVal));
           }
         }
       );
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : '任务请求失败');
+      setInstantPrompt((curr) => (curr.trim() ? curr : textVal));
     } finally {
       setRunningAgent(false);
     }
@@ -284,6 +328,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
 
   const handleConfirmPlan = async (tid: string) => {
     setRunningAgent(true);
+    setErrorMsg('');
     setLiveStages(['正在按确认步骤执行…']);
     setLiveTraces([]);
     try {
@@ -295,8 +340,12 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
           if (th) setThread(th);
           onThreadsChanged();
           onArtifactsChanged();
+        } else if (evt === 'error') {
+          setErrorMsg(String(data.message || '方案执行遇到异常'));
         }
       });
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '方案执行失败');
     } finally {
       setRunningAgent(false);
     }
@@ -562,7 +611,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
 
             <div className="hk-composer-toolbar">
               <div className="hk-composer-tools-left">
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-circle-btn"
@@ -570,6 +619,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
                     onClick={() => {
                       setCraftPlusMenu((v) => !v);
                       setCraftModelMenu(false);
+                      setCraftTipsOpen(false);
                     }}
                   >
                     +
@@ -621,13 +671,14 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
               </div>
 
               <div className="hk-composer-tools-right">
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-chip-btn"
                     onClick={() => {
                       setCraftModelMenu((v) => !v);
                       setCraftPlusMenu(false);
+                      setCraftTipsOpen(false);
                     }}
                   >
                     <span>{craftDepth === 'deep' ? '精编课程 ▾' : '快速大纲 ▾'}</span>
@@ -701,11 +752,15 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
             </div>
           )}
 
-          <div style={{ marginTop: 14, position: 'relative' }}>
+          <div style={{ marginTop: 14, position: 'relative' }} data-hk-popover-root="true">
             <button
               type="button"
               style={{ border: 'none', background: 'transparent', fontSize: 12.5, color: '#6b7280', cursor: 'pointer' }}
-              onClick={() => setCraftTipsOpen((v) => !v)}
+              onClick={() => {
+                setCraftTipsOpen((v) => !v);
+                setCraftPlusMenu(false);
+                setCraftModelMenu(false);
+              }}
             >
               ? 生成课程时可以输入什么主题？
             </button>
@@ -809,7 +864,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
             <div className="hk-composer-toolbar">
               <div className="hk-composer-tools-left">
                 {/* + Upload */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-circle-btn"
@@ -840,7 +895,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
                 </div>
 
                 {/* KB Quick Import */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-circle-btn"
@@ -887,7 +942,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
                 </div>
 
                 {/* Tools Popover */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-chip-btn"
@@ -981,7 +1036,7 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
 
               <div className="hk-composer-tools-right">
                 {/* Speed Selector with Dark Hover Tooltip */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} data-hk-popover-root="true">
                   <button
                     type="button"
                     className="hk-chip-btn"
@@ -1123,7 +1178,15 @@ export const HkHomeView: React.FC<HkHomeViewProps> = ({
 
           {visualSandboxOpen && (
             <div style={{ width: '100%', maxWidth: 820, marginTop: 18 }}>
-              <FunctionPlotCard initialExpr="x^3 - 3*x^2 + 2" />
+              <Suspense
+                fallback={
+                  <div className="paper-folio" style={{ padding: 20, textAlign: 'center', color: '#6b7280', fontSize: 13 }}>
+                    正在载入函数可视化画板…
+                  </div>
+                }
+              >
+                <FunctionPlotCard initialExpr="x^3 - 3*x^2 + 2" />
+              </Suspense>
             </div>
           )}
 

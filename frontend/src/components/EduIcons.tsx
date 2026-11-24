@@ -16,6 +16,8 @@ const baseProps = (size: number, color: string, className?: string, style?: Reac
   strokeWidth: 1.8,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
+  'aria-hidden': true,
+  focusable: 'false' as const,
   className,
   style: { flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style },
 });
@@ -466,7 +468,14 @@ export const ThemeMiniSwatch: React.FC<{
   accent: string;
   border?: string;
 }> = ({ bg, surface, accent, border = '#CBD5E1' }) => (
-  <svg width="26" height="18" viewBox="0 0 26 18" style={{ flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }}>
+  <svg
+    width="26"
+    height="18"
+    viewBox="0 0 26 18"
+    aria-hidden={true}
+    focusable="false"
+    style={{ flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }}
+  >
     <rect x="0.75" y="0.75" width="24.5" height="16.5" rx="3.5" fill={bg} stroke={border} strokeWidth="1.2" />
     <rect x="3" y="3" width="9" height="2.4" rx="1.2" fill={accent} />
     <rect x="3" y="7.2" width="9.2" height="7.5" rx="1.8" fill={surface} stroke={border} strokeWidth="0.6" />

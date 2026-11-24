@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime
 import io
 import json
+import math
 import re
 import time
 import zipfile
@@ -172,6 +173,33 @@ def _today_str() -> str:
     return datetime.date.today().isoformat()
 
 
+def _safe_json_loads(raw: Any, default: Any) -> Any:
+    if raw is None or raw == "":
+        return default
+    if isinstance(raw, (dict, list)):
+        return raw if isinstance(raw, type(default)) else default
+    try:
+        parsed = json.loads(str(raw))
+        return parsed if isinstance(parsed, type(default)) else default
+    except Exception:
+        return default
+
+
+def _safe_int(val: Any, default: int = 16) -> int:
+    if val is None or isinstance(val, bool):
+        return default
+    if isinstance(val, (int, float)):
+        if not math.isfinite(val):
+            return default
+        n = int(round(val))
+        return n if n > 0 else default
+    m = re.search(r"\d+", str(val))
+    if m:
+        n = int(m.group(0))
+        return n if n > 0 else default
+    return default
+
+
 def _recompute_progress(units: list[dict[str, Any]]) -> tuple[int, str, dict[str, Any] | None]:
     total = 0
     score_sum = 0.0
@@ -193,23 +221,15 @@ def _recompute_progress(units: list[dict[str, Any]]) -> tuple[int, str, dict[str
         return 0, "in_progress", None
     pct = min(100, max(0, int(round((score_sum / total) * 100))))
     status = "completed" if pct >= 95 else "in_progress"
-    if next_lec is None and units and (units[0].get("lectures") or []):
-        first = units[0]["lectures"][0]
-        next_lec = {
-            "id": str(first.get("id") or ""),
-            "title": str(first.get("title") or ""),
-            "kind": str(first.get("kind") or "lecture"),
-            "unit_index": int(units[0].get("unit_index") or 1),
-        }
     return pct, status, next_lec
 
 
 def _row_to_course(row: Any) -> dict[str, Any]:
     d = dict(row)
-    units = json.loads(d.pop("units_json") or "[]")
-    cheatsheet = json.loads(d.pop("cheatsheet_json") or "{}")
-    linked_ids = json.loads(d.pop("linked_ids_json") or "{}")
-    weekly_sessions = json.loads(d.pop("weekly_sessions_json") or "{}")
+    units = _safe_json_loads(d.pop("units_json", None), [])
+    cheatsheet = _safe_json_loads(d.pop("cheatsheet_json", None), {})
+    linked_ids = _safe_json_loads(d.pop("linked_ids_json", None), {})
+    weekly_sessions = _safe_json_loads(d.pop("weekly_sessions_json", None), {})
     pct, computed_status, next_lec = _recompute_progress(units)
     d["units"] = units
     d["cheatsheet"] = cheatsheet
@@ -249,8 +269,12 @@ def _build_weekly_tracker(courses: list[dict[str, Any]]) -> dict[str, Any]:
                 if l.get("id") == last_id:
                     target_lec = l
                     break
-        if target_lec is None and top.get("next_lecture"):
+            if target_lec is not None:
+                break
+        if (target_lec is None or target_lec.get("mastery") == "mastered") and top.get("next_lecture"):
             target_lec = top["next_lecture"]
+        if target_lec is None and top.get("units") and (top["units"][0].get("lectures") or []):
+            target_lec = top["units"][0]["lectures"][0]
         if target_lec:
             continue_learning = {
                 "course_id": top["id"],
@@ -880,12 +904,13 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
 
             crafted: dict[str, Any] = {}
             try:
-                crafted, _ = await call_llm_json(
+                raw_crafted, _ = await call_llm_json(
                     system_prompt=sys_prompt,
                     user_prompt=user_prompt,
                     max_tokens=5500,
                     temperature=0.25,
                 )
+                crafted = raw_crafted if isinstance(raw_crafted, dict) else {}
             except Exception:
                 crafted = {}
 
@@ -901,7 +926,8 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
             grade_level = str(crafted.get("grade_level") or "高中/大学通识").strip()
             description = str(crafted.get("description") or f"围绕「{prompt_text[:40]}」梳理的系统课程，涵盖概念直觉、分步推演、白板板书与随堂练习。").strip()
 
-            raw_units = crafted.get("units") or []
+            raw_units_val = crafted.get("units")
+            raw_units = [u for u in raw_units_val if isinstance(u, dict)] if isinstance(raw_units_val, list) else []
             if not raw_units:
                 raw_units = [
                     {
@@ -957,9 +983,12 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
             units_norm: list[dict[str, Any]] = []
             for ui, u in enumerate(raw_units[:5], start=1):
                 lecs_norm = []
-                for li, l in enumerate((u.get("lectures") or [])[:4], start=1):
+                raw_lecs = u.get("lectures")
+                lecs_in = [x for x in raw_lecs if isinstance(x, dict)] if isinstance(raw_lecs, list) else []
+                for li, l in enumerate(lecs_in[:4], start=1):
                     lid = f"lec_{cid}_{ui}_{li}"
-                    blocks_in = l.get("board_blocks") or []
+                    raw_blks = l.get("board_blocks")
+                    blocks_in = [b for b in raw_blks if isinstance(b, dict)] if isinstance(raw_blks, list) else []
                     blocks_norm = []
                     for bi, blk in enumerate(blocks_in, start=1):
                         blk_lines = [str(ln) for ln in (blk.get("lines") or [])]
@@ -1019,7 +1048,7 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
                             "summary": str(l.get("summary") or ""),
                             "kind": "lecture",
                             "mastery": "unstarted",
-                            "duration_min": int(l.get("duration_min") or 16),
+                            "duration_min": _safe_int(l.get("duration_min"), 16),
                             "visualizer_preset": preset if (ui == 1 and li == 1) else "",
                             "board_pages": [
                                 {
@@ -1416,8 +1445,12 @@ def _save_course_units(
         params.append(json.dumps(weekly_sessions, ensure_ascii=False))
     params.append(course_id)
     with get_conn() as conn:
+        if not conn.in_transaction:
+            conn.execute("BEGIN IMMEDIATE")
         conn.execute(f"UPDATE courses SET {', '.join(set_clauses)} WHERE id = ?", params)
         updated = conn.execute("SELECT * FROM courses WHERE id = ?", (course_id,)).fetchone()
+    if not updated:
+        raise HTTPException(status_code=404, detail="课程不存在")
     return _row_to_course(updated)
 
 
@@ -1533,12 +1566,13 @@ async def _run_whiteboard_chat_turn(
     reply_text = ""
     raw_blk: dict[str, Any] | None = None
     try:
-        parsed, _ = await call_llm_json(
+        raw_parsed, _ = await call_llm_json(
             system_prompt=sys_prompt,
             user_prompt=user_prompt,
             max_tokens=1600,
             temperature=0.25,
         )
+        parsed = raw_parsed if isinstance(raw_parsed, dict) else {}
         reply_text = str(parsed.get("reply") or "").strip()
         blk_in = parsed.get("board_block")
         if isinstance(blk_in, dict) and blk_in.get("lines"):
@@ -1840,12 +1874,13 @@ async def whiteboard_teach_step_stream(course_id: str, lecture_id: str, req: Tea
 
             parsed: dict[str, Any] = {}
             try:
-                parsed, _ = await call_llm_json(
+                raw_parsed, _ = await call_llm_json(
                     system_prompt=sys_prompt,
                     user_prompt=user_prompt,
                     max_tokens=1800,
                     temperature=0.25,
                 )
+                parsed = raw_parsed if isinstance(raw_parsed, dict) else {}
             except Exception:
                 parsed = {}
 
@@ -1858,16 +1893,27 @@ async def whiteboard_teach_step_stream(course_id: str, lecture_id: str, req: Tea
                 yield sse_event("delta", {"text": reply_text[i : i + max(8, len(reply_text) // 8 or 8)]})
 
             if action == "socratic_check":
-                q_raw = parsed.get("quiz_item") if isinstance(parsed.get("quiz_item"), dict) and parsed["quiz_item"].get("question") else fb["quiz_item"]
-                opts = [str(o) for o in (q_raw.get("options") or [])][:4]
-                if len(opts) < 2:
-                    opts = fb["quiz_item"]["options"]
+                raw_qi = parsed.get("quiz_item")
+                raw_opts = (
+                    [str(o).strip() for o in (raw_qi.get("options") or []) if str(o).strip()][:4]
+                    if isinstance(raw_qi, dict)
+                    else []
+                )
+                if isinstance(raw_qi, dict) and str(raw_qi.get("question") or "").strip() and len(raw_opts) >= 2:
+                    q_src = raw_qi
+                    opts = raw_opts
+                else:
+                    q_src = fb["quiz_item"]
+                    opts = list(fb["quiz_item"]["options"])
+                ans_char = str(q_src.get("answer") or "A").strip()[:1].upper()
+                if ans_char not in ("A", "B", "C", "D", "E", "F")[: len(opts)]:
+                    ans_char = "A"
                 quiz_item = {
                     "id": new_id("q"),
-                    "question": str(q_raw.get("question") or fb["quiz_item"]["question"]),
+                    "question": str(q_src.get("question") or fb["quiz_item"]["question"]),
                     "options": opts,
-                    "answer": str(q_raw.get("answer") or "A").strip()[:1].upper() or "A",
-                    "explanation": str(q_raw.get("explanation") or fb["quiz_item"]["explanation"]),
+                    "answer": ans_char,
+                    "explanation": str(q_src.get("explanation") or fb["quiz_item"]["explanation"]),
                     "related_block_id": str((focus_blk or {}).get("id") or ""),
                 }
                 q_list = list(target_lec.get("quiz_items") or [])
@@ -2192,11 +2238,14 @@ async def whiteboard_lecture_tts(course_id: str, lecture_id: str, req: LectureTT
             parts.append(str(msgs[-1].get("content") or ""))
         script_text = "\n".join(parts)
 
-    res = await synthesize_text_audio(
-        cache_key=f"{course_id}_{lecture_id}",
-        text=script_text,
-        voice_id=req.voice,
-    )
+    try:
+        res = await synthesize_text_audio(
+            cache_key=f"{course_id}_{lecture_id}",
+            text=script_text,
+            voice_id=req.voice,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return FileResponse(
         path=res["audio_path"],
         media_type=res["mime_type"],
@@ -2358,14 +2407,27 @@ async def export_course_package_zip(course_id: str) -> StreamingResponse:
     with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("01_课程大纲与逐讲板书.md", "\n".join(outline_lines).encode("utf-8"))
         zf.writestr("02_重点速查表.md", "\n".join(cs_lines).encode("utf-8"))
-        seen_names: set[str] = set()
+        used_arcnames: set[str] = set()
+        seen_paths: set[str] = set()
         for ar in art_rows:
             fp = Path(str(ar["file_path"] or ""))
-            if fp.is_file():
-                fname = str(ar["filename"] or fp.name)
-                if fname not in seen_names:
-                    seen_names.add(fname)
-                    zf.write(fp, arcname=f"配套资源/{fname}")
+            if not fp.is_file():
+                continue
+            resolved_key = str(fp.resolve())
+            if resolved_key in seen_paths:
+                continue
+            seen_paths.add(resolved_key)
+            raw_fname = Path(str(ar["filename"] or fp.name)).name or fp.name
+            stem = Path(raw_fname).stem
+            suffix = Path(raw_fname).suffix
+            cand_name = raw_fname
+            dup_idx = 2
+            while f"配套资源/{cand_name}" in used_arcnames:
+                cand_name = f"{stem}_{dup_idx}{suffix}"
+                dup_idx += 1
+            arcname = f"配套资源/{cand_name}"
+            used_arcnames.add(arcname)
+            zf.write(fp, arcname=arcname)
 
     buf.seek(0)
     safe_title = re.sub(r'[\\/:*?"<>|]+', "_", course["title"])[:36] or "course_pack"

@@ -7,9 +7,13 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          react_vendor: ['react', 'react-dom'],
-          math_katex: ['katex'],
+        manualChunks(id) {
+          if (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
+            return 'react_vendor'
+          }
+          if (/node_modules[\\/]katex[\\/]/.test(id)) {
+            return 'math_katex'
+          }
         },
       },
     },

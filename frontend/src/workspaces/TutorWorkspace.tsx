@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { DISCIPLINE_TAXONOMY, DOMAIN_QUICK_PRESETS } from '../data/disciplineTaxonomy';
 import { apiJson, handleSafeDownload, postSseStream, resolveApiUrl } from '../services/api';
 import {
@@ -18,10 +18,8 @@ import {
 import { AgentStreamTrace } from '../components/AgentStreamTrace';
 import { MathText } from '../components/MathText';
 import { TrustBadgeBar } from '../components/TrustBadgeBar';
-import { FunctionPlotCard } from '../components/FunctionPlotCard';
 import { DisciplineCascadePicker } from '../components/DisciplineCascadePicker';
 import { InterdisciplinaryMatrixSection } from '../components/InterdisciplinaryMatrixSection';
-import { MindMapDrawioWorkbench } from '../components/MindMapDrawioWorkbench';
 import {
   IconUnlockStep,
   IconVerifyCheck,
@@ -36,6 +34,13 @@ import {
   IconStarBadge,
   IconFunctionCurve,
 } from '../components/EduIcons';
+
+const FunctionPlotCard = lazy(() =>
+  import('../components/FunctionPlotCard').then((m) => ({ default: m.FunctionPlotCard }))
+);
+const MindMapDrawioWorkbench = lazy(() =>
+  import('../components/MindMapDrawioWorkbench').then((m) => ({ default: m.MindMapDrawioWorkbench }))
+);
 
 interface TutorWorkspaceProps {
   activeSubTab: TutorSubTab;
@@ -105,12 +110,48 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
 
   // Error book & study plans
   const [errorBook, setErrorBook] = useState<ErrorBookEntry[]>([]);
+  const [errorSubjectFilter, setErrorSubjectFilter] = useState<string>('ALL');
+  const [errorKeyword, setErrorKeyword] = useState<string>('');
+  const [savingErrorBook, setSavingErrorBook] = useState<boolean>(false);
+  const saveErrorBookLockRef = useRef<boolean>(false);
+  const [updatingMasteryId, setUpdatingMasteryId] = useState<string | null>(null);
+  const masteryLockRef = useRef<Set<string>>(new Set());
   const [mistakeNote, setMistakeNote] = useState('');
   const [savedToast, setSavedToast] = useState('');
   const [studyPlans, setStudyPlans] = useState<StudyPlanRecord[]>([]);
   const [planTitle, setPlanTitle] = useState('导数单调性与极值专项巩固');
   const [planGoal, setPlanGoal] = useState('7 天内彻底攻克定义域优先陷阱与含参分类讨论');
   const [creatingPlan, setCreatingPlan] = useState(false);
+
+  const errorBookSubjects = useMemo(
+    () => Array.from(new Set(errorBook.map((it) => it.subject).filter(Boolean))),
+    [errorBook]
+  );
+
+  const filteredErrorBook = useMemo(() => {
+    const kw = errorKeyword.trim().toLowerCase();
+    return errorBook.filter((it) => {
+      if (errorSubjectFilter !== 'ALL' && it.subject !== errorSubjectFilter) return false;
+      if (!kw) return true;
+      const hay = `${it.subject} ${it.topic_tag} ${it.question_text} ${it.my_mistake} ${it.key_takeaway}`.toLowerCase();
+      return hay.includes(kw);
+    });
+  }, [errorBook, errorSubjectFilter, errorKeyword]);
+
+  const clearCurrentSolutionState = () => {
+    setSolution(null);
+    setVerification(null);
+    setFollowups([]);
+    setPlotData(null);
+    setPedagogyRefs([]);
+    setSessionId('');
+    setVariantAnswers({});
+    setUnlockedHints(1);
+    setShowFullSolution(false);
+    setErrorMsg('');
+    setThinkingText('');
+    setStageMsg('');
+  };
 
   const refreshErrorBook = async () => {
     try {
@@ -143,6 +184,16 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
   }, []);
 
   useEffect(() => {
+    if (activeSubTab === 'errorbook') {
+      void refreshErrorBook();
+    } else if (activeSubTab === 'plan') {
+      void refreshPlans();
+    }
+    setErrorMsg('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSubTab]);
+
+  useEffect(() => {
     if (externalMindmap) {
       setInlineMindmap(externalMindmap);
       setFullWorkbenchMode('mindmap');
@@ -161,9 +212,12 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
       setSubject(externalPrompt.subject);
       setGradeLevel(externalPrompt.grade);
       setQuestion(externalPrompt.question);
+      clearCurrentSolutionState();
+      onSolutionReady(null, externalPrompt.question, externalPrompt.subject, externalPrompt.grade);
       onChangeSubTab('solve');
       onConsumeExternalPrompt?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalPrompt, onConsumeExternalPrompt, onChangeSubTab]);
 
   const handleSolve = async () => {
@@ -267,35 +321,58 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
   };
 
   const handleSaveToErrorBook = async () => {
-    if (!solution) return;
-    await apiJson('/api/tutor/error-book', {
-      method: 'POST',
-      body: JSON.stringify({
-        subject,
-        grade_level: gradeLevel,
-        topic_tag: solution.topic_tag,
-        question_text: question,
-        my_mistake: mistakeNote || '推导步骤容易遗漏边界/定义域检验',
-        key_takeaway: solution.knowledge_graph?.core_concept || solution.final_answer,
-        solution_json: solution,
-      }),
-    });
-    setSavedToast('已加入错题本。');
-    setTimeout(() => setSavedToast(''), 3500);
-    refreshErrorBook();
-    onArtifactsChanged();
+    if (!solution || savingErrorBook || saveErrorBookLockRef.current) return;
+    saveErrorBookLockRef.current = true;
+    setSavingErrorBook(true);
+    setErrorMsg('');
+    try {
+      await apiJson('/api/tutor/error-book', {
+        method: 'POST',
+        body: JSON.stringify({
+          subject,
+          grade_level: gradeLevel,
+          topic_tag: solution.topic_tag,
+          question_text: question,
+          my_mistake: mistakeNote || '推导步骤容易遗漏边界/定义域检验',
+          key_takeaway: solution.knowledge_graph?.core_concept || solution.final_answer,
+          solution_json: solution,
+        }),
+      });
+      setSavedToast('已加入错题本。');
+      window.setTimeout(() => setSavedToast(''), 3500);
+      await refreshErrorBook();
+      onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '加入错题本失败');
+    } finally {
+      saveErrorBookLockRef.current = false;
+      setSavingErrorBook(false);
+    }
   };
 
   const handleSetMastery = async (itemId: string, lvl: number) => {
-    await apiJson(`/api/tutor/error-book/${itemId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ mastery_level: lvl }),
-    });
-    setErrorBook((prev) => prev.map((it) => (it.id === itemId ? { ...it, mastery_level: lvl } : it)));
+    if (masteryLockRef.current.has(itemId)) return;
+    masteryLockRef.current.add(itemId);
+    setUpdatingMasteryId(itemId);
+    setErrorMsg('');
+    try {
+      await apiJson(`/api/tutor/error-book/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ mastery_level: lvl }),
+      });
+      setErrorBook((prev) => prev.map((it) => (it.id === itemId ? { ...it, mastery_level: lvl } : it)));
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '更新掌握星级失败');
+    } finally {
+      masteryLockRef.current.delete(itemId);
+      setUpdatingMasteryId((cur) => (cur === itemId ? null : cur));
+    }
   };
 
   const handleCreatePlan = async () => {
+    if (creatingPlan) return;
     setCreatingPlan(true);
+    setErrorMsg('');
     try {
       const weak = errorBook.slice(0, 3).map((e) => e.topic_tag);
       const res = await apiJson<{ plan: StudyPlanRecord }>('/api/tutor/study-plans', {
@@ -309,6 +386,8 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
       });
       setStudyPlans((prev) => [res.plan, ...prev]);
       onArtifactsChanged();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '生成复习计划失败');
     } finally {
       setCreatingPlan(false);
     }
@@ -375,56 +454,165 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
             </div>
           </div>
 
-          {fullWorkbenchMode === 'mindmap' ? (
-            <div className="paper-folio" style={{ padding: '16px 20px' }}>
-              <MindMapDrawioWorkbench
+          <Suspense
+            fallback={
+              <div className="paper-folio" style={{ padding: 28, textAlign: 'center', fontSize: 12.5, color: 'var(--ink-muted)' }}>
+                正在载入图形与思维导图画板…
+              </div>
+            }
+          >
+            {fullWorkbenchMode === 'mindmap' ? (
+              <div className="paper-folio" style={{ padding: '16px 20px' }}>
+                <MindMapDrawioWorkbench
+                  subject={subject}
+                  domainId={domainId}
+                  branch={branch}
+                  externalMap={inlineMindmap}
+                  onArtifactsChanged={onArtifactsChanged}
+                />
+              </div>
+            ) : (
+              <FunctionPlotCard
+                initialExpr={activePlotExpr}
+                initialPlotData={plotData}
+                activePreset={activePreset}
+                activePresetNonce={activePresetNonce}
                 subject={subject}
                 domainId={domainId}
                 branch={branch}
-                externalMap={inlineMindmap}
+                externalMindmap={inlineMindmap}
                 onArtifactsChanged={onArtifactsChanged}
               />
-            </div>
-          ) : (
-            <FunctionPlotCard
-              initialExpr={activePlotExpr}
-              initialPlotData={plotData}
-              activePreset={activePreset}
-              activePresetNonce={activePresetNonce}
-              subject={subject}
-              domainId={domainId}
-              branch={branch}
-              externalMindmap={inlineMindmap}
-              onArtifactsChanged={onArtifactsChanged}
-            />
-          )}
+            )}
+          </Suspense>
         </div>
       </div>
     );
   }
 
+  const tutorTopTabs = (
+    <div
+      className="no-print"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 10,
+        padding: '8px 22px',
+        background: '#ffffff',
+        borderBottom: '1px solid var(--border-hairline)',
+      }}
+    >
+      <div
+        className="hk-mode-switcher"
+        role="tablist"
+        aria-label="答疑与错题本切换"
+        style={{ borderRadius: 999 }}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSubTab === 'solve'}
+          className={`hk-mode-btn ${activeSubTab === 'solve' ? 'active' : ''}`}
+          style={{ borderRadius: 999, padding: '5px 14px', fontSize: 12.5 }}
+          onClick={() => onChangeSubTab('solve')}
+          data-testid="tutor-tab-solve"
+        >
+          分步答疑与验算
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSubTab === 'errorbook'}
+          className={`hk-mode-btn ${activeSubTab === 'errorbook' ? 'active' : ''}`}
+          style={{ borderRadius: 999, padding: '5px 14px', fontSize: 12.5 }}
+          onClick={() => onChangeSubTab('errorbook')}
+          data-testid="tutor-tab-errorbook"
+        >
+          {`错题本 (${errorBook.length})`}
+        </button>
+      </div>
+    </div>
+  );
+
   if (activeSubTab === 'errorbook') {
     return (
-      <div className="pane-stage" style={{ height: 'calc(100vh - 52px)' }}>
+      <>
+        {tutorTopTabs}
+        <div className="pane-stage" style={{ height: 'calc(100vh - 102px)' }}>
         <div className="stage-inner" style={{ maxWidth: 900 }}>
+          {errorMsg && (
+            <div className="callout-danger" style={{ marginBottom: 12, fontSize: 12.5 }}>
+              {errorMsg}
+            </div>
+          )}
           <div className="paper-folio">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 className="serif-heading" style={{ margin: 0, fontSize: 20 }}>错题本</h2>
                 <div style={{ fontSize: 12.5, color: 'var(--ink-muted)', marginTop: 3 }}>
-                  点击星标记录掌握程度
+                  点击星标记录掌握程度，支持按学科与关键词检索巩固
                 </div>
               </div>
-              <span className="stamp-badge stamp-accent mono-num">共 {errorBook.length} 题</span>
+              <span className="stamp-badge stamp-accent mono-num">
+                {filteredErrorBook.length === errorBook.length
+                  ? `共 ${errorBook.length} 题`
+                  : `筛选 ${filteredErrorBook.length} / ${errorBook.length} 题`}
+              </span>
             </div>
+
+            {errorBook.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+                <select
+                  className="select"
+                  style={{ width: 156, padding: '6px 10px', fontSize: 12.5 }}
+                  value={errorSubjectFilter}
+                  onChange={(e) => setErrorSubjectFilter(e.target.value)}
+                  aria-label="错题学科筛选"
+                  data-testid="errorbook-subject-filter"
+                >
+                  <option value="ALL">全部学科</option>
+                  {errorBookSubjects.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className="input"
+                  style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 12.5 }}
+                  value={errorKeyword}
+                  onChange={(e) => setErrorKeyword(e.target.value)}
+                  placeholder="搜索知识点、题干、错因或要点总结…"
+                  data-testid="errorbook-keyword-input"
+                />
+                {(errorSubjectFilter !== 'ALL' || errorKeyword.trim()) && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setErrorSubjectFilter('ALL');
+                      setErrorKeyword('');
+                    }}
+                  >
+                    清除筛选
+                  </button>
+                )}
+              </div>
+            )}
 
             {errorBook.length === 0 ? (
               <div style={{ padding: 36, textAlign: 'center', color: 'var(--ink-muted)' }}>
                 暂无错题记录，在答疑解析底部点击「收入错题本」即可沉淀。
               </div>
+            ) : filteredErrorBook.length === 0 ? (
+              <div style={{ padding: 28, textAlign: 'center', color: 'var(--ink-muted)' }}>
+                未找到匹配的错题记录，请调整学科或关键词筛选条件。
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {errorBook.map((item) => (
+                {filteredErrorBook.map((item) => (
                   <div key={item.id} style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -439,6 +627,7 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                               type="button"
                               className="btn btn-ghost btn-sm"
                               style={{ padding: 3 }}
+                              disabled={updatingMasteryId === item.id}
                               onClick={() => handleSetMastery(item.id, lvl)}
                               aria-label={`标记为 ${lvl} 星掌握`}
                             >
@@ -457,6 +646,8 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                             setSubject(item.subject);
                             setGradeLevel(item.grade_level);
                             setQuestion(item.question_text);
+                            clearCurrentSolutionState();
+                            onSolutionReady(null, item.question_text, item.subject, item.grade_level);
                             onChangeSubTab('solve');
                           }}
                         >
@@ -467,8 +658,13 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                           className="btn btn-ghost btn-sm"
                           aria-label="删除错题"
                           onClick={async () => {
-                            await apiJson(`/api/tutor/error-book/${item.id}`, { method: 'DELETE' });
-                            refreshErrorBook();
+                            try {
+                              setErrorMsg('');
+                              await apiJson(`/api/tutor/error-book/${item.id}`, { method: 'DELETE' });
+                              await refreshErrorBook();
+                            } catch (err) {
+                              setErrorMsg(err instanceof Error ? err.message : '删除错题失败');
+                            }
                           }}
                         >
                           <IconTrashClean size={14} color="var(--seal)" />
@@ -488,7 +684,8 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
             )}
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -529,6 +726,11 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
 
         <div className="pane-stage">
           <div className="stage-inner">
+            {errorMsg && (
+              <div className="callout-danger" style={{ marginBottom: 12, fontSize: 12.5 }}>
+                {errorMsg}
+              </div>
+            )}
             <div className="paper-folio-sheet">
               <h2 className="serif-heading" style={{ margin: '0 0 14px', fontSize: 19 }}>可执行 7 日复习档案</h2>
               {studyPlans.length === 0 ? (
@@ -602,6 +804,7 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
 
   return (
     <>
+      {tutorTopTabs}
       <div className="mobile-tutor-toggle">
         <div className="seg-switch" style={{ width: '100%' }}>
           <button
@@ -807,18 +1010,26 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
 
             {/* 4-Dimension Experimental Workbench & Mindmap Card */}
             {(!solution || plotData?.ok) && !isStreaming && (
-              <FunctionPlotCard
-                initialExpr={activePlotExpr}
-                initialPlotData={plotData}
-                activePreset={activePreset}
-                activePresetNonce={activePresetNonce}
-                subject={subject}
-                domainId={domainId}
-                branch={branch}
-                externalMindmap={inlineMindmap}
-                onExpandMindmap={() => onChangeSubTab('mindmap')}
-                onArtifactsChanged={onArtifactsChanged}
-              />
+              <Suspense
+                fallback={
+                  <div className="paper-folio" style={{ padding: 20, textAlign: 'center', fontSize: 12.5, color: 'var(--ink-muted)' }}>
+                    正在载入函数与几何画板…
+                  </div>
+                }
+              >
+                <FunctionPlotCard
+                  initialExpr={activePlotExpr}
+                  initialPlotData={plotData}
+                  activePreset={activePreset}
+                  activePresetNonce={activePresetNonce}
+                  subject={subject}
+                  domainId={domainId}
+                  branch={branch}
+                  externalMindmap={inlineMindmap}
+                  onExpandMindmap={() => onChangeSubTab('mindmap')}
+                  onArtifactsChanged={onArtifactsChanged}
+                />
+              </Suspense>
             )}
 
             {!solution && !isStreaming && !errorMsg && allTopics.length > 0 && (
@@ -841,6 +1052,8 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                     title: ft.title.split('：')[0],
                     subject: ft.subject,
                     grade_level: ft.grade_level,
+                    domain: ft.domain_id || domainId,
+                    branch: ft.branch || branch,
                     context_summary: `【专题】${ft.title}\n【分支】${ft.domain_name} · ${ft.branch}\n【直观模型】${ft.intuition_models.map((m) => `${m.name}:${m.desc}`).join('；')}\n【跨学科视角】${(ft.interdisciplinary_links || []).map((l) => `${l.domain}-${l.title}`).join('；')}\n【板书金句】${ft.board_punchline}`,
                     target_tab: 'lesson',
                   })
@@ -869,6 +1082,8 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                           title: solution.teaching_bridge?.suggested_lesson_title || solution.topic_tag,
                           subject,
                           grade_level: gradeLevel,
+                          domain: domainId,
+                          branch,
                           context_summary: `【原学习题目】${question}\n【核心思想】${solution.knowledge_graph?.core_concept}\n【教学重难点建议】${solution.teaching_bridge?.pedagogical_focus}\n【关键步骤】${solution.steps.map((s) => `${s.step}. ${s.title}: ${s.derivation}`).join('\n')}`,
                           target_tab: 'lesson',
                         })
@@ -883,7 +1098,7 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                   {(solution.known_conditions || []).map((c, idx) => (
                     <span key={idx} className="stamp-badge stamp-neutral" style={{ fontSize: 12 }}>
-                      条件 {idx + 1}：{c}
+                      条件 {idx + 1}：<MathText inline text={c} />
                     </span>
                   ))}
                 </div>
@@ -891,7 +1106,7 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                 {solution.missing_condition_check && (
                   <div className={solution.missing_condition_check.has_ambiguity ? 'callout-warn' : 'callout-pedagogy'} style={{ fontSize: 13 }}>
                     <strong>边界核查：</strong>
-                    {solution.missing_condition_check.prompt}
+                    <MathText inline text={solution.missing_condition_check.prompt} />
                   </div>
                 )}
 
@@ -990,9 +1205,11 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 5 }}>
                           <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink-primary)' }}>
-                            第 {st.step} 步：{st.title}
+                            第 {st.step} 步：<MathText inline text={st.title} />
                           </span>
-                          <span className="stamp-badge stamp-accent">依据：{st.theorem_basis}</span>
+                          <span className="stamp-badge stamp-accent">
+                            依据：<MathText inline text={st.theorem_basis} />
+                          </span>
                         </div>
                         <MathText text={st.derivation} />
                       </div>
@@ -1007,17 +1224,21 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                   {solution.knowledge_graph && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10, padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 8, fontSize: 12.5 }}>
                       <div>
-                        <strong>前置基础：</strong>{(solution.knowledge_graph.prerequisites || []).join('、')}
+                        <strong>前置基础：</strong>
+                        <MathText inline text={(solution.knowledge_graph.prerequisites || []).join('、')} />
                       </div>
                       <div>
-                        <strong>高频陷阱：</strong>{(solution.knowledge_graph.common_traps || []).join('；')}
+                        <strong>高频陷阱：</strong>
+                        <MathText inline text={(solution.knowledge_graph.common_traps || []).join('；')} />
                       </div>
                       <div>
-                        <strong>高阶迁移：</strong>{(solution.knowledge_graph.extensions || []).join('、')}
+                        <strong>高阶迁移：</strong>
+                        <MathText inline text={(solution.knowledge_graph.extensions || []).join('、')} />
                       </div>
                       {(solution.knowledge_graph.interdisciplinary_bridges || []).length > 0 && (
                         <div>
-                          <strong>跨学科映射：</strong>{(solution.knowledge_graph.interdisciplinary_bridges || []).join('；')}
+                          <strong>跨学科映射：</strong>
+                          <MathText inline text={(solution.knowledge_graph.interdisciplinary_bridges || []).join('；')} />
                         </div>
                       )}
                     </div>
@@ -1034,10 +1255,11 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                     <button
                       type="button"
                       className="btn btn-surface"
+                      disabled={savingErrorBook}
                       onClick={handleSaveToErrorBook}
                       data-testid="btn-save-errorbook"
                     >
-                      <IconBookmarkPlus size={15} color="var(--accent)" /> 收入错题本
+                      <IconBookmarkPlus size={15} color="var(--accent)" /> {savingErrorBook ? '保存中…' : '收入错题本'}
                     </button>
                     {savedToast && <span style={{ fontSize: 12.5, color: 'var(--success)', fontWeight: 600 }}>{savedToast}</span>}
                   </div>
@@ -1086,13 +1308,13 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
 
                         {picked && (
                           <div className={isCorrect || !v.options?.length ? 'callout-verified' : 'callout-danger'} style={{ marginTop: 10, fontSize: 12.5 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, marginBottom: 3 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, marginBottom: 3, flexWrap: 'wrap' }}>
                               {isCorrect || !v.options?.length ? (
                                 <IconVerifyCheck size={14} color="var(--success)" />
                               ) : (
                                 <IconCrossCircle size={14} color="var(--seal)" />
                               )}
-                              标准答案：{v.answer}
+                              <span>标准答案：<MathText inline text={v.answer} /></span>
                             </div>
                             <MathText text={v.explanation} />
                           </div>
@@ -1140,7 +1362,7 @@ export const TutorWorkspace: React.FC<TutorWorkspaceProps> = ({
                           lineHeight: 1.65,
                         }}
                       >
-                        {f.role === 'user' ? f.content : <MathText text={f.content} />}
+                        <MathText inline={f.role === 'user'} text={f.content} />
                       </div>
                     ))}
                   </div>

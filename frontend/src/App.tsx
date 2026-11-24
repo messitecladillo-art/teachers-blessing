@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { apiJson } from './services/api';
 import {
   AgentLinkedItem,
@@ -29,13 +29,15 @@ import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { HkHomeView } from './views/HkHomeView';
 import { HkMyCoursesView } from './views/HkMyCoursesView';
 import { HkCourseSpaceView } from './views/HkCourseSpaceView';
-import { HkWhiteboardView } from './views/HkWhiteboardView';
 import { HkCheatsheetView } from './views/HkCheatsheetView';
 import { HkLearningFeedView } from './views/HkLearningFeedView';
 import { HkMarketplaceView } from './views/HkMarketplaceView';
 import { HkHistoryView } from './views/HkHistoryView';
 import { HkKnowledgeBaseView } from './views/HkKnowledgeBaseView';
 
+const HkWhiteboardView = lazy(() =>
+  import('./views/HkWhiteboardView').then((m) => ({ default: m.HkWhiteboardView }))
+);
 const MindMapDrawioWorkbench = lazy(() =>
   import('./components/MindMapDrawioWorkbench').then((m) => ({ default: m.MindMapDrawioWorkbench }))
 );
@@ -144,6 +146,7 @@ export const App: React.FC = () => {
   const [settingsTab, setSettingsTab] = useState<'general' | 'memory' | 'model'>('general');
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [cmdkOpen, setCmdkOpen] = useState(false);
+  const cheatsheetCourseSeqRef = useRef(0);
 
   const navigateTo = useCallback(
     (next: HkRoute) => {
@@ -197,6 +200,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.isComposing) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setCmdkOpen((v) => !v);
@@ -213,24 +217,31 @@ export const App: React.FC = () => {
         setActiveCourse(res.course);
         setActiveCourseMaterials(res.materials || []);
         navigateTo('course_space');
+        return;
       }
     } catch {
-      const local = courses.find((c) => c.id === courseId);
-      if (local) {
-        setActiveCourse(local);
-        navigateTo('course_space');
-      } else {
-        navigateTo('courses');
-      }
+      /* fallback local */
     }
-  }, [courses, navigateTo]);
+    const local = courses.find((c) => c.id === courseId) || (activeCourse?.id === courseId ? activeCourse : null);
+    if (local) {
+      if (activeCourse?.id !== courseId) {
+        setActiveCourseMaterials([]);
+      }
+      setActiveCourse(local);
+      navigateTo('course_space');
+    } else {
+      navigateTo('courses');
+    }
+  }, [activeCourse, courses, navigateTo]);
 
   const openWhiteboard = useCallback(async (courseId: string, lectureId?: string) => {
-    let targetCourse = courses.find((c) => c.id === courseId) || activeCourse;
+    let targetCourse = courses.find((c) => c.id === courseId) || (activeCourse?.id === courseId ? activeCourse : null);
+    let appliedRemote = false;
     try {
       const res = await apiJson<{ course: CourseRecord; materials: SourceDocMeta[] }>(`/api/courses/${courseId}`);
       if (res.course) {
         targetCourse = res.course;
+        appliedRemote = true;
         setActiveCourse(res.course);
         setActiveCourseMaterials(res.materials || []);
       }
@@ -240,6 +251,12 @@ export const App: React.FC = () => {
     if (!targetCourse) {
       navigateTo('courses');
       return;
+    }
+    if (!appliedRemote) {
+      if (activeCourse?.id !== courseId) {
+        setActiveCourseMaterials([]);
+      }
+      setActiveCourse(targetCourse);
     }
     const lid =
       lectureId ||
@@ -256,7 +273,7 @@ export const App: React.FC = () => {
     const hydrateFromHash = async (hashStr: string) => {
       const parsed = parseHashLocation(hashStr);
       setHomeTab(parsed.homeTab);
-      if (parsed.threadId) setActiveThreadId(parsed.threadId);
+      setActiveThreadId(parsed.threadId || null);
       if (parsed.courseId) {
         setRestoringDeepRoute(true);
         try {
@@ -283,6 +300,9 @@ export const App: React.FC = () => {
           setRestoringDeepRoute(false);
         }
       } else {
+        if (parsed.route === 'cheatsheet' && !parsed.courseId) {
+          setActiveCourse(null);
+        }
         setRoute(parsed.route);
       }
     };
@@ -477,6 +497,7 @@ export const App: React.FC = () => {
             onOpenPedagogy={() => setPedagogyOpen(true)}
             onOpenInsights={() => setInsightsOpen(true)}
             onBackFromTool={() => setRoute(prevRoute === route ? 'home' : prevRoute)}
+            onOpenCommandPalette={() => setCmdkOpen(true)}
           />
         )}
 
@@ -546,6 +567,7 @@ export const App: React.FC = () => {
 
           {route === 'course_space' && activeCourse && (
             <HkCourseSpaceView
+              key={activeCourse.id}
               course={activeCourse}
               materials={activeCourseMaterials}
               onBack={() => navigateTo('courses')}
@@ -565,7 +587,7 @@ export const App: React.FC = () => {
                 setExternalInstantPrompt(prompt);
                 navigateTo('home');
               }}
-              onOpenLinkedTool={(kind, id) => {
+              onOpenLinkedTool={async (kind, id) => {
                 if (kind === 'exam') {
                   setExternalExamId(id);
                   setExternalExamView('take');
@@ -580,6 +602,13 @@ export const App: React.FC = () => {
                   setPrevRoute('course_space');
                   setRoute('tool_lesson');
                 } else if (kind === 'mindmap') {
+                  try {
+                    const res = await apiJson<{ mindmaps: MindMapRecord[] }>('/api/mindmap/list');
+                    const found = (res.mindmaps || []).find((m) => m.id === id) || res.mindmaps?.[0];
+                    if (found) setExternalMindmap(found);
+                  } catch {
+                    /* ignore */
+                  }
                   setPrevRoute('course_space');
                   setRoute('tool_mindmap');
                 }
@@ -588,31 +617,102 @@ export const App: React.FC = () => {
           )}
 
           {route === 'whiteboard' && activeCourse && (
-            <HkWhiteboardView
-              course={activeCourse}
-              lectureId={activeLectureId}
-              onExit={() => {
-                refreshCourses();
-                setRoute('course_space');
-              }}
-              onCourseUpdated={(updated) => {
-                setActiveCourse(updated);
-                refreshCourses();
-              }}
-              onOpenCheatsheet={() => navigateTo('cheatsheet')}
-              onSelectLecture={(lid) => setActiveLectureId(lid)}
-            />
+            <Suspense
+              fallback={
+                <div className="hk-page-wrap">
+                  <div className="paper-folio" style={{ padding: 28, textAlign: 'center', color: '#6b7280' }}>
+                    正在载入互动白板课堂…
+                  </div>
+                </div>
+              }
+            >
+              <HkWhiteboardView
+                key={activeCourse.id}
+                course={activeCourse}
+                lectureId={activeLectureId}
+                onExit={() => {
+                  refreshCourses();
+                  setRoute('course_space');
+                }}
+                onCourseUpdated={(updated) => {
+                  setActiveCourse(updated);
+                  refreshCourses();
+                }}
+                onOpenCheatsheet={() => {
+                  setExternalCheatsheetData(null);
+                  setPrevRoute('whiteboard');
+                  setRoute('cheatsheet');
+                }}
+                onSelectLecture={(lid) => setActiveLectureId(lid)}
+              />
+            </Suspense>
           )}
 
           {route === 'cheatsheet' && (
             <HkCheatsheetView
               course={activeCourse}
+              courses={courses}
               initialTopic={cheatsheetTopic}
               initialData={externalCheatsheetData}
+              backLabel={prevRoute === 'whiteboard' && activeCourse ? '返回白板课堂' : undefined}
+              onSelectCourse={(cid) => {
+                const reqSeq = ++cheatsheetCourseSeqRef.current;
+                setExternalCheatsheetData(null);
+                const switching = !cid || cid !== activeCourse?.id;
+                if (switching && prevRoute === 'whiteboard') {
+                  setPrevRoute('course_space');
+                }
+                if (!cid) {
+                  setActiveCourse(null);
+                  setActiveCourseMaterials([]);
+                  setActiveLectureId('');
+                  return;
+                }
+                if (switching) {
+                  setActiveCourseMaterials([]);
+                }
+                const local = courses.find((c) => c.id === cid) || null;
+                if (local) {
+                  setActiveCourse(local);
+                  if (switching) {
+                    setActiveLectureId(
+                      local.last_lecture_id ||
+                        local.next_lecture?.id ||
+                        local.units?.[0]?.lectures?.[0]?.id ||
+                        ''
+                    );
+                  }
+                } else if (switching) {
+                  setActiveLectureId('');
+                }
+                apiJson<{ course: CourseRecord; materials: SourceDocMeta[] }>(`/api/courses/${cid}`)
+                  .then((res) => {
+                    if (reqSeq !== cheatsheetCourseSeqRef.current) return;
+                    if (res.course) {
+                      const c = res.course;
+                      setActiveCourse(c);
+                      setActiveCourseMaterials(res.materials || []);
+                      if (switching) {
+                        setActiveLectureId(
+                          c.last_lecture_id ||
+                            c.next_lecture?.id ||
+                            c.units?.[0]?.lectures?.[0]?.id ||
+                            ''
+                        );
+                      }
+                    }
+                  })
+                  .catch(() => {});
+              }}
               onBack={() => {
                 setExternalCheatsheetData(null);
-                if (activeCourse) setRoute('course_space');
-                else setRoute('home');
+                if (prevRoute === 'whiteboard' && activeCourse) {
+                  setRoute('whiteboard');
+                } else if (activeCourse) {
+                  setRoute('course_space');
+                } else {
+                  setRoute('home');
+                }
               }}
               onCourseUpdated={(updated) => {
                 setActiveCourse(updated);
@@ -665,6 +765,9 @@ export const App: React.FC = () => {
                   setExternalExamId(itemId);
                   setExternalExamView('take');
                 }
+                if (specRoute === 'tool_tutor') {
+                  setTutorTab('errorbook');
+                }
                 setPrevRoute('history');
                 setRoute(specRoute);
               }}
@@ -714,8 +817,8 @@ export const App: React.FC = () => {
                 externalLessonId={externalLessonId}
                 onConsumeExternalLesson={() => setExternalLessonId(null)}
                 onArtifactsChanged={refreshSystemAndArtifacts}
-                onGeneratePptFromLesson={(title, subject, grade, material) =>
-                  handleTransferToTeach({ title, subject, grade_level: grade, context_summary: material, target_tab: 'ppt' })
+                onGeneratePptFromLesson={(title, subject, grade, material, domain, branch) =>
+                  handleTransferToTeach({ title, subject, grade_level: grade, domain, branch, context_summary: material, target_tab: 'ppt' })
                 }
               />
             )}
@@ -736,8 +839,8 @@ export const App: React.FC = () => {
                 externalViewMode={externalExamView}
                 onConsumeExternalExam={() => setExternalExamId(null)}
                 onArtifactsChanged={refreshSystemAndArtifacts}
-                onExportExamToPpt={(title, subject, grade, material) =>
-                  handleTransferToTeach({ title, subject, grade_level: grade, context_summary: material, target_tab: 'ppt' })
+                onExportExamToPpt={(title, subject, grade, material, domain, branch) =>
+                  handleTransferToTeach({ title, subject, grade_level: grade, domain, branch, context_summary: material, target_tab: 'ppt' })
                 }
               />
             )}
@@ -745,9 +848,30 @@ export const App: React.FC = () => {
             {route === 'tool_analytics' && (
               <AnalyticsWorkspace
                 onArtifactsChanged={refreshSystemAndArtifacts}
-                onExportAnalyticsToPpt={(title, subject, grade, material) =>
-                  handleTransferToTeach({ title, subject, grade_level: grade, context_summary: material, target_tab: 'ppt' })
+                onExportAnalyticsToPpt={(title, subject, grade, material, domain, branch) =>
+                  handleTransferToTeach({ title, subject, grade_level: grade, domain, branch, context_summary: material, target_tab: 'ppt' })
                 }
+                onCreateRemediationQuiz={async (weakTopics = []) => {
+                  try {
+                    const res = await apiJson<{ exam_record?: { id: string }; exam_id?: string }>(
+                      '/api/agent/memory/remediation-quiz',
+                      {
+                        method: 'POST',
+                        body: JSON.stringify({ weak_topics: weakTopics, topics: weakTopics, count: 4 }),
+                      }
+                    );
+                    const examId = res.exam_record?.id || res.exam_id;
+                    if (examId) {
+                      setExternalExamId(examId);
+                      setExternalExamView('take');
+                      setPrevRoute('tool_analytics');
+                      setRoute('tool_exam');
+                      refreshSystemAndArtifacts();
+                    }
+                  } catch (err) {
+                    throw err;
+                  }
+                }}
               />
             )}
 
@@ -853,6 +977,27 @@ export const App: React.FC = () => {
         open={cmdkOpen}
         onClose={() => setCmdkOpen(false)}
         artifacts={artifacts}
+        courses={courses}
+        onNavigateRoute={(r, tab) => {
+          if (r === 'whiteboard') {
+            handleOpenContinueWhiteboard();
+            return;
+          }
+          if (r === 'home') {
+            if (tab) setHomeTab(tab);
+            setActiveThreadId(null);
+          }
+          if (r === 'cheatsheet') {
+            setExternalCheatsheetData(null);
+          }
+          navigateTo(r);
+        }}
+        onOpenCourseSpace={(cid) => {
+          void openCourseSpace(cid);
+        }}
+        onOpenWhiteboard={(cid, lid) => {
+          void openWhiteboard(cid, lid);
+        }}
         onNavigateAgent={() => {
           setHomeTab('instant');
           navigateTo('home');
