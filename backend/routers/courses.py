@@ -24,7 +24,7 @@ from engines.math_verifier import extract_plottable_expression, verify_freeform_
 from engines.memory_engine import record_learning_outcome
 from engines.mindmap_engine import auto_layout_mindmap, build_mindmap_from_topic, compile_drawio_xml
 from engines.pedagogy_kb import load_pedagogy_corpus
-from engines.tts_narrator import synthesize_text_audio
+from engines.tts_narrator import latex_to_spoken_zh, synthesize_text_audio
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
@@ -283,39 +283,65 @@ def _topic_to_course_payload(topic: dict[str, Any], *, course_id: str, cover_ima
     u1_l1_blocks = [
         {
             "id": "blk_intro",
+            "block_type": "concept",
             "heading": f"一、{title}直观建立",
             "lines": [
                 m.get("name", "核心视角") + "：" + m.get("desc", "")
                 for m in (models[:2] or [{"name": "概念切入", "desc": str(topic.get("micro_teaching_hook") or f"从实际情境理解{title}的本质。")}])
             ],
             "highlight_note": punch,
+            "narration": latex_to_spoken_zh(
+                f"我们先来建立《{title}》的核心直观。"
+                + "；".join(
+                    m.get("name", "核心视角") + "，也就是" + m.get("desc", "")
+                    for m in (models[:2] or [{"name": "概念切入", "desc": f"从实际情境理解{title}的本质"}])
+                )
+                + f"。请记住这句核心提示：{punch}"
+            ),
+            "teaching_tip": f"授课切入：先用生活或几何直观打开认知，再引出《{title}》的形式化定义。",
+            "visual_expr": "x^3 - 3*x^2 + 2" if "导数" in title else "",
         },
         {
             "id": "blk_flow",
+            "block_type": "derivation",
             "heading": "二、核心推演路线",
             "lines": [str(step) for step in flow[:3]],
             "highlight_note": f"核心公式参考：{topic.get('core_formula_latex') or '按定义与约束分步检验'}",
+            "narration": latex_to_spoken_zh(
+                "接下来按规范推演路线一步步看：" + "；".join(str(step) for step in flow[:3])
+            ),
+            "teaching_tip": "板书节奏：分步骤写出前提检查与变形依据，切忌跳步。",
         },
     ]
 
     u1_l2_blocks = [
         {
             "id": "blk_trap",
+            "block_type": "trap",
             "heading": "一、高频反例与边界警示",
             "lines": [str(pf) for pf in pitfalls[:3]],
             "highlight_note": "遇到临界点或特殊值务必单独代入检验。",
+            "narration": latex_to_spoken_zh(
+                f"这一块我们专门排雷，留意几个高频反例：" + "；".join(str(pf) for pf in pitfalls[:3]) + "。临界点一定单独代回验算。"
+            ),
+            "teaching_tip": "课堂设问：先让学生判断边界点是否正确，再展示反例制造认知冲突。",
         }
     ]
 
     u2_l1_blocks = [
         {
             "id": "blk_ext",
+            "block_type": "example",
             "heading": "一、跨情境迁移与应用",
             "lines": [
                 f"{lk.get('domain', '相关领域')} · {lk.get('title', title)}：{lk.get('mechanism', '')}"
                 for lk in (topic.get("interdisciplinary_links") or [{"domain": "方法迁移", "title": title, "mechanism": punch}])
             ],
             "highlight_note": punch,
+            "narration": latex_to_spoken_zh(
+                f"现在我们把《{title}》放到实际应用场景中检验迁移能力。核心还是把握：{punch}"
+            ),
+            "teaching_tip": "迁移收束：总结跨题型通用模板，并与上一讲对比前提条件差异。",
         }
     ]
 
@@ -550,6 +576,35 @@ class CourseUpdateReq(BaseModel):
 
 class WhiteboardChatReq(BaseModel):
     message: str
+    focus_block_id: str = ""
+    teaching_mode: str = "self_study"
+
+
+class TeachStepReq(BaseModel):
+    action: str  # next_segment | reexplain_analogy | worked_example | counterexample | socratic_check | summarize | teacher_script
+    block_id: str = ""
+    page_index: int = 1
+    teaching_mode: str = "self_study"
+    custom_prompt: str = ""
+
+
+class BoardMutateReq(BaseModel):
+    op: str  # add_block | update_block | delete_block | add_page | move_block
+    page_index: int = 1
+    block_id: str = ""
+    heading: str = ""
+    lines: list[str] | None = None
+    highlight_note: str | None = None
+    narration: str | None = None
+    teaching_tip: str | None = None
+    block_type: str | None = None
+    visual_expr: str | None = None
+    roadmap_title: str | None = None
+    direction: str = "up"
+
+
+class LectureQuizSubmitReq(BaseModel):
+    answers: dict[str, str]
 
 
 class CheatsheetReq(BaseModel):
@@ -811,7 +866,7 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
                 '"description": "一句话说明课程覆盖目标", '
                 '"units": [{"unit_index": 1, "title": "单元名", "summary": "单元简介", "lectures": ['
                 '{"title": "讲次名", "summary": "1句话介绍本讲目标", "duration_min": 15, '
-                '"board_blocks": [{"heading": "一、核心原理", "lines": ["要点1", "要点2"], "highlight_note": "板书要点"}], '
+                '"board_blocks": [{"block_type": "concept|derivation|example|trap|summary", "heading": "一、核心原理", "lines": ["要点1", "要点2"], "highlight_note": "板书要点", "narration": "口语化清晰讲解稿(不含LaTeX斜杠)", "teaching_tip": "授课停顿或板书提醒", "visual_expr": "可选如 x^2-1"}], '
                 '"opening_dialogue": "老师用第一人称启发式口吻开启本讲的2句对话", '
                 '"quiz": {"question": "概念检验题", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "A", "explanation": "简明解析"}'
                 ']}], '
@@ -907,21 +962,42 @@ async def craft_course_stream(req: CraftCourseReq) -> StreamingResponse:
                     blocks_in = l.get("board_blocks") or []
                     blocks_norm = []
                     for bi, blk in enumerate(blocks_in, start=1):
+                        blk_lines = [str(ln) for ln in (blk.get("lines") or [])]
+                        blk_heading = str(blk.get("heading") or f"要点 {bi}")
+                        blk_note = str(blk.get("highlight_note") or "")
+                        blk_narr = str(blk.get("narration") or "").strip() or latex_to_spoken_zh(
+                            f"{blk_heading}。" + "；".join(blk_lines) + (f"。重点注意：{blk_note}" if blk_note else "")
+                        )
+                        v_expr = str(blk.get("visual_expr") or "").strip()
+                        if not v_expr:
+                            for cand_line in [*blk_lines, blk_heading]:
+                                plotted = extract_plottable_expression(cand_line)
+                                if plotted and plotted[0]:
+                                    v_expr = plotted[0]
+                                    break
                         blocks_norm.append(
                             {
                                 "id": f"blk_{ui}_{li}_{bi}",
-                                "heading": str(blk.get("heading") or f"要点 {bi}"),
-                                "lines": [str(ln) for ln in (blk.get("lines") or [])],
-                                "highlight_note": str(blk.get("highlight_note") or ""),
+                                "block_type": str(blk.get("block_type") or ("concept" if bi == 1 else "derivation")),
+                                "heading": blk_heading,
+                                "lines": blk_lines,
+                                "highlight_note": blk_note,
+                                "narration": blk_narr,
+                                "teaching_tip": str(blk.get("teaching_tip") or f"讲解完「{blk_heading[:12]}」后停顿提问并核对关键前提。"),
+                                **({"visual_expr": v_expr} if v_expr else {}),
                             }
                         )
                     if not blocks_norm:
+                        summ = str(l.get("summary") or "按核心步骤推演与检验")
                         blocks_norm = [
                             {
                                 "id": f"blk_{ui}_{li}_1",
+                                "block_type": "concept",
                                 "heading": str(l.get("title") or "核心板书"),
-                                "lines": [str(l.get("summary") or "按核心步骤推演与检验")],
+                                "lines": [summ],
                                 "highlight_note": "注意检查边界条件",
+                                "narration": latex_to_spoken_zh(f"这一部分聚焦{l.get('title') or '核心板书'}，核心要点是：{summ}"),
+                                "teaching_tip": "板书重点并提醒学生核对边界条件。",
                             }
                         ]
                     quiz_items = []
@@ -1290,45 +1366,172 @@ def _verify_whiteboard_math_snippet(msg_text: str, lines: list[str]) -> str:
     return ""
 
 
-async def _run_whiteboard_chat_turn(course_id: str, lecture_id: str, msg_text: str) -> dict[str, Any]:
+MASTERY_ORDER: dict[str, int] = {
+    "unstarted": 0,
+    "attempted": 1,
+    "familiar": 2,
+    "proficient": 3,
+    "mastered": 4,
+}
+
+
+def _load_course_and_lecture(course_id: str, lecture_id: str) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
+    """Fetch course row and locate target lecture dict cleanly."""
     with get_conn() as conn:
         row = conn.execute("SELECT * FROM courses WHERE id = ?", (course_id,)).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="课程不存在")
     course = _row_to_course(row)
-
-    target_lec = None
     units = list(course["units"])
+    target_lec = None
     for u in units:
         for l in u.get("lectures") or []:
             if l.get("id") == lecture_id:
                 target_lec = l
                 break
+        if target_lec:
+            break
     if not target_lec:
         raise HTTPException(status_code=404, detail="讲次不存在")
+    return course, units, target_lec
 
-    board_pages = target_lec.get("board_pages") or [{"page_index": 1, "roadmap_title": "本节课路线图", "blocks": []}]
+
+def _save_course_units(
+    course_id: str,
+    units: list[dict[str, Any]],
+    *,
+    last_lecture_id: str | None = None,
+    weekly_sessions: dict[str, int] | None = None,
+) -> dict[str, Any]:
+    """Recompute progress and persist mutated units back to SQLite."""
+    pct, status, _ = _recompute_progress(units)
+    now = time.time()
+    set_clauses = ["units_json = ?", "progress_pct = ?", "status = ?", "updated_at = ?"]
+    params: list[Any] = [json.dumps(units, ensure_ascii=False), pct, status, now]
+    if last_lecture_id is not None:
+        set_clauses.append("last_lecture_id = ?")
+        params.append(last_lecture_id)
+    if weekly_sessions is not None:
+        set_clauses.append("weekly_sessions_json = ?")
+        params.append(json.dumps(weekly_sessions, ensure_ascii=False))
+    params.append(course_id)
+    with get_conn() as conn:
+        conn.execute(f"UPDATE courses SET {', '.join(set_clauses)} WHERE id = ?", params)
+        updated = conn.execute("SELECT * FROM courses WHERE id = ?", (course_id,)).fetchone()
+    return _row_to_course(updated)
+
+
+def _find_block_by_id(board_pages: list[dict[str, Any]], block_id: str) -> tuple[int, dict[str, Any] | None]:
+    """Locate a board block and its 1-based page index by block_id."""
+    if not block_id:
+        return 1, None
+    for idx, pg in enumerate(board_pages, start=1):
+        for blk in pg.get("blocks") or []:
+            if blk.get("id") == block_id:
+                return int(pg.get("page_index") or idx), blk
+    return 1, None
+
+
+def _enrich_board_block(blk: dict[str, Any], *, msg_hint: str = "", default_type: str = "derivation") -> dict[str, Any]:
+    """Ensure block metadata (block_type, narration, teaching_tip, verified_badge, visual_expr) is complete."""
+    heading = str(blk.get("heading") or "板书要点").strip()
+    lines = [str(x).strip() for x in (blk.get("lines") or []) if str(x).strip()]
+    note = str(blk.get("highlight_note") or "").strip()
+    blk_type = str(blk.get("block_type") or default_type).strip()
+    if blk_type not in ("concept", "derivation", "example", "trap", "summary"):
+        blk_type = default_type
+
+    out: dict[str, Any] = {
+        "id": str(blk.get("id") or new_id("blk")),
+        "block_type": blk_type,
+        "heading": heading,
+        "lines": lines or [heading],
+        "highlight_note": note,
+        "narration": str(blk.get("narration") or "").strip()
+        or latex_to_spoken_zh(f"{heading}。" + "；".join(lines) + (f"。重点提示：{note}" if note else "")),
+        "teaching_tip": str(blk.get("teaching_tip") or "").strip()
+        or f"板书停顿：引导学生先核对「{heading[:14]}」的前提条件再进入演算。",
+    }
+    badge = str(blk.get("verified_badge") or "").strip() or _verify_whiteboard_math_snippet(msg_hint, out["lines"])
+    if badge:
+        out["verified_badge"] = badge
+    v_expr = str(blk.get("visual_expr") or "").strip()
+    if not v_expr:
+        for cand_line in [*out["lines"], heading, msg_hint]:
+            plotted = extract_plottable_expression(cand_line)
+            if plotted and plotted[0]:
+                v_expr = plotted[0]
+                break
+    if v_expr:
+        out["visual_expr"] = v_expr
+    return out
+
+
+def _append_block_to_pages(board_pages: list[dict[str, Any]], new_blk: dict[str, Any]) -> int:
+    """Append a block to the last page or create a fresh overflow page, returning 1-based page index."""
+    if not board_pages:
+        board_pages.append({"page_index": 1, "roadmap_title": "本节课路线图", "blocks": [new_blk]})
+        return 1
+    if len(board_pages[-1].get("blocks") or []) >= 4:
+        next_idx = len(board_pages) + 1
+        board_pages.append(
+            {
+                "page_index": next_idx,
+                "roadmap_title": f"课堂互动板书 · 第 {next_idx} 页",
+                "blocks": [new_blk],
+            }
+        )
+        return next_idx
+    board_pages[-1].setdefault("blocks", []).append(new_blk)
+    return len(board_pages)
+
+
+async def _run_whiteboard_chat_turn(
+    course_id: str,
+    lecture_id: str,
+    msg_text: str,
+    *,
+    focus_block_id: str = "",
+    teaching_mode: str = "self_study",
+) -> dict[str, Any]:
+    course, units, target_lec = _load_course_and_lecture(course_id, lecture_id)
+
+    board_pages = list(target_lec.get("board_pages") or [{"page_index": 1, "roadmap_title": "本节课路线图", "blocks": []}])
     existing_blocks = board_pages[-1].get("blocks") or []
     board_summary = "\n".join(
         f"{b.get('heading', '')}: " + "；".join(b.get("lines") or [])
         for b in existing_blocks[-4:]
     )
+    _, focus_blk = _find_block_by_id(board_pages, focus_block_id)
+    focus_ctx = (
+        f"\n当前聚焦板书块：{focus_blk.get('heading', '')} -> {'；'.join(focus_blk.get('lines') or [])}\n"
+        if focus_blk
+        else ""
+    )
+    role_desc = (
+        "教研授课顾问（兼顾课堂讲授口吻、板书排版与提问互动建议）"
+        if teaching_mode == "teaching"
+        else "白板课堂一对一启发式主讲老师"
+    )
 
     sys_prompt = (
-        "你是白板课堂的一对一主讲老师。请针对学生追问，在回答的同时在左侧白板补充一块清晰简短的板书要点。\n"
+        f"你是{role_desc}。请针对用户当前问题或指令，在回答的同时在左侧白板补充一块清晰简短的板书要点。\n"
         "要求：语言平实清晰，少用修辞，严禁出现底层工具或代码词；数学公式用 `$...$`。\n"
         "严格输出 JSON：\n"
-        '{"reply": "面向学生的清晰回答(<=220字)", '
-        '"board_block": {"heading": "补充板书标题(<=16字)", "lines": ["公式或推导关键步骤1", "对比或验证结论2"], "highlight_note": "一句话点睛"}}'
+        '{"reply": "清晰回答(<=220字)", '
+        '"board_block": {"block_type": "concept|derivation|example|trap|summary", "heading": "补充板书标题(<=16字)", '
+        '"lines": ["公式或推导关键步骤1", "对比或验证结论2"], "highlight_note": "一句话点睛", '
+        '"narration": "口语化清晰朗读稿(不含LaTeX反斜杠)", "teaching_tip": "课堂停顿或板书提醒"}}'
     )
     user_prompt = (
         f"课程：《{course['title']}》 | 讲次：《{target_lec['title']}》\n"
-        f"当前白板内容：\n{board_summary}\n\n"
-        f"学生追问：{msg_text}"
+        f"当前白板内容：\n{board_summary}\n"
+        f"{focus_ctx}\n"
+        f"用户追问：{msg_text}"
     )
 
     reply_text = ""
-    new_blk: dict[str, Any] | None = None
+    raw_blk: dict[str, Any] | None = None
     try:
         parsed, _ = await call_llm_json(
             system_prompt=sys_prompt,
@@ -1339,22 +1542,25 @@ async def _run_whiteboard_chat_turn(course_id: str, lecture_id: str, msg_text: s
         reply_text = str(parsed.get("reply") or "").strip()
         blk_in = parsed.get("board_block")
         if isinstance(blk_in, dict) and blk_in.get("lines"):
-            blk_id = new_id("blk")
-            new_blk = {
-                "id": blk_id,
+            raw_blk = {
+                "id": new_id("blk"),
+                "block_type": str(blk_in.get("block_type") or "derivation"),
                 "heading": str(blk_in.get("heading") or f"追问解析：{msg_text[:12]}"),
                 "lines": [str(x) for x in (blk_in.get("lines") or [])][:4],
                 "highlight_note": str(blk_in.get("highlight_note") or ""),
+                "narration": str(blk_in.get("narration") or ""),
+                "teaching_tip": str(blk_in.get("teaching_tip") or ""),
             }
     except Exception:
         pass
 
     if not reply_text:
-        reply_text = f"关于“{msg_text[:36]}”，关键在于先把题目或结论里的约束条件拆出来，核对每一步推导的前提是否成立，再用简单特例代入验算一遍。已在左侧白板补充记录。"
-    if new_blk is None:
-        blk_id = new_id("blk")
-        new_blk = {
-            "id": blk_id,
+        focus_hint = f"针对「{focus_blk.get('heading', '')}」" if focus_blk else f"关于“{msg_text[:32]}”"
+        reply_text = f"{focus_hint}，关键在于先把题目或结论里的约束条件拆出来，核对每一步推导的前提是否成立，再用简单特例代入验算一遍。已在左侧白板补充记录。"
+    if raw_blk is None:
+        raw_blk = {
+            "id": new_id("blk"),
+            "block_type": "derivation",
             "heading": f"补充辨析：{msg_text[:14]}",
             "lines": [
                 "先写出已知前提与适用范围",
@@ -1363,25 +1569,13 @@ async def _run_whiteboard_chat_turn(course_id: str, lecture_id: str, msg_text: s
             "highlight_note": "核对前提 -> 分步推演 -> 特例验算",
         }
 
-    verified_badge = _verify_whiteboard_math_snippet(msg_text, new_blk.get("lines") or [])
-    if verified_badge:
-        new_blk["verified_badge"] = verified_badge
-
-    if len(board_pages[-1].get("blocks") or []) >= 4:
-        board_pages.append(
-            {
-                "page_index": len(board_pages) + 1,
-                "roadmap_title": f"课堂互动板书 · 第 {len(board_pages) + 1} 页",
-                "blocks": [new_blk],
-            }
-        )
-    else:
-        board_pages[-1]["blocks"].append(new_blk)
+    new_blk = _enrich_board_block(raw_blk, msg_hint=msg_text, default_type="derivation")
+    target_page_idx = _append_block_to_pages(board_pages, new_blk)
     target_lec["board_pages"] = board_pages
 
     now = time.time()
     msgs = list(target_lec.get("messages") or [])
-    u_msg = {"id": new_id("wmsg"), "role": "user", "content": msg_text, "board_anchor_id": "", "created_at": now}
+    u_msg = {"id": new_id("wmsg"), "role": "user", "content": msg_text, "board_anchor_id": focus_block_id or "", "created_at": now}
     a_msg = {
         "id": new_id("wmsg"),
         "role": "assistant",
@@ -1395,25 +1589,14 @@ async def _run_whiteboard_chat_turn(course_id: str, lecture_id: str, msg_text: s
     if target_lec.get("mastery") == "unstarted":
         target_lec["mastery"] = "attempted"
 
-    pct, status, _ = _recompute_progress(units)
-    with get_conn() as conn:
-        conn.execute(
-            """
-            UPDATE courses
-            SET units_json = ?, progress_pct = ?, status = ?, last_lecture_id = ?, updated_at = ?
-            WHERE id = ?
-            """,
-            (json.dumps(units, ensure_ascii=False), pct, status, lecture_id, now, course_id),
-        )
-        updated = conn.execute("SELECT * FROM courses WHERE id = ?", (course_id,)).fetchone()
-
+    updated_course = _save_course_units(course_id, units, last_lecture_id=lecture_id)
     log_telemetry("course", "whiteboard_chat", verified_ok=True)
     return {
         "ok": True,
         "reply": a_msg,
         "new_board_block": new_blk,
-        "page_index": len(board_pages),
-        "course": _row_to_course(updated),
+        "page_index": target_page_idx,
+        "course": updated_course,
     }
 
 
@@ -1422,7 +1605,13 @@ async def whiteboard_lecture_chat(course_id: str, lecture_id: str, req: Whiteboa
     msg_text = (req.message or "").strip()
     if not msg_text:
         raise HTTPException(status_code=400, detail="请输入你的问题")
-    return await _run_whiteboard_chat_turn(course_id, lecture_id, msg_text)
+    return await _run_whiteboard_chat_turn(
+        course_id,
+        lecture_id,
+        msg_text,
+        focus_block_id=req.focus_block_id,
+        teaching_mode=req.teaching_mode,
+    )
 
 
 @router.post("/{course_id}/lectures/{lecture_id}/chat-stream")
@@ -1434,7 +1623,13 @@ async def whiteboard_lecture_chat_stream(course_id: str, lecture_id: str, req: W
     async def gen():
         try:
             yield sse_event("stage", {"stage": "thinking", "message": "正在结合当前白板板书梳理推演过程…"})
-            res = await _run_whiteboard_chat_turn(course_id, lecture_id, msg_text)
+            res = await _run_whiteboard_chat_turn(
+                course_id,
+                lecture_id,
+                msg_text,
+                focus_block_id=req.focus_block_id,
+                teaching_mode=req.teaching_mode,
+            )
             reply_content = str((res.get("reply") or {}).get("content") or "")
             step_size = max(6, len(reply_content) // 10) if reply_content else 6
             for i in range(0, len(reply_content), step_size):
@@ -1450,6 +1645,523 @@ async def whiteboard_lecture_chat_stream(course_id: str, lecture_id: str, req: W
             yield sse_event("error", {"message": f"白板讲解生成失败：{exc}"})
 
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+_TEACH_ACTION_META: dict[str, tuple[str, str, str]] = {
+    "next_segment": ("derivation", "正在推进下一教学环节并生成衔接板书…", "推进下一节重点"),
+    "reexplain_analogy": ("concept", "正在构思生活化类比与直观图像…", "直观类比精讲"),
+    "worked_example": ("example", "正在编写分步规范例题并自动验算…", "典例分步拆解"),
+    "counterexample": ("trap", "正在构建易错反例与边界警示…", "易错反例警示"),
+    "socratic_check": ("concept", "正在设计苏格拉底式随堂诊断小题…", "随堂互动检验"),
+    "summarize": ("summary", "正在提炼本讲知识骨架与口诀…", "本讲小结升华"),
+    "teacher_script": ("concept", "正在生成微格试讲逐字稿与板书调度…", "试讲逐字稿"),
+}
+
+
+def _fallback_teach_step(
+    action: str,
+    course: dict[str, Any],
+    lecture: dict[str, Any],
+    focus_blk: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Produce contextual, non-generic pedagogical fallback output for teach-step when LLM is offline."""
+    lec_title = str(lecture.get("title") or course.get("title") or "本讲核心")
+    focus_heading = str((focus_blk or {}).get("heading") or lec_title)
+    focus_lines = (focus_blk or {}).get("lines") or [str(lecture.get("summary") or lec_title)]
+    lead_line = str(focus_lines[0]) if focus_lines else lec_title
+    short_focus = re.sub(r"^[一二三四五六七八九十]+、\s*", "", focus_heading)[:18]
+
+    if action == "socratic_check":
+        q_item = {
+            "id": new_id("q"),
+            "question": f"结合板书「{short_focus}」，下列在判断或演算时最必须优先检验的环节是（ ）",
+            "options": [
+                "A. 先明确函数或结论成立的定义域及前提约束，再做符号与临界点分析",
+                "B. 直接代入一个特殊数值后推广到全部区间",
+                "C. 跳过分界点或导数为零点的两侧符号验证",
+                "D. 将多个不连续区间直接用并集符号连接作答",
+            ],
+            "answer": "A",
+            "explanation": f"针对「{short_focus}」，先界定前提约束与区间边界，再用典型特例做临界复核，能避免条件滑坡与伪解。",
+            "related_block_id": (focus_blk or {}).get("id", ""),
+        }
+        return {
+            "reply": f"我围绕「{short_focus}」出了一道即时诊断题，可点击顶部「随堂检验」直接作答并立即判分。",
+            "quiz_item": q_item,
+        }
+
+    if action == "reexplain_analogy":
+        return {
+            "reply": f"换个直观类比来理解「{short_focus}」：可以把公式判定想象成开车爬坡时看仪表盘瞬时坡度——只要方向盘前方的坡度持续向上（即使红绿灯短暂踩一下刹车停顿一下，如 $f(x)=x^3$ 在原点切线水平），整段路程高度仍在稳步上升。",
+            "board_block": {
+                "block_type": "concept",
+                "heading": f"直观类比：{short_focus[:12]}",
+                "lines": [
+                    f"核心映射：{lead_line[:44]}",
+                    "汽车爬坡类比：瞬间水平踩刹车（孤立点零斜率）不改变整体单调上升趋势",
+                    "判定关键：必须看临界点左右两侧的持续变号趋势",
+                ],
+                "highlight_note": "先看方向趋势，再核对孤立点是否影响严格单调",
+                "narration": latex_to_spoken_zh(f"我们换一个更容易记住的画面来理解{short_focus}。就像开车爬坡时看坡度表，中途轻微点一下刹车只是某个瞬时斜率为零，只要前后都在往上走，整体高度还是严格增加的。"),
+                "teaching_tip": "课堂语言建议：放慢语速比划爬坡手势，让学生先口述结论再写不等式。",
+            },
+        }
+
+    if action == "worked_example":
+        return {
+            "reply": f"配合「{short_focus}」补充一道规范分步例题 $f(x)=x^3-3x$：先定域为实数集，再求导分解 $f'(x)=3(x-1)(x+1)$，列表判号得出递增区间 $(-\\infty,-1)$ 和 $(1,+\\infty)$，递减区间 $(-1,1)$，极大值 $f(-1)=2$、极小值 $f(1)=-2$。",
+            "board_block": {
+                "block_type": "example",
+                "heading": f"典例规范拆解：{short_focus[:10]}",
+                "lines": [
+                    "例题：讨论 $f(x)=x^3-3x$ 在 $(-\\infty,+\\infty)$ 上的单调性与极值",
+                    "Step 1 定域与求导：$f'(x)=3x^2-3=3(x-1)(x+1)=0 \\Rightarrow x=\\pm 1$",
+                    "Step 2 分段列表：$(-\\infty,-1)$ 与 $(1,+\\infty)$ 递增；$(-1,1)$ 递减；极值 $f(-1)=2, f(1)=-2$",
+                ],
+                "highlight_note": "严谨书写规范：两段增区间之间用“和”连接，严禁写成并集 $\\cup$",
+                "narration": latex_to_spoken_zh("我们来结合一道典例规范走完四步程序：已知 f of x 等于 x 的立方减 3x，第一步先标明定义域为全体实数；第二步求导因式分解得 f 撇 x 等于 3 倍 x 减 1 乘以 x 加 1，求出驻点正负 1；第三步分段列表判号，正区间用和连接，不要写并集符号。"),
+                "teaching_tip": "板书示例：故意留出列表格的符号行，请学生上台填正负号。",
+                "visual_expr": "x^3 - 3*x",
+            },
+        }
+
+    if action == "counterexample":
+        return {
+            "reply": f"针对「{short_focus}」最常考的两个反例陷阱已补充到板书：$f(x)=1/x$ 证明断崖间断两侧不能写并集；$f(x)=|x|$ 说明尖点不可导同样可以是极小值点。",
+            "board_block": {
+                "block_type": "trap",
+                "heading": f"易错反例警示：{short_focus[:10]}",
+                "lines": [
+                    "反例 1（并集陷阱）：$f(x)=\\frac{1}{x}$ 在 $(-\\infty,0)$ 与 $(0,+\\infty)$ 均递减，但 $f(-1)=-1 < f(1)=1$",
+                    "反例 2（可导误区）：$f(x)=|x|$ 在 $x=0$ 不可导却取到极小值；$f(x)=x^3$ 可导且 $f'(0)=0$ 却无极值",
+                ],
+                "highlight_note": "遇分母与对数先画间断边界；判极值务必检验一阶导左右变号",
+                "narration": latex_to_spoken_zh("这组反例专门帮大家避坑：第一，为什么单调区间中间不能随便写并集？看看 y 等于 x 分之一，负 1 小于 1，但函数值反而变大了；第二，极值点不一定可导，比如绝对值 x 在原点是尖点照样是极小值。"),
+                "teaching_tip": "对比板书：用红笔圈出“$\\cup$ 误区”与“左右变号”两个核心字眼。",
+            },
+        }
+
+    if action == "summarize":
+        return {
+            "reply": f"为你提炼本讲《{lec_title}》的考场核心口诀：一标定义域、二求导分解、三找驻点与间断点、四列表看变号，区间分隔写“和”不写并集。",
+            "board_block": {
+                "block_type": "summary",
+                "heading": "核心总结与考场四步口诀",
+                "lines": [
+                    f"1. 主线回顾：{short_focus} 围绕“定域 → 求导 → 列表 → 检验”展开",
+                    "2. 核心检验：驻点不等价于极值点，必须检验左右导数符号是否真正反号",
+                    "3. 书写底线：分段单调区间用“和”或逗号分隔，闭区间最值兼顾端点值",
+                ],
+                "highlight_note": "定域为先，变号为据，端点不漏，分隔用“和”",
+                "narration": latex_to_spoken_zh(f"最后我们把《{lec_title}》收束成考场四步口诀：一先标定义域，二规范求导因式分解，三标出驻点与间断点，四列表检查左右导数是否变号，闭区间还要记得比对两个端点值。"),
+                "teaching_tip": "结课收尾：停顿 3 秒留给学生对照速查表完成随堂自测。",
+            },
+        }
+
+    if action == "teacher_script":
+        return {
+            "reply": f"已为你生成针对《{lec_title}》的 3 分钟微格试讲过渡话术与板书调度提示，已追加到板书便于对照。",
+            "board_block": {
+                "block_type": "concept",
+                "heading": f"试讲口播逐字稿：{short_focus[:10]}",
+                "lines": [
+                    f"引入设问（40秒）：“同学们先看屏幕图像，{lead_line[:38]}——为什么会出现这个关键边界？”",
+                    "板书同步（90秒）：边推导边请学生口答符号变化，在右栏保留「定义域优先」常驻提醒框",
+                    "收束过渡（50秒）：“请用 30 秒核对刚才例题的端点取值，接下来我们用随堂小题即时检验。”",
+                ],
+                "highlight_note": "试讲节奏建议：问题驱动设问 + 核心结论留白待学生接话",
+                "narration": latex_to_spoken_zh(f"试讲过渡示范：各位同学请看黑板左上角，我们刚才已经得出核心关系。接下来大家思考三十秒，如果在端点处导数恰好为零，原来的单调性还成立吗？"),
+                "teaching_tip": "站位与视线提示：写完主公式后侧身面向学生停顿 2 秒，预留互动停顿点。",
+            },
+        }
+
+    # next_segment default
+    return {
+        "reply": f"基于上一节「{short_focus}」，我们顺势推进到下一步关键推演：当表达式含有参数或存在分段边界时，需先列出参数零点对比关系。",
+        "board_block": {
+            "block_type": "derivation",
+            "heading": "进阶延伸：分类界限与参数检验",
+            "lines": [
+                f"承接上一步：{lead_line[:44]}",
+                "参数分级检验：最高次项系数正负 → 判别式有无实根 → 根是否落入定义域",
+                "边界回归校验：单独检验临界等号是否破坏单调严格性",
+            ],
+            "highlight_note": "分类讨论做到不重不漏的关键是画出参数数轴",
+            "narration": latex_to_spoken_zh("掌握了前面基础步骤后，我们向前推进一档，看看含参数情况下怎么讨论：第一层看导函数最高次系数，第二层看零点是否在定义域内，第三层借助数轴比较两根大小。"),
+            "teaching_tip": "梯度拔高提示：确认全班掌握无参步骤后再展开参数分类数轴。",
+        },
+    }
+
+
+@router.post("/{course_id}/lectures/{lecture_id}/teach-step")
+async def whiteboard_teach_step_stream(course_id: str, lecture_id: str, req: TeachStepReq) -> StreamingResponse:
+    """Stream a single pedagogical action (analogy, worked example, counterexample, quiz check, etc.)."""
+    action = (req.action or "next_segment").strip()
+    if action not in _TEACH_ACTION_META:
+        raise HTTPException(status_code=400, detail=f"不支持的讲课动作：{action}")
+
+    default_btype, stage_msg, action_label = _TEACH_ACTION_META[action]
+
+    async def gen():
+        try:
+            yield sse_event("stage", {"stage": "thinking", "message": stage_msg})
+            course, units, target_lec = _load_course_and_lecture(course_id, lecture_id)
+            board_pages = list(target_lec.get("board_pages") or [{"page_index": 1, "roadmap_title": "本节课路线图", "blocks": []}])
+            _, focus_blk = _find_block_by_id(board_pages, req.block_id)
+            if not focus_blk and board_pages:
+                pg_idx_clamped = max(0, min(len(board_pages) - 1, int(req.page_index or 1) - 1))
+                pg_blks = board_pages[pg_idx_clamped].get("blocks") or []
+                if pg_blks:
+                    focus_blk = pg_blks[-1]
+
+            board_ctx = ""
+            if focus_blk:
+                board_ctx = f"聚焦板书：{focus_blk.get('heading', '')} -> {'；'.join(focus_blk.get('lines') or [])}"
+
+            if action == "socratic_check":
+                sys_prompt = (
+                    "你是交互式课堂命题老师。请结合指定板书块出一道高质量随堂选择题检验真实理解（不要考机械记忆）。\n"
+                    "语言简洁准确，公式用 `$...$`。\n"
+                    '严格输出 JSON：{"reply": "引导提示(<=90字)", "quiz_item": {"question": "题干", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "A", "explanation": "简明解析"}}'
+                )
+            else:
+                sys_prompt = (
+                    f"你是交互式白板讲课专家，当前需要执行教学动作「{action_label}」（模式：{req.teaching_mode}）。\n"
+                    "要求：紧扣当前板书与课程主线，少用虚词修辞，公式用 `$...$`，并在 narration 中提供自然口语版读法。\n"
+                    '严格输出 JSON：{"reply": "课堂伴随口播总结(<=180字)", "board_block": {"block_type": "concept|derivation|example|trap|summary", "heading": "板书块标题(<=18字)", "lines": ["要点1", "要点2", "要点3"], "highlight_note": "点睛提醒", "narration": "自然口语逐字稿(不含反斜杠)", "teaching_tip": "给老师的停顿/板书提示"}}'
+                )
+
+            user_prompt = (
+                f"课程：《{course['title']}》 | 学科：{course['subject']} | 学段：{course['grade_level']}\n"
+                f"当前讲次：《{target_lec['title']}》\n"
+                f"{board_ctx}\n"
+                + (f"附加要求：{req.custom_prompt}\n" if req.custom_prompt else "")
+            )
+
+            parsed: dict[str, Any] = {}
+            try:
+                parsed, _ = await call_llm_json(
+                    system_prompt=sys_prompt,
+                    user_prompt=user_prompt,
+                    max_tokens=1800,
+                    temperature=0.25,
+                )
+            except Exception:
+                parsed = {}
+
+            fb = _fallback_teach_step(action, course, target_lec, focus_blk)
+            reply_text = str(parsed.get("reply") or fb["reply"]).strip()
+
+            now = time.time()
+            msgs = list(target_lec.get("messages") or [])
+            for i in range(0, len(reply_text), max(8, len(reply_text) // 8 or 8)):
+                yield sse_event("delta", {"text": reply_text[i : i + max(8, len(reply_text) // 8 or 8)]})
+
+            if action == "socratic_check":
+                q_raw = parsed.get("quiz_item") if isinstance(parsed.get("quiz_item"), dict) and parsed["quiz_item"].get("question") else fb["quiz_item"]
+                opts = [str(o) for o in (q_raw.get("options") or [])][:4]
+                if len(opts) < 2:
+                    opts = fb["quiz_item"]["options"]
+                quiz_item = {
+                    "id": new_id("q"),
+                    "question": str(q_raw.get("question") or fb["quiz_item"]["question"]),
+                    "options": opts,
+                    "answer": str(q_raw.get("answer") or "A").strip()[:1].upper() or "A",
+                    "explanation": str(q_raw.get("explanation") or fb["quiz_item"]["explanation"]),
+                    "related_block_id": str((focus_blk or {}).get("id") or ""),
+                }
+                q_list = list(target_lec.get("quiz_items") or [])
+                q_list.append(quiz_item)
+                target_lec["quiz_items"] = q_list
+
+                a_msg = {
+                    "id": new_id("wmsg"),
+                    "role": "assistant",
+                    "content": reply_text,
+                    "board_anchor_id": str((focus_blk or {}).get("id") or ""),
+                    "created_at": now,
+                }
+                msgs.append(a_msg)
+                target_lec["messages"] = msgs
+                if target_lec.get("mastery") == "unstarted":
+                    target_lec["mastery"] = "attempted"
+                updated_course = _save_course_units(course_id, units, last_lecture_id=lecture_id)
+                log_telemetry("course", f"teach_step_{action}", verified_ok=True)
+                yield sse_event("quiz_item", {"quiz_item": quiz_item})
+                yield sse_event(
+                    "result",
+                    {
+                        "ok": True,
+                        "action": action,
+                        "reply": a_msg,
+                        "new_quiz_item": quiz_item,
+                        "course": updated_course,
+                    },
+                )
+                return
+
+            blk_in = parsed.get("board_block") if isinstance(parsed.get("board_block"), dict) and parsed["board_block"].get("lines") else fb["board_block"]
+            new_blk = _enrich_board_block(
+                {**blk_in, "id": new_id("blk")},
+                msg_hint=f"{action} {req.custom_prompt} {' '.join(blk_in.get('lines') or [])}",
+                default_type=default_btype,
+            )
+            page_idx = _append_block_to_pages(board_pages, new_blk)
+            target_lec["board_pages"] = board_pages
+
+            a_msg = {
+                "id": new_id("wmsg"),
+                "role": "assistant",
+                "content": reply_text,
+                "board_anchor_id": new_blk["id"],
+                "created_at": now,
+            }
+            msgs.append(a_msg)
+            target_lec["messages"] = msgs
+            if target_lec.get("mastery") == "unstarted":
+                target_lec["mastery"] = "attempted"
+
+            updated_course = _save_course_units(course_id, units, last_lecture_id=lecture_id)
+            log_telemetry("course", f"teach_step_{action}", verified_ok=True)
+            yield sse_event("board_block", {"block": new_blk, "page_index": page_idx})
+            yield sse_event(
+                "result",
+                {
+                    "ok": True,
+                    "action": action,
+                    "reply": a_msg,
+                    "new_board_block": new_blk,
+                    "page_index": page_idx,
+                    "course": updated_course,
+                },
+            )
+        except HTTPException as hex_err:
+            yield sse_event("error", {"message": hex_err.detail})
+        except Exception as exc:
+            yield sse_event("error", {"message": f"讲课动作执行失败：{exc}"})
+
+    return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@router.patch("/{course_id}/lectures/{lecture_id}/board")
+async def mutate_whiteboard_board(course_id: str, lecture_id: str, req: BoardMutateReq) -> dict[str, Any]:
+    """Create, update, reorder, or delete whiteboard pages and blocks."""
+    op = (req.op or "").strip()
+    if op not in ("add_block", "update_block", "delete_block", "add_page", "move_block"):
+        raise HTTPException(status_code=400, detail="不支持的板书操作类型")
+
+    _, units, target_lec = _load_course_and_lecture(course_id, lecture_id)
+    board_pages = list(target_lec.get("board_pages") or [{"page_index": 1, "roadmap_title": "本节课路线图", "blocks": []}])
+    result_block: dict[str, Any] | None = None
+    result_page_idx = max(1, min(len(board_pages), int(req.page_index or 1)))
+
+    if op == "add_page":
+        next_idx = len(board_pages) + 1
+        blocks: list[dict[str, Any]] = []
+        if req.heading.strip() or req.lines:
+            result_block = _enrich_board_block(
+                {
+                    "id": new_id("blk"),
+                    "heading": req.heading or f"新板书页要点",
+                    "lines": req.lines or ["在此补充核心推导或板书要点"],
+                    "highlight_note": req.highlight_note or "",
+                    "narration": req.narration or "",
+                    "teaching_tip": req.teaching_tip or "",
+                    "block_type": req.block_type or "concept",
+                    "visual_expr": req.visual_expr or "",
+                },
+                default_type="concept",
+            )
+            blocks.append(result_block)
+        board_pages.append(
+            {
+                "page_index": next_idx,
+                "roadmap_title": (req.roadmap_title or f"课堂板书 · 第 {next_idx} 页").strip(),
+                "blocks": blocks,
+            }
+        )
+        result_page_idx = next_idx
+
+    elif op == "add_block":
+        if not req.heading.strip() and not req.lines:
+            raise HTTPException(status_code=400, detail="板书标题与内容不能同时为空")
+        result_block = _enrich_board_block(
+            {
+                "id": new_id("blk"),
+                "heading": req.heading.strip() or "补充板书",
+                "lines": req.lines or [req.heading.strip()],
+                "highlight_note": req.highlight_note or "",
+                "narration": req.narration or "",
+                "teaching_tip": req.teaching_tip or "",
+                "block_type": req.block_type or "derivation",
+                "visual_expr": req.visual_expr or "",
+            },
+            default_type="derivation",
+        )
+        pg_idx_0 = max(0, min(len(board_pages) - 1, int(req.page_index or 1) - 1))
+        board_pages[pg_idx_0].setdefault("blocks", []).append(result_block)
+        result_page_idx = pg_idx_0 + 1
+
+    elif op == "update_block":
+        if not req.block_id:
+            raise HTTPException(status_code=400, detail="缺少目标板书 block_id")
+        found = False
+        for idx, pg in enumerate(board_pages, start=1):
+            blks = pg.get("blocks") or []
+            for bi, blk in enumerate(blks):
+                if blk.get("id") == req.block_id:
+                    merged = dict(blk)
+                    if req.heading:
+                        merged["heading"] = req.heading.strip()
+                    if req.lines is not None:
+                        merged["lines"] = [str(x).strip() for x in req.lines if str(x).strip()]
+                    if req.highlight_note is not None:
+                        merged["highlight_note"] = req.highlight_note.strip()
+                    if req.narration is not None:
+                        merged["narration"] = req.narration.strip()
+                    if req.teaching_tip is not None:
+                        merged["teaching_tip"] = req.teaching_tip.strip()
+                    if req.block_type is not None:
+                        merged["block_type"] = req.block_type.strip()
+                    if req.visual_expr is not None:
+                        merged["visual_expr"] = req.visual_expr.strip()
+                    merged.pop("verified_badge", None)
+                    result_block = _enrich_board_block(merged, default_type=str(merged.get("block_type") or "derivation"))
+                    blks[bi] = result_block
+                    result_page_idx = idx
+                    found = True
+                    break
+            if found:
+                break
+        if not found:
+            raise HTTPException(status_code=404, detail="未找到指定板书块")
+
+    elif op == "delete_block":
+        if not req.block_id:
+            raise HTTPException(status_code=400, detail="缺少目标板书 block_id")
+        removed = False
+        for pg in board_pages:
+            before = len(pg.get("blocks") or [])
+            pg["blocks"] = [b for b in (pg.get("blocks") or []) if b.get("id") != req.block_id]
+            if len(pg["blocks"]) < before:
+                removed = True
+        if not removed:
+            raise HTTPException(status_code=404, detail="未找到指定板书块")
+        # Keep non-empty pages or always preserve at least page 1
+        board_pages = [pg for i, pg in enumerate(board_pages) if i == 0 or (pg.get("blocks") or [])]
+        for i, pg in enumerate(board_pages, start=1):
+            pg["page_index"] = i
+        result_page_idx = min(result_page_idx, len(board_pages))
+
+    elif op == "move_block":
+        if not req.block_id:
+            raise HTTPException(status_code=400, detail="缺少目标板书 block_id")
+        delta = -1 if req.direction == "up" else 1
+        moved = False
+        for idx, pg in enumerate(board_pages, start=1):
+            blks = list(pg.get("blocks") or [])
+            for bi, blk in enumerate(blks):
+                if blk.get("id") == req.block_id:
+                    new_pos = max(0, min(len(blks) - 1, bi + delta))
+                    if new_pos != bi:
+                        blks[bi], blks[new_pos] = blks[new_pos], blks[bi]
+                        pg["blocks"] = blks
+                    result_block = blks[new_pos]
+                    result_page_idx = idx
+                    moved = True
+                    break
+            if moved:
+                break
+        if not moved:
+            raise HTTPException(status_code=404, detail="未找到指定板书块")
+
+    target_lec["board_pages"] = board_pages
+    updated_course = _save_course_units(course_id, units, last_lecture_id=lecture_id)
+    log_telemetry("course", f"board_{op}", verified_ok=True)
+    return {
+        "ok": True,
+        "course": updated_course,
+        "page_index": result_page_idx,
+        "block": result_block,
+    }
+
+
+@router.post("/{course_id}/lectures/{lecture_id}/quiz-submit")
+async def submit_whiteboard_lecture_quiz(
+    course_id: str,
+    lecture_id: str,
+    req: LectureQuizSubmitReq,
+) -> dict[str, Any]:
+    """Grade inline classroom checkpoint quiz and upgrade lecture mastery monotonically."""
+    course, units, target_lec = _load_course_and_lecture(course_id, lecture_id)
+    quiz_items = list(target_lec.get("quiz_items") or [])
+    if not quiz_items:
+        raise HTTPException(status_code=400, detail="当前讲次暂无随堂检验题")
+
+    graded_items: list[dict[str, Any]] = []
+    correct_count = 0
+    for q in quiz_items:
+        qid = str(q.get("id") or "")
+        expected = str(q.get("answer") or "A").strip()[:1].upper()
+        selected_raw = str((req.answers or {}).get(qid, "") or "").strip()
+        selected = selected_raw[:1].upper() if selected_raw else ""
+        is_ok = bool(selected and selected == expected)
+        if is_ok:
+            correct_count += 1
+        graded_items.append(
+            {
+                "id": qid,
+                "selected": selected,
+                "expected": expected,
+                "correct": is_ok,
+                "explanation": str(q.get("explanation") or ""),
+                "related_block_id": str(q.get("related_block_id") or ""),
+            }
+        )
+
+    total_count = len(quiz_items)
+    score_pct = int(round((correct_count / total_count) * 100)) if total_count else 0
+    if score_pct >= 85:
+        target_mastery = "mastered"
+    elif score_pct >= 60:
+        target_mastery = "proficient"
+    elif correct_count > 0:
+        target_mastery = "familiar"
+    else:
+        target_mastery = "attempted"
+
+    cur_mastery = str(target_lec.get("mastery") or "unstarted")
+    if MASTERY_ORDER.get(target_mastery, 0) > MASTERY_ORDER.get(cur_mastery, 0):
+        target_lec["mastery"] = target_mastery
+    new_mastery = str(target_lec["mastery"])
+
+    weekly = dict(course.get("weekly_sessions") or {})
+    today_k = _today_str()
+    weekly[today_k] = int(weekly.get(today_k, 0)) + 1
+
+    updated_course = _save_course_units(
+        course_id,
+        units,
+        last_lecture_id=lecture_id,
+        weekly_sessions=weekly,
+    )
+    record_learning_outcome(
+        topic_tag=str(target_lec.get("title") or course.get("title") or "课堂随堂检验")[:48],
+        subject=str(course.get("subject") or "综合学科"),
+        grade_level=str(course.get("grade_level") or "高二年级"),
+        correct=(score_pct >= 60),
+        mistake_note="" if score_pct >= 60 else f"随堂检验得分 {score_pct}%，建议回看错题对应板书。",
+    )
+    log_telemetry("course", "quiz_submit", verified_ok=True, meta={"score_pct": score_pct})
+    return {
+        "ok": True,
+        "score_pct": score_pct,
+        "correct_count": correct_count,
+        "total_count": total_count,
+        "items": graded_items,
+        "mastery": new_mastery,
+        "course": updated_course,
+    }
 
 
 @router.post("/{course_id}/lectures/{lecture_id}/tts")

@@ -77,7 +77,7 @@ def main() -> None:
 
         # Precompute interactive 2D/3D plots so visual canvas renders real SymPy curves offline
         plots_2d: dict[str, Any] = {}
-        for expr in ("x^3 - 3*x^2 + 2", "ln(x) + 0.5*x^2", "1/(x^2 + 0.35)"):
+        for expr in ("x^3 - 3*x^2 + 2", "x^3 - 3*x", "x^3", "x^4", "x - ln(x)", "ln(x) + 0.5*x^2", "1/(x^2 + 0.35)"):
             try:
                 p = client.post("/api/tutor/plot-function", json={"expression": expr}).json()
                 if p.get("ok"):

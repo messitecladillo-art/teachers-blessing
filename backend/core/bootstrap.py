@@ -20,7 +20,7 @@ from engines.ppt_bridge import compile_ppt_project
 from engines.question_bank_engine import assemble_from_bank
 from engines.source_ingestor import convert_uploaded_source_to_markdown
 
-SHOWCASE_VERSION = "v4.1"
+SHOWCASE_VERSION = "v4.5"
 
 
 def ensure_showcase_data() -> None:
@@ -1264,6 +1264,7 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_1_1_roadmap",
+                                    "block_type": "concept",
                                     "heading": "一、核心问题：导数符号 vs 曲线升降",
                                     "lines": [
                                         "几何直观：切线倾斜角为锐角 $\\Rightarrow k=f'(x)>0 \\Rightarrow$ 曲线上升",
@@ -1271,9 +1272,13 @@ def ensure_showcase_data() -> None:
                                         "严格条件：$f'(x) \\ge 0$ 且仅在离散点处取等号，不在任何子区间恒为零",
                                     ],
                                     "highlight_note": "先定定义域，再判导数变号；区间之间写“和”，切忌直接写并集 $\\cup$！",
+                                    "narration": "欢迎进入第一讲。我们先把单调性与导数的关系抓成一条直观主线：曲线在哪个区间一路往上爬，切线斜率也就是一阶导数就在那里大于零。但请盯紧 $f(x)=x^3$ 这个反例：在原点切线明明是水平的，导数为零，却依然在全体实数上严格递增。所以关键规则是：导数在离散点取零不破坏单调性，书写两段单调区间时必须写“和”，严禁写并集符号。",
+                                    "teaching_tip": "先在屏幕切出函数图像对比上升段与 x=0 的水平切线，停留 3 秒提问学生是否增函数。",
+                                    "visual_expr": "x^3",
                                 },
                                 {
                                     "id": "blk_1_1_example",
+                                    "block_type": "example",
                                     "heading": "二、典例演算：$f(x)=x^3-3x^2+2$",
                                     "lines": [
                                         "1. 定义域为 $\\mathbb{R}$",
@@ -1281,6 +1286,9 @@ def ensure_showcase_data() -> None:
                                         "3. 分段列表：$x \\in (-\\infty,0)$ 与 $(2,+\\infty)$ 时 $f'(x)>0$（单调递增）；$x \\in (0,2)$ 时 $f'(x)<0$（单调递减）",
                                     ],
                                     "highlight_note": "极大值 $f(0)=2$，极小值 $f(2)=-2$",
+                                    "narration": "接着用标准四步法演示典例 x 的立方减 3 倍 x 平方加 2。第一步确定定义域为全体实数；第二步求导因式分解得到 3x 乘 x 减 2，锁定驻点 x 等于 0 和 x 等于 2；第三步列出符号区间表，在负无穷到 0 以及 2 到正无穷区间导数大于零单调递增，在 0 到 2 区间单调递减，极大值为 2，极小值为负 2。",
+                                    "teaching_tip": "板书分四行对齐写出“定域→求导→求驻点→列表”，并在列表正负号处用荧光笔标出。",
+                                    "visual_expr": "x^3 - 3*x^2 + 2",
                                 },
                             ],
                         },
@@ -1290,6 +1298,7 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_1_1_param",
+                                    "block_type": "derivation",
                                     "heading": "三、含参单调性的三级讨论标尺",
                                     "lines": [
                                         "第一级：讨论导函数最高次项系数正负或有无零点",
@@ -1297,7 +1306,21 @@ def ensure_showcase_data() -> None:
                                         "第三级：当两根同时存在时，比较两根大小决定左右位置",
                                     ],
                                     "highlight_note": "先画参数临界数轴，再按左中右区间分条作答。",
-                                }
+                                    "narration": "翻到第二页板书，来看压轴考法：含参数单调性讨论的三级标尺。第一级先看最高次项系数与判别式决定有几个根；第二级检查算出的根到底在不在定义域内；第三级当两根同时存在时，必须用数轴比较大小决定左右顺序，这样才能不重不漏。",
+                                    "teaching_tip": "用数轴从左向右平移分界点，强调分类阈值不能漏掉等号合并检验。",
+                                },
+                                {
+                                    "id": "blk_1_1_summary",
+                                    "block_type": "summary",
+                                    "heading": "四、本讲核心结论速记",
+                                    "lines": [
+                                        "定域优先 $\\rightarrow$ 求导分解 $\\rightarrow$ 驻点列表 $\\rightarrow$ 严格判号",
+                                        "严禁习惯性把不连续的单调区间用 $\\cup$ 直接连接",
+                                    ],
+                                    "highlight_note": "完成本讲后建议进入「随堂检验」核对两道概念辨析题",
+                                    "narration": "收束一下第一讲：无论题目多复杂，永远记住定域在先、变号为据、写和断区。准备好了可以点击随堂检验马上巩固两道高频辨析题。",
+                                    "teaching_tip": "收尾提示学生对照速查表完成随堂自测，观察错因反馈。",
+                                },
                             ],
                         },
                     ],
@@ -1319,7 +1342,7 @@ def ensure_showcase_data() -> None:
                         {
                             "id": "wmsg_1_1_3",
                             "role": "assistant",
-                            "content": "看一个最直接的检验：$f(x)=\\frac{1}{x}$ 在 $(-\\infty,0)$ 和 $(0,+\\infty)$ 上各自严格递减。但如果我们取 $-1 < 1$，会发现 $f(-1)=-1 < f(1)=1$，大小顺序反过来了！\n\n所以跨越间断点的两段单调区间只能用“和”或逗号连接。右侧典例 $x^3-3x^2+2$ 的严格分段列表已经写在板书第二块，你可以试着用这个步骤自己推一遍含参题，或者在下方继续提问。",
+                            "content": "看一个最直接的检验：$f(x)=\\frac{1}{x}$ 在 $(-\\infty,0)$ 和 $(0,+\\infty)$ 上各自严格递减。但如果我们取 $-1 < 1$，会发现 $f(-1)=-1 < f(1)=1$，大小顺序反过来了！\n\n所以跨越间断点的两段单调区间只能用“和”或逗号连接。右侧典例 $x^3-3x^2+2$ 的严格分段列表已经写在板书第二块，你可以试着用这个步骤自己推一遍含参题，或者点击底部「开始讲课」听完整分步领读。",
                             "board_anchor_id": "blk_1_1_example",
                             "created_at": now - 560,
                         },
@@ -1331,6 +1354,7 @@ def ensure_showcase_data() -> None:
                             "options": ["A. $(0, 1)$", "B. $(-\\infty, 1)$", "C. $(1, +\\infty)$", "D. $(0, +\\infty)$"],
                             "answer": "A",
                             "explanation": "定义域优先限定 $x > 0$；$f'(x) = 1 - \\frac{1}{x} < 0 \\Rightarrow 0 < x < 1$。",
+                            "related_block_id": "blk_1_1_roadmap",
                         },
                         {
                             "id": "qc1_2",
@@ -1343,6 +1367,7 @@ def ensure_showcase_data() -> None:
                             ],
                             "answer": "A",
                             "explanation": "如 $f(x)=x^3$ 满足 $f'(0)=0$ 但无极值；$f(x)=|x|$ 不可导但取极小值。",
+                            "related_block_id": "blk_1_1_roadmap",
                         },
                     ],
                 },
@@ -1353,7 +1378,7 @@ def ensure_showcase_data() -> None:
                     "kind": "lecture",
                     "mastery": "proficient",
                     "duration_min": 16,
-                    "visualizer_preset": "ln_quad",
+                    "visualizer_preset": "cubic",
                     "board_pages": [
                         {
                             "page_index": 1,
@@ -1361,13 +1386,31 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_1_2_1",
+                                    "block_type": "trap",
                                     "heading": "一、一阶导变号判据（比二阶导更稳妥）",
                                     "lines": [
                                         "左正右负 $\\Rightarrow$ 极大值点；左负右正 $\\Rightarrow$ 极小值点",
                                         "反例警示：$y=x^4$ 与 $y=x^3$ 在 $x=0$ 处二阶导均等于 $0$，仍需看一阶导两侧符号",
                                     ],
                                     "highlight_note": "闭区间最值 = {区间内所有极值点值, 区间左右端点值} 取最大最小",
-                                }
+                                    "narration": "这一讲解决极值与最值最常混淆的问题。记住判极值最稳的尺子是一阶导两侧有没有变号：左正右负取极大，左负右正取极小。不要迷信二阶导，$y=x^4$ 与 $y=x^3$ 在原点二阶导都等于零，但前者是极小值点、后者不是，只有看一阶导变号才百分百可靠。",
+                                    "teaching_tip": "对比 x³ 与 x⁴ 的导函数图像穿过 x 轴方式，一穿而过与相切反弹一目了然。",
+                                    "visual_expr": "x^4",
+                                },
+                                {
+                                    "id": "blk_1_2_2",
+                                    "block_type": "example",
+                                    "heading": "二、闭区间 $[-1, 3]$ 最值四步比对表",
+                                    "lines": [
+                                        "对 $f(x)=x^3-3x^2+2$ 求内部极值：$f(0)=2$，极小值 $f(2)=-2$",
+                                        "核算闭区间端点：$f(-1)=-1-3+2=-2$，$f(3)=27-27+2=2$",
+                                        "全域比大小：最大值 $2$（在 $x=0,3$ 取到），最小值 $-2$（在 $x=-1,2$ 取到）",
+                                    ],
+                                    "highlight_note": "极值是局部山头，最值必须与左右边界端点同台打擂台",
+                                    "narration": "算闭区间最值时，极值只是局部山头和谷底，一定要把区间左右端点请上同一张比对表。看这里 f(-1) 和 f(2) 同样取到最小值负 2，不验算端点很容易漏掉边界取等情况。",
+                                    "teaching_tip": "板书画三列对比表：内部极值 | 左端点 | 右端点，养成闭环验算习惯。",
+                                    "visual_expr": "x^3 - 3*x^2 + 2",
+                                },
                             ],
                         }
                     ],
@@ -1375,7 +1418,7 @@ def ensure_showcase_data() -> None:
                         {
                             "id": "wmsg_1_2_1",
                             "role": "assistant",
-                            "content": "求闭区间最值时，极值只是“局部山峰/谷底”，千万别漏掉左右两个区间端点函数值的比较。试着口述一下 $y=x^4$ 为什么不能靠二阶导数为零下结论？",
+                            "content": "求闭区间最值时，极值只是“局部山峰/谷底”，千万别漏掉左右两个区间端点函数值的比较。试着点击「开始讲课」对比 $y=x^4$ 与 $y=x^3$ 的区别。",
                             "board_anchor_id": "blk_1_2_1",
                             "created_at": now - 400,
                         }
@@ -1387,6 +1430,7 @@ def ensure_showcase_data() -> None:
                             "options": ["A. $-2$", "B. $0$", "C. $2$", "D. $-4$"],
                             "answer": "A",
                             "explanation": "比较端点 $f(-1)=-2, f(3)=2$ 与极小值 $f(2)=-2$，最小值为 $-2$。",
+                            "related_block_id": "blk_1_2_2",
                         }
                     ],
                 },
@@ -1412,6 +1456,7 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_2_1_1",
+                                    "block_type": "derivation",
                                     "heading": "一、分类边界锚点设定",
                                     "lines": [
                                         "设 $f(x)=\\ln x + a x^2$，首要先标明定义域 $(0, +\\infty)$",
@@ -1419,7 +1464,22 @@ def ensure_showcase_data() -> None:
                                         "若 $a \\ge 0$ 则恒增；若 $a < 0$ 则在 $x_0 = \\sqrt{-\\frac{1}{2a}}$ 处由正转负",
                                     ],
                                     "highlight_note": "通分之后只看关键分子，分类按参数令分子无实根/有正根切分。",
-                                }
+                                    "narration": "处理含自然对数与参数的复合函数，第一动作圈定定义域 x 大于零。求导通分后分母 x 恒正，可以直接丢到一边，只看分子 1 加 2a x 平方什么时候在正半轴变号：当参数 a 大于等于零时分子恒正函数一直增；当 a 小于零时会在正根 x 零处先增后减。",
+                                    "teaching_tip": "引导学生说出“通分后分母恒正只看分子”这句降维技巧。",
+                                    "visual_expr": "ln(x) + 0.5*x^2",
+                                },
+                                {
+                                    "id": "blk_2_1_2",
+                                    "block_type": "summary",
+                                    "heading": "二、含参结论规范分条答法",
+                                    "lines": [
+                                        "情形一：当 $a \\ge 0$ 时，$f(x)$ 在 $(0, +\\infty)$ 上单调递增，无递减区间",
+                                        "情形二：当 $a < 0$ 时，递增区间为 $(0, \\sqrt{-1/(2a)})$，递减区间为 $(\\sqrt{-1/(2a)}, +\\infty)$",
+                                    ],
+                                    "highlight_note": "千万注意别忘了截断负半轴：递减与递增区间左端点最小只能到 $0$",
+                                    "narration": "最后书写答案必须按参数分条作答，尤其留意第二条中递增区间左端必须是零而不是负无穷，守住对数定义域底线。",
+                                    "teaching_tip": "提醒学生在区间左侧标红 0，避免顺手写出负无穷大。",
+                                },
                             ],
                         }
                     ],
@@ -1427,12 +1487,21 @@ def ensure_showcase_data() -> None:
                         {
                             "id": "wmsg_2_1_1",
                             "role": "assistant",
-                            "content": "遇到含 $\\ln x$ 的导数大题，第一行先把定义域 $(0,+\\infty)$ 圈出来，能帮你过滤掉所有负根伪驻点。你可以点击右上角可视化画板观察不同参数下的曲线变化。",
+                            "content": "遇到含 $\\ln x$ 的导数大题，第一行先把定义域 $(0,+\\infty)$ 圈出来，能帮你过滤掉所有负根伪驻点。你可以点击右上角画板观察曲线走势。",
                             "board_anchor_id": "blk_2_1_1",
                             "created_at": now - 200,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc2_1",
+                            "question": "讨论 $f(x)=\\ln x + ax^2$ 单调性时，令分类讨论发生转折的参数临界值是（ ）",
+                            "options": ["A. $a = 0$", "B. $a = 1$", "C. $a = -1/2$", "D. $a = -1$"],
+                            "answer": "A",
+                            "explanation": "导数分子 $1+2ax^2$ 在 $a \\ge 0$ 时恒正，当 $a < 0$ 时才会出现正实根，故临界值为 $a=0$。",
+                            "related_block_id": "blk_2_1_1",
+                        }
+                    ],
                 },
                 {
                     "id": "lec_crs1_2_2",
@@ -1449,13 +1518,28 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_2_2_1",
+                                    "block_type": "concept",
                                     "heading": "一、参变分离两项前提",
                                     "lines": [
-                                        "1. 待分离自变量系数项必须先判别严格正负（防止变号反转）",
+                                        "1. 待分离自变量系数项必须先判别严格正负（防止不等号方向未翻转）",
                                         "2. $a \\le g(x)_{\\min}$ 取等号后务必回代检验函数是否仍满足单调性要求",
                                     ],
                                     "highlight_note": "孤立端点导数为零时不等式仍可能严格单调。",
-                                }
+                                    "narration": "参变分离虽然爽快，但有两条安全带必须系好：第一，除过去那一项是正还是负？跨过零点就得分类讨论不等号反转；第二，算出范围边界取等号后，务必回代验证是不是只让导数在孤立点为零，以免丢分。",
+                                    "teaching_tip": "重点圈出“孤立零点可取等”的考场加分细节。",
+                                },
+                                {
+                                    "id": "blk_2_2_2",
+                                    "block_type": "trap",
+                                    "heading": "二、端点效应常见失效情境",
+                                    "lines": [
+                                        "当构造新函数端点导数等于 0 但二阶导未变号时，不能直接用端点一阶导充当充分边界",
+                                        "务必补上充分性分类证明：分大于、等于临界两档确认在全区间成立",
+                                    ],
+                                    "highlight_note": "端点效应只是“探路器”（必要条件），正式解答仍须验证充分性",
+                                    "narration": "很多同学爱背端点效应秒杀公式，但记住它只是帮我们猜到临界值的探路器。大题书写一定要补全充分性验证，否则很容易被扣步骤分。",
+                                    "teaching_tip": "板书区分“必要性探路”与“充分性证明”两栏结构。",
+                                },
                             ],
                         }
                     ],
@@ -1468,7 +1552,21 @@ def ensure_showcase_data() -> None:
                             "created_at": now - 120,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc2_2",
+                            "question": "利用“端点效应”求恒成立参数范围时，最规范的答题逻辑是（ ）",
+                            "options": [
+                                "A. 先用端点值探索必要性得到候选范围，再分段证明该范围下不等式确实充分成立",
+                                "B. 直接以端点一阶导大于零作为充分必要答案",
+                                "C. 默认参数分离时分母永远大于零",
+                                "D. 遇到取等边界直接舍去",
+                            ],
+                            "answer": "A",
+                            "explanation": "端点效应只提供必要条件线索，必须补充充分性验证才严密完整。",
+                            "related_block_id": "blk_2_2_2",
+                        }
+                    ],
                 },
             ],
         },
@@ -1480,7 +1578,7 @@ def ensure_showcase_data() -> None:
                 {
                     "id": "lec_crs1_3_1",
                     "title": "导数单调性核心通关测验",
-                    "summary": "完成 5 道梯度变式测验，错题自动进入个人复习队列。",
+                    "summary": "完成综合诊断随堂测验，错题自动进入个人复习队列。",
                     "kind": "quiz",
                     "mastery": "attempted",
                     "duration_min": 25,
@@ -1492,13 +1590,16 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_3_1_1",
+                                    "block_type": "summary",
                                     "heading": "本次测验重点维度",
                                     "lines": [
                                         "维度一：基础求导与单调区间正确书写",
                                         "维度二：极值存在性与闭合区间最值计算",
                                         "维度三：含参不等式与反例辨析",
                                     ],
-                                    "highlight_note": "点击课程左栏「练习」可直接打开整卷在线作答并自动批改。",
+                                    "highlight_note": "点击顶部「随堂检验」可直接完成本讲热身测试，或在左栏打开整卷练习。",
+                                    "narration": "欢迎来到单元测试前热身讲。测验覆盖基础求导书写规范、闭区间最值端点比对、含参讨论三个核心维度。可以直接点击上方随堂检验标签开始做题。",
+                                    "teaching_tip": "引导学生先完成随堂 2 道热身题检验，再进入整卷限时作答。",
                                 }
                             ],
                         }
@@ -1507,12 +1608,26 @@ def ensure_showcase_data() -> None:
                         {
                             "id": "wmsg_3_1_1",
                             "role": "assistant",
-                            "content": "测验前可以先在速查表中快速回顾四步法与三大反例，祝一次通关。",
+                            "content": "测验前可以先在速查表中快速回顾四步法与三大反例，或点击顶部「随堂检验」先练热身题，祝一次通关。",
                             "board_anchor_id": "blk_3_1_1",
                             "created_at": now - 80,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc3_1",
+                            "question": "若函数 $f(x)=x^3+ax^2+x$ 在 $\\mathbb{R}$ 上单调递增，则实数 $a$ 的取值范围是（ ）",
+                            "options": [
+                                "A. $[-\\sqrt{3}, \\sqrt{3}]$",
+                                "B. $(-\\sqrt{3}, \\sqrt{3})$",
+                                "C. $[-3, 3]$",
+                                "D. $(0, \\sqrt{3})$",
+                            ],
+                            "answer": "A",
+                            "explanation": "要求 $f'(x)=3x^2+2ax+1 \\ge 0$ 恒成立，由判别式 $4a^2-12 \\le 0$ 解得 $[-\\sqrt{3}, \\sqrt{3}]$，且端点仅在孤立点取零依然递增。",
+                            "related_block_id": "blk_3_1_1",
+                        }
+                    ],
                 }
             ],
         },
@@ -1600,6 +1715,7 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_c2_1",
+                                    "block_type": "concept",
                                     "heading": "一、陪集的等价类本质",
                                     "lines": [
                                         "定义等价关系 $x \\sim y \\iff x^{-1}y \\in H$",
@@ -1607,7 +1723,21 @@ def ensure_showcase_data() -> None:
                                         "拉格朗日定理推论：$|G| = [G:H] \\cdot |H|$，子群阶数必整除母群阶数",
                                     ],
                                     "highlight_note": "可在上方画板切至「循环群模运算矩阵」实地观察。",
-                                }
+                                    "narration": "理解拉格朗日定理最直观的方式是把有限群想象成一整块积木，每一个左陪集都是与子群完全等大的木块，彼此不重叠地拼出整个母群。",
+                                    "teaching_tip": "切换至图形画板选择循环群 Z6 展示子群 {0,2,4} 与陪集切分。",
+                                },
+                                {
+                                    "id": "blk_c2_1_ex",
+                                    "block_type": "example",
+                                    "heading": "二、整数模 6 加群切片举例",
+                                    "lines": [
+                                        "取母群 $G=\\mathbb{Z}_6$，子群 $H=\\{0, 3\\}$（2 阶子群）",
+                                        "全部左陪集：$0+H=\\{0,3\\}$，$1+H=\\{1,4\\}$，$2+H=\\{2,5\\}$，恰好无重叠覆盖 $\\mathbb{Z}_6$",
+                                    ],
+                                    "highlight_note": "因此 $[\\mathbb{Z}_6 : H] = 6 / 2 = 3$",
+                                    "narration": "以模 6 加群为例，两阶子群 {0,3} 通过平移生成三个互不相交的陪集切片，大小完全相同，指数恰好是 6 除以 2 等于 3。",
+                                    "teaching_tip": "让学生口算另一子群 {0, 2, 4} 有几个左陪集。",
+                                },
                             ],
                         }
                     ],
@@ -1620,7 +1750,16 @@ def ensure_showcase_data() -> None:
                             "created_at": now - 500,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc2_alg_1",
+                            "question": "若有限群 $G$ 的阶 $|G|=12$，下列阶数中不可能是 $G$ 的子群阶数的是（ ）",
+                            "options": ["A. 5", "B. 3", "C. 4", "D. 6"],
+                            "answer": "A",
+                            "explanation": "由拉格朗日定理，子群阶数必整除母群阶数 $12$，$5$ 不整除 $12$。",
+                            "related_block_id": "blk_c2_1",
+                        }
+                    ],
                 }
             ],
         },
@@ -1644,12 +1783,15 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_c2_2",
+                                    "block_type": "trap",
                                     "heading": "一、陪集乘法为何依赖正规性",
                                     "lines": [
                                         "令 $(aN)(bN) = (ab)N$ 不随代表元选取改变，充要条件即 $aN=Na$",
                                         "经典反例：在 $S_3$ 中取 2 阶反射子群 $H=\\{e, (12)\\}$，其左陪集与右陪集不重合",
                                     ],
                                     "highlight_note": "同态核 $\\ker \\varphi$ 永远是正规子群，且 $G/\\ker \\varphi \\cong \\text{Im}\\,\\varphi$。",
+                                    "narration": "为什么任意子群不能直接造商群？因为我们需要陪集乘法结果与挑哪个代表元无关，这恰好要求每个元素的左陪集等于右陪集，也就是正规子群条件。",
+                                    "teaching_tip": "用 S₃ 对称群中二阶反射子群与三阶旋转子群作正反对照。",
                                 }
                             ],
                         }
@@ -1663,7 +1805,16 @@ def ensure_showcase_data() -> None:
                             "created_at": now - 300,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc2_alg_2",
+                            "question": "使商群乘法 $(aH)(bH)=(ab)H$ 良定义的充要条件是 $H$ 满足（ ）",
+                            "options": ["A. $H$ 是正规子群（$aH=Ha$）", "B. $H$ 阶数为质数", "C. $H$ 是循环群", "D. $G$ 是无限群"],
+                            "answer": "A",
+                            "explanation": "左右陪集相等等价于 $gHg^{-1}=H$，方能保障乘法不依赖代表元选择。",
+                            "related_block_id": "blk_c2_2",
+                        }
+                    ],
                 }
             ],
         },
@@ -1690,12 +1841,15 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_c3_1",
+                                    "block_type": "concept",
                                     "heading": "一、柯西-黎曼方程的保角直觉",
                                     "lines": [
-                                        "复可微要求从任意方向趋近导数极值相同，等价于：$u_x = v_y,\\; u_y = -v_x$",
+                                        "复可微要求从任意方向趋近导数极限相同，等价于：$u_x = v_y,\\; u_y = -v_x$",
                                         "几何效应：无穷小邻域只发生旋转和等比例缩放，不产生剪切变形",
                                     ],
                                     "highlight_note": "可点击顶部图形切换至「3D 多叶曲面实验台」立体旋转观察。",
+                                    "narration": "复可微苛刻在哪里？在实数轴上只能从左右两头逼近一点，而在复平面上可以从 360 度任意螺旋逼近。为了保证极限一致，实部与虚部偏导必须严格耦合满足柯西-黎曼方程，几何上就体现为保角不变形。",
+                                    "teaching_tip": "切换到「函数画板」3D 视角拖转复变曲面展示多叶缝合面。",
                                 }
                             ],
                         }
@@ -1709,7 +1863,16 @@ def ensure_showcase_data() -> None:
                             "created_at": now - 250,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc3_cpx_1",
+                            "question": "函数 $f(z)=u+iv$ 在一点解析的必要偏微分条件是柯西-黎曼方程（ ）",
+                            "options": ["A. $u_x=v_y,\\; u_y=-v_x$", "B. $u_x=v_x,\\; u_y=v_y$", "C. $u_x=-v_y,\\; u_y=v_x$", "D. $u_{xx}+v_{yy}=0$"],
+                            "answer": "A",
+                            "explanation": "沿实轴与虚轴方向极限相等推得 $u_x=v_y$ 且 $u_y=-v_x$。",
+                            "related_block_id": "blk_c3_1",
+                        }
+                    ],
                 }
             ],
         }
@@ -1736,12 +1899,16 @@ def ensure_showcase_data() -> None:
                             "blocks": [
                                 {
                                     "id": "blk_c4_1",
+                                    "block_type": "concept",
                                     "heading": "一、1/r³ 引力梯度差与同步自转",
                                     "lines": [
                                         "万有引力按 $1/r^2$ 衰减，而近侧与远侧受到的潮汐拉伸差按 $1/r^3$ 衰减",
                                         "1:1 潮汐锁定并非停止自转，而是自转角速度与平均公转角速度相等",
                                     ],
                                     "highlight_note": "因椭圆轨道公转角速度不均而自转匀速，积累出 59% 月面可见。",
+                                    "narration": "很多同学误以为月球正面永远朝向地球是因为它不自转，其实恰恰相反：地球对月球正背两面拉出一条依距离三次方反比的引力差，经过上亿年潮汐摩擦制动，让月球自转周期与公转周期严丝合缝锁死为一比一。",
+                                    "teaching_tip": "用左手握拳充当地球、右手同步绕转加自转示范“不自转反而会露出背面”。",
+                                    "visual_expr": "1/(x^2 + 0.35)",
                                 }
                             ],
                         }
@@ -1750,12 +1917,21 @@ def ensure_showcase_data() -> None:
                         {
                             "id": "wmsg_c4_1",
                             "role": "assistant",
-                            "content": "本节已全部学习掌握。你可以随时打开本课配套的 7 页天文学演示课件或重温量天阶梯思维导图。",
+                            "content": "本节已全部学习掌握。你可以随时打开本课配套的 7 页天文学演示课件或点击下方进入随堂小测温故知新。",
                             "board_anchor_id": "blk_c4_1",
                             "created_at": now - 150,
                         }
                     ],
-                    "quiz_items": [],
+                    "quiz_items": [
+                        {
+                            "id": "qc4_astro_1",
+                            "question": "潮汐拉伸引力差随天体距离 $r$ 衰减的标度律是（ ）",
+                            "options": ["A. $1/r^3$", "B. $1/r^2$", "C. $1/r$", "D. $1/r^4$"],
+                            "answer": "A",
+                            "explanation": "潮汐力来源于引力场的一阶空间梯度导数，对 $1/r^2$ 求导按 $1/r^3$ 衰减。",
+                            "related_block_id": "blk_c4_1",
+                        }
+                    ],
                 }
             ],
         }

@@ -85,6 +85,126 @@ _TTS_VOICE_MAP: dict[str, str] = {
 }
 
 
+def latex_to_spoken_zh(text: str) -> str:
+    """Convert LaTeX formulas and markup into natural spoken Chinese for TTS."""
+    if not text:
+        return ""
+    s = str(text)
+    s = re.sub(r"```[\s\S]*?```", " ", s)
+    s = re.sub(r"\$\$?", " ", s)
+
+    # Unwrap common text wrappers
+    for _ in range(3):
+        s = re.sub(r"\\(?:text|mathrm|mathbf|operatorname|boldsymbol)\{([^{}]*)\}", r"\1", s)
+
+    # Common blackboard sets
+    s = re.sub(r"\\mathbb\{R\}", " 全体实数集 ", s)
+    s = re.sub(r"\\mathbb\{N\}", " 自然数集 ", s)
+    s = re.sub(r"\\mathbb\{Z\}", " 整数集 ", s)
+    s = re.sub(r"\\mathbb\{Q\}", " 有理数集 ", s)
+    s = re.sub(r"\\mathbb\{C\}", " 复数集 ", s)
+    s = re.sub(r"\\mathbb\{([A-Za-z]+)\}", r" \1 ", s)
+
+    # Fractions & roots (nested-safe)
+    for _ in range(3):
+        s, n = re.subn(r"\\d?frac\{([^{}]+)\}\{([^{}]+)\}", r" \2 分之 \1 ", s)
+        if n == 0:
+            break
+
+    s = re.sub(r"\\sqrt\[([^\]]+)\]\{([^{}]+)\}", r" \1 次根号下 \2 ", s)
+    for _ in range(2):
+        s = re.sub(r"\\sqrt\{([^{}]+)\}", r" 根号下 \1 ", s)
+
+    s = re.sub(r"-\s*\\infty", " 负无穷大 ", s)
+    s = re.sub(r"\+\s*\\infty", " 正无穷大 ", s)
+
+    replacements = [
+        (r"\\Rightarrow", " 推出 "),
+        (r"\\Leftarrow", " 反推得到 "),
+        (r"\\iff", " 当且仅当 "),
+        (r"\\leftrightarrow", " 等价于 "),
+        (r"\\rightarrow|\\to", " 趋近于 "),
+        (r"\\mapsto", " 映射到 "),
+        (r"\\ge(?:q)?", " 大于等于 "),
+        (r"\\le(?:q)?", " 小于等于 "),
+        (r"\\ne(?:q)?", " 不等于 "),
+        (r"\\approx", " 约等于 "),
+        (r"\\equiv|\\cong", " 同构于 "),
+        (r"\\propto", " 正比于 "),
+        (r"\\infty", " 无穷大 "),
+        (r"\\cup", " 并 "),
+        (r"\\cap", " 交 "),
+        (r"\\in\b", " 属于 "),
+        (r"\\notin\b", " 不属于 "),
+        (r"\\subset(?:eq)?\b", " 包含于 "),
+        (r"\\mid\b", " 整除 "),
+        (r"\\cdot", " 乘 "),
+        (r"\\times", " 乘以 "),
+        (r"\\div", " 除以 "),
+        (r"\\pm", " 加减 "),
+        (r"\\ln\b", " 自然对数 "),
+        (r"\\log\b", " 对数 "),
+        (r"\\sin\b", " 正弦 "),
+        (r"\\cos\b", " 余弦 "),
+        (r"\\tan\b", " 正切 "),
+        (r"\\lim\b", " 极限 "),
+        (r"\\max\b", " 最大值 "),
+        (r"\\min\b", " 最小值 "),
+        (r"\\alpha\b", " 阿尔法 "),
+        (r"\\beta\b", " 贝塔 "),
+        (r"\\gamma\b", " 伽马 "),
+        (r"\\Delta\b", " 判别式德尔塔 "),
+        (r"\\delta\b", " 德尔塔 "),
+        (r"\\theta\b", " 西塔 "),
+        (r"\\varphi\b|\\phi\b", " 斐 "),
+        (r"\\lambda\b", " 拉姆达 "),
+        (r"\\pi\b", " 派 "),
+        (r"\\sigma\b", " 西格玛 "),
+        (r"\\omega\b", " 欧米伽 "),
+        (r"\\partial\b", " 偏 "),
+        (r"\\forall\b", " 对任意 "),
+        (r"\\exists\b", " 存在 "),
+        (r"\\left|\\right|\\,|\\;|\\:|\\!", " "),
+    ]
+    for pat, rep in replacements:
+        s = re.sub(pat, rep, s)
+
+    # Derivatives: f''(x), f'(x)
+    s = re.sub(r"([A-Za-z])''\s*\(([^)]+)\)", r"\1 两撇 \2", s)
+    s = re.sub(r"([A-Za-z])'\s*\(([^)]+)\)", r"\1 撇 \2", s)
+    s = re.sub(r"([A-Za-z])''", r"\1 两撇", s)
+    s = re.sub(r"([A-Za-z])'", r"\1 撇", s)
+
+    # Powers & subscripts
+    s = re.sub(r"\^\{2\}|\^2\b", " 的平方 ", s)
+    s = re.sub(r"\^\{3\}|\^3\b", " 的立方 ", s)
+    s = re.sub(r"\^\{([^{}]+)\}", r" 的 \1 次方 ", s)
+    s = re.sub(r"\^(-?\d+|[A-Za-z])", r" 的 \1 次方 ", s)
+    s = re.sub(r"_\{([^{}]+)\}", r" 下标 \1 ", s)
+
+    # Unicode symbols
+    unicode_map = {
+        "⇒": " 推出 ",
+        "→": "，下一步 ",
+        "≥": " 大于等于 ",
+        "≤": " 小于等于 ",
+        "≠": " 不等于 ",
+        "∞": " 无穷大 ",
+        "∈": " 属于 ",
+        "∝": " 正比于 ",
+        "·": " 乘 ",
+        "²": " 的平方",
+        "³": " 的立方",
+    }
+    for k, v in unicode_map.items():
+        s = s.replace(k, v)
+
+    s = re.sub(r"\\[A-Za-z]+", " ", s)
+    s = re.sub(r"[{}\\#*`>~|]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
 async def synthesize_text_audio(
     *,
     cache_key: str,
@@ -92,8 +212,7 @@ async def synthesize_text_audio(
     voice_id: str = "zh_female_clear",
 ) -> dict[str, Any]:
     """Synthesize cached Chinese voice narration for lecture/whiteboard playback with offline fallback."""
-    clean_text = re.sub(r"\$\$?|```[\s\S]*?```|[#*`>]+", " ", text or "")
-    clean_text = re.sub(r"\s+", " ", clean_text).strip()[:2400]
+    clean_text = latex_to_spoken_zh(text)[:2400]
     if not clean_text:
         raise ValueError("当前没有可朗读的文本内容。")
 
@@ -166,7 +285,7 @@ async def synthesize_deck_narration(
             notes = f"第{idx}页，{sl.get('title', '')}。{sl.get('takeaway', '')}"
         chunks.append(f"第{idx}页。{notes}")
 
-    full_script = "\n".join(chunks).strip()
+    full_script = latex_to_spoken_zh("\n".join(chunks))[:3600]
     if not full_script:
         raise ValueError("当前课件没有可用的讲解逐字稿。")
 

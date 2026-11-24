@@ -704,3 +704,101 @@ def test_v42_calendar_agent_tools_tts_and_zip() -> None:
         client.delete(f"/api/courses/{crs_id}")
 
 
+def test_latex_to_spoken_zh() -> None:
+    from engines.tts_narrator import latex_to_spoken_zh
+
+    sample = "令 $f'(x) = \\frac{1 + 2ax^2}{x} \\ge 0$，$x \\in \\mathbb{R} \\Rightarrow x^3 - \\sqrt{x}$。"
+    spoken = latex_to_spoken_zh(sample)
+    assert "\\" not in spoken
+    assert "$" not in spoken
+    assert "分之" in spoken
+    assert "大于等于" in spoken
+    assert "全体实数集" in spoken
+    assert "推出" in spoken
+    assert "根号下" in spoken
+
+
+def test_whiteboard_teach_step_board_crud_and_quiz() -> None:
+    with TestClient(app) as client:
+        enrolled = client.post("/api/courses/enroll", json={"market_id": "mkt_calc_deriv", "mode": "teaching"}).json()
+        assert enrolled["ok"] is True
+        crs_id = enrolled["course"]["id"]
+        lid = enrolled["course"]["units"][0]["lectures"][0]["id"]
+
+        # 1. teach-step (reexplain_analogy, worked_example, socratic_check)
+        for act in ("reexplain_analogy", "worked_example", "socratic_check"):
+            evts = []
+            with client.stream(
+                "POST",
+                f"/api/courses/{crs_id}/lectures/{lid}/teach-step",
+                json={"action": act, "teaching_mode": "teaching"},
+            ) as resp:
+                assert resp.status_code == 200
+                ename = "message"
+                for line in resp.iter_lines():
+                    if line.startswith("event:"):
+                        ename = line.split(":", 1)[1].strip()
+                    elif line.startswith("data:"):
+                        evts.append((ename, json.loads(line.split(":", 1)[1].strip())))
+            res_evts = [p for e, p in evts if e == "result"]
+            assert len(res_evts) == 1
+            if act == "socratic_check":
+                assert res_evts[0]["new_quiz_item"]["question"]
+            else:
+                assert res_evts[0]["new_board_block"]["narration"]
+
+        # 2. PATCH /board (add_block, update_block, move_block, add_page, delete_block)
+        added = client.patch(
+            f"/api/courses/{crs_id}/lectures/{lid}/board",
+            json={
+                "op": "add_block",
+                "page_index": 1,
+                "block_type": "example",
+                "heading": "自定义检验块",
+                "lines": ["f(x) = x^2 - 1", "f'(x) = 2x"],
+                "highlight_note": "驻点 x=0",
+            },
+        ).json()
+        assert added["ok"] is True
+        blk_id = added["block"]["id"]
+        assert added["block"]["visual_expr"]
+
+        upd = client.patch(
+            f"/api/courses/{crs_id}/lectures/{lid}/board",
+            json={"op": "update_block", "block_id": blk_id, "heading": "修订后检验块", "lines": ["f(x)=x^2-4"]},
+        ).json()
+        assert upd["ok"] is True and upd["block"]["heading"] == "修订后检验块"
+
+        moved = client.patch(
+            f"/api/courses/{crs_id}/lectures/{lid}/board",
+            json={"op": "move_block", "block_id": blk_id, "direction": "up"},
+        ).json()
+        assert moved["ok"] is True
+
+        added_pg = client.patch(
+            f"/api/courses/{crs_id}/lectures/{lid}/board",
+            json={"op": "add_page", "roadmap_title": "新板书页"},
+        ).json()
+        assert added_pg["ok"] is True and added_pg["page_index"] >= 2
+
+        deleted = client.patch(
+            f"/api/courses/{crs_id}/lectures/{lid}/board",
+            json={"op": "delete_block", "block_id": blk_id},
+        ).json()
+        assert deleted["ok"] is True
+
+        # 3. POST /quiz-submit grading & mastery upgrade
+        latest_crs = client.get(f"/api/courses/{crs_id}").json()["course"]
+        q_items = latest_crs["units"][0]["lectures"][0]["quiz_items"]
+        answers = {q["id"]: q["answer"] for q in q_items}
+        sub = client.post(
+            f"/api/courses/{crs_id}/lectures/{lid}/quiz-submit",
+            json={"answers": answers},
+        ).json()
+        assert sub["ok"] is True
+        assert sub["score_pct"] == 100
+        assert sub["mastery"] == "mastered"
+
+        client.delete(f"/api/courses/{crs_id}")
+
+

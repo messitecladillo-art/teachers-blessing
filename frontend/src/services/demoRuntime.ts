@@ -1,4 +1,6 @@
+import { BoardBlock } from '../types';
 import { assetUrl } from '../utils/assets';
+import { extractPlottableFromBlock, latexToSpokenZh } from '../utils/speechMath';
 
 type EventCallback = (event: string, data: Record<string, unknown>) => void;
 
@@ -10,7 +12,7 @@ export interface StreamHandlers {
   onError?: (message: string) => void;
 }
 
-const DEMO_STORAGE_KEY = 'eduforge_demo_state_v1';
+const DEMO_STORAGE_KEY = 'eduforge_demo_state_v45';
 
 interface DemoMutableState {
   courses: Record<string, unknown>[];
@@ -555,6 +557,180 @@ export async function demoApiJson<T>(url: string, options?: RequestInit): Promis
     return { ok: true, course: norm } as T;
   }
 
+  const boardMutateMatch = path.match(/^\/api\/courses\/([^/]+)\/lectures\/([^/]+)\/board$/);
+  if (boardMutateMatch && method === 'PATCH') {
+    const cid = decodeURIComponent(boardMutateMatch[1]);
+    const lid = decodeURIComponent(boardMutateMatch[2]);
+    const course = state.courses.find((c) => c.id === cid);
+    if (!course) throw new Error('课程不存在');
+    let targetLec: Record<string, unknown> | null = null;
+    for (const u of (course.units as { lectures: Record<string, unknown>[] }[]) || []) {
+      for (const l of u.lectures || []) {
+        if (l.id === lid) targetLec = l;
+      }
+    }
+    if (!targetLec) throw new Error('讲次不存在');
+
+    const op = String(body.op || '').trim();
+    type DemoPage = { page_index: number; roadmap_title: string; blocks: Record<string, unknown>[] };
+    let pages = ((targetLec.board_pages as DemoPage[]) || [{ page_index: 1, roadmap_title: '本节课路线图', blocks: [] }]);
+    let resultBlock: Record<string, unknown> | null = null;
+    let resultPageIdx = Math.max(1, Math.min(pages.length, Number(body.page_index || 1)));
+
+    const enrichBlock = (raw: Record<string, unknown>): Record<string, unknown> => {
+      const heading = String(raw.heading || '板书要点').trim();
+      const lines = Array.isArray(raw.lines) ? raw.lines.map((x) => String(x).trim()).filter(Boolean) : [heading];
+      const highlightNote = String(raw.highlight_note || '').trim();
+      const blockType = String(raw.block_type || 'derivation');
+      const vExpr =
+        String(raw.visual_expr || '').trim() ||
+        extractPlottableFromBlock({ id: '', heading, lines } as BoardBlock);
+      const narration =
+        String(raw.narration || '').trim() ||
+        latexToSpokenZh(`${heading}。${lines.join('；')}${highlightNote ? `。重点提示：${highlightNote}` : ''}`);
+      return {
+        id: String(raw.id || makeId('blk')),
+        block_type: blockType,
+        heading,
+        lines,
+        highlight_note: highlightNote,
+        narration,
+        teaching_tip: String(raw.teaching_tip || '').trim() || `板书停顿：引导学生核对「${heading.slice(0, 12)}」的关键条件。`,
+        verified_badge: /=|\^|f'/.test(lines.join(' ')) ? '推导要点已校验 · 已验算' : undefined,
+        ...(vExpr ? { visual_expr: vExpr } : {}),
+      };
+    };
+
+    if (op === 'add_page') {
+      const nextIdx = pages.length + 1;
+      const newBlocks: Record<string, unknown>[] = [];
+      if (String(body.heading || '').trim() || (Array.isArray(body.lines) && body.lines.length)) {
+        resultBlock = enrichBlock(body);
+        newBlocks.push(resultBlock);
+      }
+      pages.push({
+        page_index: nextIdx,
+        roadmap_title: String(body.roadmap_title || `课堂板书 · 第 ${nextIdx} 页`).trim(),
+        blocks: newBlocks,
+      });
+      resultPageIdx = nextIdx;
+    } else if (op === 'add_block') {
+      resultBlock = enrichBlock(body);
+      const pgIdx0 = Math.max(0, Math.min(pages.length - 1, Number(body.page_index || 1) - 1));
+      pages[pgIdx0].blocks = [...(pages[pgIdx0].blocks || []), resultBlock];
+      resultPageIdx = pgIdx0 + 1;
+    } else if (op === 'update_block') {
+      const targetId = String(body.block_id || '');
+      for (let pi = 0; pi < pages.length; pi++) {
+        const bi = (pages[pi].blocks || []).findIndex((b) => b.id === targetId);
+        if (bi !== -1) {
+          resultBlock = enrichBlock({ ...pages[pi].blocks[bi], ...body, id: targetId });
+          pages[pi].blocks[bi] = resultBlock;
+          resultPageIdx = pi + 1;
+          break;
+        }
+      }
+    } else if (op === 'delete_block') {
+      const targetId = String(body.block_id || '');
+      pages.forEach((pg) => {
+        pg.blocks = (pg.blocks || []).filter((b) => b.id !== targetId);
+      });
+      pages = pages.filter((pg, i) => i === 0 || (pg.blocks || []).length > 0);
+      pages.forEach((pg, i) => {
+        pg.page_index = i + 1;
+      });
+      resultPageIdx = Math.min(resultPageIdx, pages.length);
+    } else if (op === 'move_block') {
+      const targetId = String(body.block_id || '');
+      const delta = body.direction === 'down' ? 1 : -1;
+      for (let pi = 0; pi < pages.length; pi++) {
+        const blks = [...(pages[pi].blocks || [])];
+        const bi = blks.findIndex((b) => b.id === targetId);
+        if (bi !== -1) {
+          const np = Math.max(0, Math.min(blks.length - 1, bi + delta));
+          if (np !== bi) {
+            [blks[bi], blks[np]] = [blks[np], blks[bi]];
+            pages[pi].blocks = blks;
+          }
+          resultBlock = blks[np];
+          resultPageIdx = pi + 1;
+          break;
+        }
+      }
+    }
+
+    targetLec.board_pages = pages;
+    course.last_lecture_id = lid;
+    const norm = recomputeCourseProgress(course);
+    Object.assign(course, norm);
+    persistState();
+    return { ok: true, course: norm, page_index: resultPageIdx, block: resultBlock } as T;
+  }
+
+  const quizSubmitMatch = path.match(/^\/api\/courses\/([^/]+)\/lectures\/([^/]+)\/quiz-submit$/);
+  if (quizSubmitMatch && method === 'POST') {
+    const cid = decodeURIComponent(quizSubmitMatch[1]);
+    const lid = decodeURIComponent(quizSubmitMatch[2]);
+    const course = state.courses.find((c) => c.id === cid);
+    if (!course) throw new Error('课程不存在');
+    let targetLec: Record<string, unknown> | null = null;
+    for (const u of (course.units as { lectures: Record<string, unknown>[] }[]) || []) {
+      for (const l of u.lectures || []) {
+        if (l.id === lid) targetLec = l;
+      }
+    }
+    if (!targetLec) throw new Error('讲次不存在');
+
+    const qItems = (targetLec.quiz_items as Record<string, unknown>[]) || [];
+    if (!qItems.length) throw new Error('当前讲次暂无随堂检验题');
+
+    const ansMap = (body.answers as Record<string, string>) || {};
+    let correctCount = 0;
+    const graded = qItems.map((q) => {
+      const qid = String(q.id || '');
+      const expected = String(q.answer || 'A').trim().slice(0, 1).toUpperCase();
+      const selected = String(ansMap[qid] || '').trim().slice(0, 1).toUpperCase();
+      const correct = Boolean(selected && selected === expected);
+      if (correct) correctCount += 1;
+      return {
+        id: qid,
+        selected,
+        expected,
+        correct,
+        explanation: String(q.explanation || ''),
+        related_block_id: String(q.related_block_id || ''),
+      };
+    });
+
+    const totalCount = qItems.length;
+    const scorePct = Math.round((correctCount / totalCount) * 100);
+    const targetMastery = scorePct >= 85 ? 'mastered' : scorePct >= 60 ? 'proficient' : correctCount > 0 ? 'familiar' : 'attempted';
+    const order: Record<string, number> = { unstarted: 0, attempted: 1, familiar: 2, proficient: 3, mastered: 4 };
+    const curM = String(targetLec.mastery || 'unstarted');
+    if ((order[targetMastery] || 0) > (order[curM] || 0)) {
+      targetLec.mastery = targetMastery;
+    }
+
+    const today = new Date();
+    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const ws = (course.weekly_sessions as Record<string, number>) || {};
+    ws[iso] = (ws[iso] || 0) + 1;
+    course.weekly_sessions = ws;
+    course.last_lecture_id = lid;
+    const norm = recomputeCourseProgress(course);
+    Object.assign(course, norm);
+    persistState();
+    return {
+      ok: true,
+      score_pct: scorePct,
+      correct_count: correctCount,
+      total_count: totalCount,
+      items: graded,
+      mastery: targetLec.mastery,
+      course: norm,
+    } as T;
+  }
+
   const expandMatch = path.match(/^\/api\/courses\/([^/]+)\/expand$/);
   if (expandMatch && method === 'POST') {
     const cid = decodeURIComponent(expandMatch[1]);
@@ -1032,12 +1208,189 @@ export async function demoEventStream(
     return;
   }
 
-  // 2. Whiteboard lecture chat-stream
+  // 2. Whiteboard lecture chat-stream & teach-step
+  const teachStepMatch = path.match(/^\/api\/courses\/([^/]+)\/lectures\/([^/]+)\/teach-step$/);
+  if (teachStepMatch) {
+    const cid = decodeURIComponent(teachStepMatch[1]);
+    const lid = decodeURIComponent(teachStepMatch[2]);
+    const action = String(body.action || 'next_segment');
+    const blockId = String(body.block_id || '');
+    const pageIndexReq = Number(body.page_index || 1);
+    const course = state.courses.find((c) => c.id === cid);
+    if (!course) {
+      onEvent('error', { message: '课程不存在' });
+      return;
+    }
+    let targetLec: Record<string, unknown> | null = null;
+    for (const u of (course.units as { lectures: Record<string, unknown>[] }[]) || []) {
+      for (const l of u.lectures || []) {
+        if (l.id === lid) targetLec = l;
+      }
+    }
+    if (!targetLec) {
+      onEvent('error', { message: '讲次不存在' });
+      return;
+    }
+
+    type DemoPage = { page_index: number; roadmap_title: string; blocks: Record<string, unknown>[] };
+    const pages = (targetLec.board_pages as DemoPage[]) || [{ page_index: 1, roadmap_title: '本节课路线图', blocks: [] }];
+    let focusBlk: Record<string, unknown> | null = null;
+    for (const pg of pages) {
+      for (const b of pg.blocks || []) {
+        if (b.id === blockId) focusBlk = b;
+      }
+    }
+    if (!focusBlk && pages.length) {
+      const clampedPg = pages[Math.max(0, Math.min(pages.length - 1, pageIndexReq - 1))];
+      if (clampedPg?.blocks?.length) focusBlk = clampedPg.blocks[clampedPg.blocks.length - 1];
+    }
+
+    const shortFocus = String(focusBlk?.heading || targetLec.title || '本讲核心')
+      .replace(/^[一二三四五六七八九十]+、\s*/, '')
+      .slice(0, 14);
+    onEvent('stage', { stage: 'thinking', message: '正在构思交互讲解并同步左侧白板…' });
+    await pause(160);
+
+    const now = Date.now() / 1000;
+    const msgs = (targetLec.messages as Record<string, unknown>[]) || [];
+
+    if (action === 'socratic_check') {
+      const qItem: Record<string, unknown> = {
+        id: makeId('q'),
+        question: `结合板书「${shortFocus}」，下列在判断或演算时最必须优先检验的环节是（ ）`,
+        options: [
+          'A. 先明确函数或结论成立的定义域及前提约束，再做符号与临界点分析',
+          'B. 直接代入单个特值后推广到全区间',
+          'C. 跳过驻点两侧符号检验直接判极值',
+          'D. 将不连续单调区间直接用并集 $\\cup$ 连接',
+        ],
+        answer: 'A',
+        explanation: `针对「${shortFocus}」，优先界定前提与定义域并用典型特例复核临界边界，是严谨解题的核心保证。`,
+        related_block_id: String(focusBlk?.id || ''),
+      };
+      const qList = (targetLec.quiz_items as Record<string, unknown>[]) || [];
+      qList.push(qItem);
+      targetLec.quiz_items = qList;
+      const replyText = `我结合「${shortFocus}」为你出了一道即时诊断检验题，已同步至「随堂检验」面板。`;
+      for (let i = 0; i < replyText.length; i += 12) {
+        onEvent('delta', { text: replyText.slice(i, i + 12) });
+        await pause(30);
+      }
+      const aMsg = { id: makeId('wmsg'), role: 'assistant', content: replyText, board_anchor_id: String(focusBlk?.id || ''), created_at: now };
+      msgs.push(aMsg);
+      targetLec.messages = msgs;
+      if (targetLec.mastery === 'unstarted') targetLec.mastery = 'attempted';
+      const norm = recomputeCourseProgress(course);
+      Object.assign(course, norm);
+      persistState();
+      onEvent('quiz_item', { quiz_item: qItem });
+      onEvent('result', { ok: true, action, reply: aMsg, new_quiz_item: qItem, course: norm });
+      return;
+    }
+
+    let replyText = '';
+    let newBlk: Record<string, unknown>;
+    if (action === 'reexplain_analogy') {
+      replyText = `换个生活画面理解「${shortFocus}」：就像开车爬坡看仪表盘瞬时坡度，中途短暂轻踩一次刹车只是瞬时水平点（如 $f(x)=x^3$ 原点），整条山路高度仍稳步抬升。`;
+      newBlk = {
+        id: makeId('blk'),
+        block_type: 'concept',
+        heading: `直观类比：${shortFocus}`,
+        lines: ['开车爬坡图景：切线斜率对应瞬时爬坡倾角', '短暂停顿（$f\'(x_0)=0$）不改整体严格递增趋势'],
+        highlight_note: '先看整体走势方向，再检验离散零点',
+        narration: latexToSpokenZh(`换个更容易记住的比喻来理解${shortFocus}：就像开车上坡看坡度表，中途轻微松一脚油门只是某个瞬间斜率为零，前后都在上升就依然是严格单调递增。`),
+        teaching_tip: '课堂停顿：配合手势比划爬坡趋势，再引回导数符号检验。',
+      };
+    } else if (action === 'worked_example') {
+      replyText = `围绕「${shortFocus}」补充规范典例 $f(x)=x^3-3x$：定义域为全体实数，求导得 $f'(x)=3(x-1)(x+1)$，列表判号可知极值 $f(-1)=2$、$f(1)=-2$。`;
+      newBlk = {
+        id: makeId('blk'),
+        block_type: 'example',
+        heading: `典例拆解：${shortFocus}`,
+        lines: [
+          '例题：分析 $f(x)=x^3-3x$ 的单调区间与极值',
+          'Step 1 求导因式分解：$f\'(x)=3(x-1)(x+1)=0 \\Rightarrow x=\\pm 1$',
+          'Step 2 列表判号：$(-\\infty,-1)$ 和 $(1,+\\infty)$ 递增；$(-1,1)$ 递减',
+        ],
+        highlight_note: '严谨书写：两段增区间之间用“和”连接',
+        verified_badge: '导数与驻点已校核 · 已验算',
+        narration: latexToSpokenZh('看这道典例：f of x 等于 x 的立方减 3x，求导因式分解后找到正负 1 两个驻点，分段列表即可锁定极大值 2 与极小值负 2。'),
+        teaching_tip: '请学生口答三个分段区间内的导数正负符号。',
+        visual_expr: 'x^3 - 3*x',
+      };
+    } else if (action === 'counterexample') {
+      replyText = `针对「${shortFocus}」补充两条必避反例：$f(x)=1/x$ 禁止跨断点写并集 $\\cup$；$f(x)=|x|$ 在尖点不可导仍为极小值。`;
+      newBlk = {
+        id: makeId('blk'),
+        block_type: 'trap',
+        heading: `易错反例：${shortFocus}`,
+        lines: [
+          '反例 1：$f(x)=\\frac{1}{x}$ 跨间断点不能用并集 $\\cup$ 连接递减区间',
+          '反例 2：$f(x)=|x|$ 不可导但取极小值；$f(x)=x^3$ 可导且 $f\'(0)=0$ 却无极值',
+        ],
+        highlight_note: '遇分母先标间断点，判极值须检左右变号',
+        narration: latexToSpokenZh('注意这两条高频反例：x 分之一跨越原点不能用并集连接；绝对值 x 在原点不可导却是极小值。'),
+        teaching_tip: '红笔标出并集禁忌与尖点极值对比。',
+      };
+    } else if (action === 'teacher_script') {
+      replyText = `已生成围绕「${shortFocus}」的 3 分钟微格试讲导入、板书衔接与设问逐字稿，并写入左侧白板卡片。`;
+      newBlk = {
+        id: makeId('blk'),
+        block_type: 'concept',
+        heading: `试讲口播稿：${shortFocus}`,
+        lines: [
+          '设问导入：“各位同学先观察切线方向，何时上升何时水平？”',
+          '板书推进：主栏写定义域与求导分解，副栏保留反例对比',
+          '即时收束：引导完成 1 道随堂检验确认符号判据过关',
+        ],
+        highlight_note: '试讲节奏：设问留白 3 秒 + 关键词高亮对齐',
+        narration: latexToSpokenZh('试讲导入示范：各位同学请先关注图像中的水平切线，为什么这一瞬斜率为零却没有阻断曲线继续升高？'),
+        teaching_tip: '面向听众停顿 2 秒后再展开右侧四步推导。',
+      };
+    } else {
+      replyText = `已提炼「${shortFocus}」的核心知识骨架与口诀：定域优先、求导分解、找驻点、列表判变号，要点已追加至白板。`;
+      newBlk = {
+        id: makeId('blk'),
+        block_type: action === 'summarize' ? 'summary' : 'derivation',
+        heading: action === 'summarize' ? `核心小结：${shortFocus}` : `进阶延伸：${shortFocus}`,
+        lines: ['1. 定域为先：锁定自然定义域与参数前提', '2. 列表为据：检查临界点左右导数符号变化', '3. 书写闭环：区间分隔用“和”，端点单独检验'],
+        highlight_note: '定域 -> 求导 -> 列表 -> 验边界',
+        narration: latexToSpokenZh(`归纳核心四步口诀：一标定义域，二求导分解，三定驻点，四列表检验左右变号。`),
+        teaching_tip: '结课停顿，提示切换「随堂检验」自测。',
+      };
+    }
+
+    for (let i = 0; i < replyText.length; i += 12) {
+      onEvent('delta', { text: replyText.slice(i, i + 12) });
+      await pause(30);
+    }
+
+    if (!pages.length || pages[pages.length - 1].blocks.length >= 4) {
+      pages.push({ page_index: pages.length + 1, roadmap_title: `课堂互动板书 · 第 ${pages.length + 1} 页`, blocks: [newBlk] });
+    } else {
+      pages[pages.length - 1].blocks.push(newBlk);
+    }
+    targetLec.board_pages = pages;
+
+    const aMsg = { id: makeId('wmsg'), role: 'assistant', content: replyText, board_anchor_id: newBlk.id, created_at: now };
+    msgs.push(aMsg);
+    targetLec.messages = msgs;
+    if (targetLec.mastery === 'unstarted') targetLec.mastery = 'attempted';
+    const norm = recomputeCourseProgress(course);
+    Object.assign(course, norm);
+    persistState();
+
+    onEvent('board_block', { block: newBlk, page_index: pages.length });
+    onEvent('result', { ok: true, action, reply: aMsg, new_board_block: newBlk, page_index: pages.length, course: norm });
+    return;
+  }
+
   const wbMatch = path.match(/^\/api\/courses\/([^/]+)\/lectures\/([^/]+)\/chat-stream$/);
   if (wbMatch) {
     const cid = decodeURIComponent(wbMatch[1]);
     const lid = decodeURIComponent(wbMatch[2]);
     const msg = String(body.message || '').trim();
+    const focusBlockId = String(body.focus_block_id || '');
     const course = state.courses.find((c) => c.id === cid);
     if (!course) {
       onEvent('error', { message: '课程不存在' });
@@ -1085,11 +1438,16 @@ export async function demoEventStream(
     const blkId = makeId('blk');
     const newBlk: Record<string, unknown> = {
       id: blkId,
+      block_type: hasEquation ? 'derivation' : 'concept',
       heading: blkHeading,
       lines: blkLines,
       highlight_note: '核对前提 -> 分步推演 -> 特例验算',
+      narration: latexToSpokenZh(replyText),
+      teaching_tip: '板书同步：高亮验证前提条件与边界根值。',
       ...(verifiedBadge ? { verified_badge: verifiedBadge } : {}),
     };
+    const vExpr = extractPlottableFromBlock(newBlk as unknown as BoardBlock);
+    if (vExpr) newBlk.visual_expr = vExpr;
 
     const pages = (targetLec.board_pages as { page_index: number; roadmap_title: string; blocks: Record<string, unknown>[] }[]) || [];
     if (!pages.length || pages[pages.length - 1].blocks.length >= 4) {
@@ -1100,7 +1458,7 @@ export async function demoEventStream(
     targetLec.board_pages = pages;
 
     const now = Date.now() / 1000;
-    const uMsg = { id: makeId('wmsg'), role: 'user', content: msg, board_anchor_id: '', created_at: now };
+    const uMsg = { id: makeId('wmsg'), role: 'user', content: msg, board_anchor_id: focusBlockId, created_at: now };
     const aMsg = { id: makeId('wmsg'), role: 'assistant', content: replyText, board_anchor_id: blkId, created_at: now + 0.01 };
     const msgs = (targetLec.messages as Record<string, unknown>[]) || [];
     msgs.push(uMsg, aMsg);

@@ -607,10 +607,14 @@ export type LectureMastery = 'unstarted' | 'attempted' | 'familiar' | 'proficien
 
 export interface BoardBlock {
   id: string;
+  block_type?: 'concept' | 'derivation' | 'example' | 'trap' | 'summary';
   heading: string;
   lines: string[];
   highlight_note?: string;
   verified_badge?: string;
+  narration?: string;
+  teaching_tip?: string;
+  visual_expr?: string;
 }
 
 export interface BoardPage {
@@ -633,6 +637,24 @@ export interface LectureQuizItem {
   options: string[];
   answer: string;
   explanation: string;
+  related_block_id?: string;
+}
+
+export interface LectureQuizSubmitResult {
+  ok: boolean;
+  score_pct: number;
+  correct_count: number;
+  total_count: number;
+  mastery: LectureMastery;
+  items: {
+    id: string;
+    selected: string;
+    expected: string;
+    correct: boolean;
+    explanation: string;
+    related_block_id?: string;
+  }[];
+  course: CourseRecord;
 }
 
 export interface CourseLecture {

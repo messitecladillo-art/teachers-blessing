@@ -535,7 +535,7 @@ def extract_plottable_expression(question: str, sympy_checks: list[dict[str, Any
 
     # Regex fallback on question string: match f(x) = ... until Chinese char, comma, semicolon, dollar, or newline
     m_fn = re.search(
-        r"(?:[fgh]\s*\(\s*x\s*\)|y)\s*=\s*([A-Za-z0-9\s\+\-\*/\^\(\)\\{}\.²³]+)",
+        r"(?:[fgh]\s*\(\s*x\s*\)|y)\s*=\s*([A-Za-z0-9 \t\+\-\*/\^\(\)\\{}\.²³]+)",
         question or "",
     )
     if m_fn:
